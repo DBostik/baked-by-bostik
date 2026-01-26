@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Request Sent | Baked By Bostik</title>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/buttons.css">
+    <link rel="stylesheet" href="css/styles.css?v=6">
+    <link rel="icon" type="image/jpg" href="logo.JPG">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="index.html" class="logo-link">
+                <img src="public/logo.JPG" alt="Baked By Bostik" class="header-logo">
+            </a>
+            <nav class="desktop-nav">
+                <ul class="nav-list">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="gallery.html" class="nav-link">Gallery</a></li>
+                    <li><a href="about.html" class="nav-link">About</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Background handled by global CSS -->
+
+    <main class="container text-center"
+        style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:75vh; padding: 2rem 0;">
+
+        <!-- Success Card -->
+        <div
+            style="background: rgba(255, 255, 255, 0.9); padding: 3rem 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-xl); border: 1px solid rgba(255,255,255,0.6); max-width: 700px; width: 100%;">
+
+            <!-- Icon -->
+            <div
+                style="width: 80px; height: 80px; background: var(--color-accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-6);">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)"
+                    stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+
+            <h1 style="font-size:var(--text-4xl); margin-bottom:var(--space-4); color:var(--color-primary);">Request
+                Sent!</h1>
+            <p
+                style="font-size:var(--text-lg); color:var(--color-text-muted); margin-bottom:var(--space-8); line-height: 1.6;">
+                Thanks so much for reaching out! I've received your details and am excited to review your request.
+                <br><br>
+                You can expect a follow-up email from me within <strong>24 to 48 hours</strong>.
+            </p>
+
+            <div style="display:flex; gap:var(--space-4); justify-content: center; flex-wrap: wrap;">
+                <a href="index.html" class="btn btn-primary btn-large">Back to Home</a>
+                <a href="gallery.html" class="btn btn-outline btn-large">Browse Gallery</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <div class="footer-col">
+                <h3>Baked By Bostik</h3>
+                <a href="mailto:hello@bakedbybostik.com">hello@bakedbybostik.com</a>
+                <div class="social-links">
+                    <a href="https://instagram.com/bakedbybostik" target="_blank">Instagram</a>
+                    <a href="https://www.facebook.com/profile.php?id=61554467784437" target="_blank">Facebook</a>
+                </div>
+            </div>
+
+            <div class="footer-col" style="justify-content:center; display:flex;">
+                <img src="public/logo.JPG" alt="Baked By Bostik" class="footer-logo">
+            </div>
+
+            <div class="footer-col" style="text-align:right;">
+                <nav class="footer-nav">
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="terms.html">Terms</a>
+                </nav>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Confetti Script -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        window.addEventListener('load', () => {
+            const duration = 3000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            function random(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function () {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 50 * (timeLeft / duration);
+
+                // simple two-cannon confetti
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: 0.1, y: 0.6 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: 0.9, y: 0.6 } }));
+            }, 250);
+        });
+    </script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

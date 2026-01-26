@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baked By Bostik | Custom Cakes, Cookies & Cupcakes in Glen Ellyn</title>
+    <meta name="description"
+        content="Custom-made designer cookies, cakes, and cupcakes for birthdays, showers, and celebrations. Local pickup in Glen Ellyn, IL.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/buttons.css"> <!-- Will create next -->
+    <link rel="stylesheet" href="css/styles.css?v=6">
+
+    <!-- Favicon (using logo for now if available, otherwise generic) -->
+    <link rel="icon" type="image/jpg" href="logo.JPG">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="index.html" class="logo-link">
+                <!-- Logo Image -->
+                <img src="public/logo.JPG" alt="Baked By Bostik" class="header-logo">
+            </a>
+
+            <nav class="desktop-nav">
+                <ul class="nav-list">
+                    <li><a href="index.html" class="nav-link active">Home</a></li>
+                    <li><a href="gallery.html" class="nav-link">Gallery</a></li>
+                    <li><a href="about.html" class="nav-link">About</a></li>
+                </ul>
+            </nav>
+
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="openOrderModal()">Request an Order</button>
+            </div>
+
+            <button class="mobile-menu-toggle" aria-label="Open menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Section A: Split Hero -->
+        <section class="hero-section">
+            <div class="container hero-grid">
+                <div class="hero-content">
+                    <h1 class="hero-title fade-in-up">Designer cookies, cakes, and cupcakes for unforgettable parties.
+                    </h1>
+                    <p class="hero-subtitle fade-in-up delay-1">Custom-made in Glen Ellyn for birthdays, showers, and
+                        celebrations.</p>
+                    <div class="hero-buttons fade-in-up delay-2">
+                        <button class="btn btn-primary" onclick="openOrderModal()">Request an Order</button>
+                        <a href="gallery.html" class="btn btn-secondary">View Gallery</a>
+                    </div>
+                </div>
+                <div class="hero-image-wrapper fade-in-right">
+                    <!-- Hero Image -->
+                    <img src="public/images/Graduation and Milestones/cake-40th-birthday-navy-blue-gold-macarons.jpg"
+                        alt="Signature Cake" class="hero-img">
+                </div>
+            </div>
+        </section>
+
+        <!-- Section B: Featured Work Strip -->
+        <section class="featured-work-section">
+            <div class="container">
+                <div class="featured-grid" id="featuredGrid">
+                    <!-- Featured Images - Fixed Paths -->
+                    <div class="featured-item"><img
+                            src="public/images/Unicorns and Rainbow/cake-5th-birthday-unicorn-pastel-gold-happy-birthday-2.jpg"
+                            alt="Unicorn Cake" loading="lazy"></div>
+                    <div class="featured-item"><img
+                            src="public/images/Baby Shower and New Baby/cookies-baby-shower-baby-arundel-pink-white-clouds-bows.jpg"
+                            alt="Baby Shower Cookies" loading="lazy"></div>
+                    <div class="featured-item"><img
+                            src="public/images/Unicorns and Rainbow/cookies-birthday-unicorn-rainbow-happy-adair.jpg"
+                            alt="Unicorn Cookies" loading="lazy"></div>
+                    <div class="featured-item"><img
+                            src="public/images/Baby Shower and New Baby/cupcakes-blue-white-baby-shower-boy.jpg"
+                            alt="Baby Shower Cupcakes" loading="lazy"></div>
+                </div>
+                <div class="center-cta">
+                    <button class="btn btn-outline" onclick="openOrderModal()">Request an Order</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section C: Browse by Theme -->
+        <section class="themes-section bg-cream">
+            <div class="container">
+                <h2 class="section-title text-center">Browse by Theme</h2>
+                <div class="themes-grid">
+                    <!-- 1. Unicorns -->
+                    <a href="gallery.html?theme=unicorn" class="theme-card fade-in-up">
+                        <img src="public/images/Unicorns and Rainbow/cookies-unicorn-hearts-happy-birthday-pink-blue.jpg"
+                            alt="Unicorns">
+                        <h3>Unicorns & Rainbows</h3>
+                    </a>
+                    <!-- 2. Baby -->
+                    <a href="gallery.html?theme=baby" class="theme-card fade-in-up delay-1">
+                        <img src="public/images/Baby Shower and New Baby/cookies-baby-shower-onesies-hearts-gift-box.jpg"
+                            alt="Baby Shower">
+                        <h3>Baby Shower</h3>
+                    </a>
+                    <!-- 3. Seasonal -->
+                    <a href="gallery.html?theme=seasonal" class="theme-card fade-in-up delay-2">
+                        <img src="public/images/Holidays and Seasonal/cookies-christmas-snowflakes-blue-white-silver-box.jpg"
+                            alt="Seasonal">
+                        <h3>Seasonal</h3>
+                    </a>
+                    <!-- 4. Princess -->
+                    <a href="gallery.html?theme=princess" class="theme-card fade-in-up">
+                        <img src="public/images/Princess and Fairytale/cake-princess-doll-pink-coral-dress-grass-roses-2.jpg"
+                            alt="Princess">
+                        <h3>Princess & Fairytale</h3>
+                    </a>
+                    <!-- 5. Sports -->
+                    <a href="gallery.html?theme=sports" class="theme-card fade-in-up delay-1">
+                        <img src="public/images/Sports and Team Spirit/cookies-football-green-bay-packers-helmet-mask.jpg"
+                            alt="Sports">
+                        <h3>Sports & Teams</h3>
+                    </a>
+                    <!-- 6. Teachers -->
+                    <a href="gallery.html?theme=teacher" class="theme-card fade-in-up delay-2">
+                        <img src="public/images/Teacher and School Gifts/cookies-teacher-apple-pencil-notebook-gift-box.jpg"
+                            alt="Teachers">
+                        <h3>Teachers & School</h3>
+                    </a>
+                    <!-- 7. Graduation -->
+                    <a href="gallery.html?theme=graduation" class="theme-card fade-in-up">
+                        <img src="public/images/Graduation and Milestones/cookies-graduation-diploma-gown-cap-2024-chicago.jpg"
+                            alt="Graduation">
+                        <h3>Graduation</h3>
+                    </a>
+                    <!-- 8. Corporate/Other -->
+                    <a href="gallery.html?theme=corporate" class="theme-card fade-in-up delay-1">
+                        <img src="public/images/Corporate Logos and Events/cookies-financial-piggy-bank-money-bags-coins.jpg"
+                            alt="Corporate">
+                        <h3>Corporate & Events</h3>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section D: Testimonials -->
+        <section class="testimonials-section">
+            <div class="container text-center">
+                <h2 class="section-title">Sweet Words</h2>
+                <div class="testimonial-carousel">
+                    <!-- Items populated by JS -->
+                    <div class="testimonial-item active">
+                        <p class="quote">"The unicorn cake was the hit of the party! Not only did it look incredible,
+                            but it tasted amazing too."</p>
+                        <cite>- Sarah M.</cite>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section E: How It Works -->
+        <section class="how-it-works-section bg-cream">
+            <div class="container">
+                <h2 class="section-title text-center">How It Works</h2>
+                <div class="steps-grid">
+                    <div class="step-card fade-in-up">
+                        <div class="step-number">1</div>
+                        <h3>Request</h3>
+                        <p>Submit the quick form with your date, order type, and theme.</p>
+                    </div>
+                    <div class="step-card fade-in-up delay-1">
+                        <div class="step-number">2</div>
+                        <h3>Design + Quote</h3>
+                        <p>Kristen confirms availability, finalizes the look, then sends your custom quote.</p>
+                    </div>
+                    <div class="step-card fade-in-up delay-2">
+                        <div class="step-number">3</div>
+                        <h3>Reserve</h3>
+                        <p>Reserve your date once the deposit is paid, pickup or delivery on the big day.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section F: Seasonal Drops Banner -->
+        <section class="seasonal-banner">
+            <!-- Overlay handled in CSS -->
+            <div class="container banner-inner">
+                <div class="banner-text">
+                    <h3>Get limited preorder access to seasonal drops.</h3>
+                    <p>Holiday ordering reminders and early access.</p>
+                </div>
+                <div class="banner-action">
+                    <!-- Simple imitation form -->
+                    <button class="btn btn-secondary">Get Updates</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section G: Final CTA -->
+        <section class="final-cta-section text-center">
+            <div class="container">
+                <h2>Ready to start your custom order?</h2>
+                <p class="response-time">Replies within 24 to 48 hours.</p>
+                <button class="btn btn-primary btn-large" onclick="openOrderModal()">Request an Order</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <div class="footer-col">
+                <h3>Baked By Bostik</h3>
+                <a href="mailto:hello@bakedbybostik.com">hello@bakedbybostik.com</a>
+                <div class="social-links">
+                    <a href="https://instagram.com/bakedbybostik" target="_blank">Instagram</a>
+                    <a href="https://www.facebook.com/profile.php?id=61554467784437" target="_blank">Facebook</a>
+                </div>
+            </div>
+
+            <div class="footer-col" style="justify-content:center; display:flex;">
+                <img src="public/logo.JPG" alt="Baked By Bostik" class="footer-logo">
+            </div>
+
+            <div class="footer-col" style="text-align:right;">
+                <nav class="footer-nav">
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="terms.html">Terms</a>
+                </nav>
+            </div>
+        </div>
+        <div class="local-delivery-banner">
+            Local delivery available for an added fee, based on location.
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+</body>
+
+</html>

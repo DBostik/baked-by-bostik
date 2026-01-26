@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About | Baked By Bostik</title>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/buttons.css">
+    <link rel="stylesheet" href="css/styles.css?v=6">
+    <link rel="stylesheet" href="css/about.css?v=5"> <!-- New specific styles -->
+    <link rel="icon" type="image/jpg" href="logo.JPG">
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="index.html" class="logo-link">
+                <img src="public/logo.JPG" alt="Baked By Bostik" class="header-logo">
+            </a>
+            <nav class="desktop-nav">
+                <ul class="nav-list">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="gallery.html" class="nav-link">Gallery</a></li>
+                    <li><a href="about.html" class="nav-link active">About</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="openOrderModal()">Request an Order</button>
+            </div>
+            <button class="mobile-menu-toggle" aria-label="Open menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Bio Section -->
+        <section class="bio-section">
+            <div class="container bio-grid">
+                <!-- Image Wrapper with Centering and Width Constraint -->
+                <div class="bio-image fade-in-right"
+                    style="text-align:center; display:flex; justify-content:center; align-items:flex-start;">
+                    <img src="public/kristen.png" alt="Kristen - Baked By Bostik"
+                        style="width:70%; border-radius:var(--radius-lg); object-fit:cover;">
+                </div>
+                <div class="bio-content fade-in-up">
+                    <h1 class="section-title">Meet Kristen</h1>
+                    <!-- Reverted Text -->
+                    <p>Welcome to Baked By Bostik! I'm Kristen, the baker and artist behind your custom creations. Based
+                        in Glen Ellyn, I specialize in designing cookies, cakes, and cupcakes that are as delicious as
+                        they are beautiful.</p>
+                    <p>Whether it's a birthday, baby shower, or just because, I love turning your themes into edible
+                        art. Everything is custom-made with love and premium ingredients.</p>
+                    <p class="highlight-text">Pickup in Glen Ellyn, IL. Local delivery available for a fee.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="faq-section bg-cream">
+            <div class="container">
+                <h2 class="section-title text-center">Frequently Asked Questions</h2>
+                <div class="faq-grid">
+                    <details class="faq-item">
+                        <summary>What is the minimum order quantity?</summary>
+                        <div class="faq-content">
+                            <p>For cookies and cupcakes, the minimum order is <strong>2 dozen</strong>. For cakes, the
+                                minimum size is an <strong>8-inch cake</strong>.</p>
+                        </div>
+                    </details>
+                    <details class="faq-item">
+                        <summary>How far in advance should I order?</summary>
+                        <div class="faq-content">
+                            <p>I recommend booking as early as possible! Requests under 7 days may include a
+                                <strong>rush fee</strong>.
+                            </p>
+                        </div>
+                    </details>
+                    <details class="faq-item">
+                        <summary>Do you offer delivery?</summary>
+                        <div class="faq-content">
+                            <p>Yes! Local delivery is available for an added fee based on your location. Alternatively,
+                                free pickup is available in Glen Ellyn.</p>
+                        </div>
+                    </details>
+                    <details class="faq-item">
+                        <summary>What payment methods do you accept?</summary>
+                        <div class="faq-content">
+                            <p>I accept Venmo and Zelle. Your date is officially reserved once the <strong>50%
+                                    deposit</strong> is paid.</p>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </section>
+
+        <!-- General Contact Form -->
+        <section class="contact-section">
+            <div class="container text-center">
+                <h2 class="section-title">Get in Touch</h2>
+                <p class="subtitle">For general questions not related to an order.</p>
+
+                <form action="mailto:hello@bakedbybostik.com" method="post" enctype="text/plain" class="simple-form">
+                    <div class="form-group">
+                        <input type="text" name="name" placeholder="Your Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" name="email" placeholder="Your Email" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea name="message" rows="5" placeholder="Your Message" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-secondary">Send Message</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <!-- Footer Content same as index -->
+        <div class="container footer-inner">
+            <div class="footer-col">
+                <h3>Baked By Bostik</h3>
+                <a href="mailto:hello@bakedbybostik.com">hello@bakedbybostik.com</a>
+                <div class="social-links">
+                    <a href="https://instagram.com/bakedbybostik" target="_blank">Instagram</a>
+                    <a href="https://www.facebook.com/profile.php?id=61554467784437" target="_blank">Facebook</a>
+                </div>
+            </div>
+
+            <div class="footer-col" style="justify-content:center; display:flex;">
+                <img src="public/logo.JPG" alt="Baked By Bostik" class="footer-logo">
+            </div>
+
+            <div class="footer-col" style="text-align:right;">
+                <nav class="footer-nav">
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="terms.html">Terms</a>
+                </nav>
+            </div>
+        </div>
+        <div class="local-delivery-banner">
+            Local delivery available for an added fee, based on location.
+        </div>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+
+</html>

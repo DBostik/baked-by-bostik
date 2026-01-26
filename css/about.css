@@ -1,0 +1,131 @@
+/* About Page Styles */
+
+/* Bio Section */
+.bio-section {
+    padding: var(--space-12) 0;
+}
+
+.bio-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+    align-items: center;
+}
+
+@media(min-width: 768px) {
+    .bio-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.bio-content p {
+    margin-bottom: var(--space-4);
+    font-size: var(--text-lg);
+    color: var(--color-text-muted);
+}
+
+.highlight-text {
+    font-weight: 600;
+    color: var(--color-primary);
+    border-left: 4px solid var(--color-accent);
+    padding-left: var(--space-4);
+}
+
+/* FAQ Section */
+.faq-section {
+    padding: var(--space-12) 0;
+}
+
+.faq-grid {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.faq-item {
+    background-color: var(--color-bg-white);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.faq-item summary {
+    padding: var(--space-4) var(--space-6);
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--color-primary);
+    list-style: none;
+    /* Hide default triangle */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.faq-item summary::-webkit-details-marker {
+    display: none;
+}
+
+.faq-item summary::after {
+    content: '+';
+    font-size: var(--text-xl);
+    font-weight: 300;
+    transition: transform var(--transition-fast);
+}
+
+.faq-item[open] summary::after {
+    transform: rotate(45deg);
+}
+
+.faq-content {
+    /* Absolute centering via Flexbox */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+
+    /* Ensure height and padding */
+    min-height: 60px;
+    /* Reduced to ~60px */
+    padding: 1.1rem !important;
+    /* Reduced to 1.1rem */
+    text-align: center;
+}
+
+.faq-content p {
+    margin: 0;
+}
+
+/* Contact Section */
+.contact-section {
+    padding: var(--space-12) 0;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.simple-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(26, 42, 58, 0.1);
+}

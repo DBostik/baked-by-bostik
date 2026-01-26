@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Your Request | Baked By Bostik</title>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/buttons.css">
+    <link rel="stylesheet" href="css/styles.css?v=6">
+    <style>
+        .order-container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: var(--space-8) var(--space-4);
+        }
+
+        .progress-bar {
+            display: flex;
+            margin-bottom: var(--space-8);
+            justify-content: center;
+            gap: var(--space-4);
+        }
+
+        .progress-step {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--color-border);
+        }
+
+        .progress-step.active {
+            background-color: var(--color-primary);
+        }
+
+        .step-review-box {
+            background-color: var(--color-bg-white);
+            border: 1px solid var(--color-border);
+            padding: var(--space-4);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-8);
+        }
+
+        .form-section {
+            margin-bottom: var(--space-8);
+        }
+
+        .form-section h3 {
+            border-bottom: 2px solid var(--color-accent);
+            padding-bottom: var(--space-2);
+            display: inline-block;
+            margin-bottom: var(--space-6);
+        }
+
+        .form-grid {
+            display: grid;
+            gap: var(--space-4);
+        }
+
+        @media(min-width:768px) {
+            .form-grid.two-col {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        label {
+            display: block;
+            margin-bottom: var(--space-2);
+            font-weight: 500;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-group input {
+            width: auto;
+        }
+    </style>
+    <link rel="icon" type="image/jpg" href="logo.JPG">
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="index.html" class="logo-link">
+                <img src="public/logo.JPG" alt="Baked By Bostik" class="header-logo">
+            </a>
+            <nav class="desktop-nav">
+                <span style="font-weight:600; color:var(--color-primary);">Order Request - Step 2 of 2</span>
+            </nav>
+        </div>
+    </header>
+
+    <main class="order-container">
+        <!-- Progress -->
+        <div class="progress-bar">
+            <div class="progress-step active"></div>
+            <div class="progress-step active"></div>
+        </div>
+
+        <h1 class="text-center" style="margin-bottom:var(--space-2);">Almost there!</h1>
+        <p class="text-center text-muted" style="margin-bottom:var(--space-8);">Help Kristen quote your order faster by
+            providing a few more details.</p>
+
+        <!-- Step 1 Review (Hidden inputs) -->
+        <div class="step-review-box">
+            <h4>Ordering for: <span id="reviewName" style="color:var(--color-primary);">...</span></h4>
+            <p><strong>Date:</strong> <span id="reviewDate">...</span> | <strong>Type:</strong> <span
+                    id="reviewType">...</span></p>
+        </div>
+
+        <form id="step2Form" class="simple-form">
+            <!-- Hidden inputs to carry over Step 1 data -->
+            <input type="hidden" name="name" id="hiddenName">
+            <input type="hidden" name="email" id="hiddenEmail">
+            <input type="hidden" name="date" id="hiddenDate">
+            <input type="hidden" name="type" id="hiddenType">
+            <input type="hidden" name="qty" id="hiddenQty">
+
+            <!-- Design Details -->
+            <div class="form-section">
+                <h3>Design Details</h3>
+                <div class="form-grid two-col">
+                    <div>
+                        <label>Occasion (Optional)</label>
+                        <select name="occasion">
+                            <option value="">Select Occasion...</option>
+                            <option value="birthday">Birthday</option>
+                            <option value="shower">Baby/Bridal Shower</option>
+                            <option value="wedding">Wedding</option>
+                            <option value="corporate">Corporate</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Theme / Keywords</label>
+                        <input type="text" name="theme" placeholder="e.g. Unicorns, Blue & Gold">
+                    </div>
+                </div>
+                <div style="margin-top:var(--space-4);">
+                    <label>Preferred Colors</label>
+                    <input type="text" name="colors" placeholder="e.g. Pastel pink, white, gold">
+                </div>
+            </div>
+
+            <!-- Complexity & Budget -->
+            <div class="form-section">
+                <h3>Preferences</h3>
+                <div class="form-grid two-col">
+                    <div>
+                        <label>Design Complexity (Optional)</label>
+                        <select name="complexity">
+                            <option value="">No preference</option>
+                            <option value="simple">Simple (Basic piping/sprinkles)</option>
+                            <option value="standard">Standard (Themed details)</option>
+                            <option value="detailed">Detailed (Complex art/fondant)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Budget Comfort (Optional)</label>
+                        <select name="budget">
+                            <option value="">Unsure / Flexible</option>
+                            <option value="under75">Under $75</option>
+                            <option value="75-150">$75 - $150</option>
+                            <option value="150-300">$150 - $300</option>
+                            <option value="300+">$300+</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <label>Notes / Inspiration</label>
+                <textarea name="notes" rows="4" placeholder="Describe what you have in mind..."></textarea>
+            </div>
+
+            <div class="checkbox-group" style="margin-bottom:var(--space-8);">
+                <input type="checkbox" id="emailOptIn" name="emailOptIn" checked>
+                <label for="emailOptIn" style="margin:0; font-weight:400;">Notify me about seasonal drops and holiday
+                    ordering reminders.</label>
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary btn-large">Submit Request</button>
+            </div>
+        </form>
+    </main>
+
+    <script src="js/order-flow.js"></script>
+</body>
+
+</html>
