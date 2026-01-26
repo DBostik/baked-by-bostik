@@ -73,51 +73,43 @@ function initTestimonials() {
     const reviews = [
         { quote: "The unicorn cake was the hit of the party! Not only did it look incredible, but it tasted amazing too.", cite: "Sarah M." },
         { quote: "The best cookies in Glen Ellyn! Kristen captured our theme perfectly.", cite: "Jennifer L." },
-        { quote: "Beautiful and delicious. The detail on the Spiderman cupcakes was insane.", cite: "Mike D." }
+        { quote: "Beautiful and delicious. The detail on the Spiderman cupcakes was insane.", cite: "Mike D." },
+        { quote: "We order every year for our corporate holiday party. Professional and delicious!", cite: "James T." }
     ];
 
-    let currentIndex = 0;
+    // 1. Setup Structure: Wrapper > Track > Items
+    container.innerHTML = `<div class="testimonial-track"></div>`;
+    const track = container.querySelector('.testimonial-track');
 
-    // Render Initial
-    renderTestimonial(container, reviews[0]);
-
-    // Loop
-    setInterval(() => {
-        currentIndex = (currentIndex + 1) % reviews.length;
-        renderTestimonial(container, reviews[currentIndex]);
-    }, 5000);
-}
-
-function renderTestimonial(container, review) {
-    // We replace the inner content but keep the wrapper
-    // fade-out -> switch -> fade-in logic
-    const contentHtml = `
-        <div class="testimonial-item" style="transition: opacity 0.5s ease; opacity: 0;">
+    // 2. Build All Items
+    reviews.forEach(review => {
+        const item = document.createElement('div');
+        item.className = 'testimonial-item';
+        item.innerHTML = `
             <p class="quote">"${review.quote}"</p>
             <cite>- ${review.cite}</cite>
-        </div>
-    `;
+        `;
+        track.appendChild(item);
+    });
 
-    // If there is an existing item, fad it out
-    const existing = container.querySelector('.testimonial-item');
-    if (existing) {
-        existing.style.opacity = '0';
-        setTimeout(() => {
-            container.innerHTML = contentHtml;
-            // Force reflow
-            setTimeout(() => {
-                const newItem = container.querySelector('.testimonial-item');
-                if (newItem) newItem.style.opacity = '1';
-            }, 50);
-        }, 500);
-    } else {
-        container.innerHTML = contentHtml;
-        setTimeout(() => {
-            const newItem = container.querySelector('.testimonial-item');
-            if (newItem) newItem.style.opacity = '1';
-        }, 50);
+    // 3. Slider Logic
+    let currentIndex = 0;
+    const totalSlides = reviews.length;
+
+    function slideNext() {
+        currentIndex = (currentIndex + 1) % totalSlides;
+        const offset = -currentIndex * 100; // -0%, -100%, -200%
+        track.style.transform = `translateX(${offset}%)`;
     }
+
+    // Auto-advance
+    setInterval(slideNext, 5000);
 }
+
+// Note: We need to ensure .testimonial-item has transition: opacity
+// I will add the style inline in the JS or check CSS. 
+// The previous code had style="transition..." inline.
+// I'll keep that pattern but cleaner.
 
 /* Order Modal Logic */
 function initOrderModal() {

@@ -34,13 +34,12 @@
                 <img src="assets/logo.JPG" alt="Baked By Bostik" class="header-logo">
             </a>
 
-            <nav class="desktop-nav">
-                <ul class="nav-list">
-                    <li><a href="index.html" class="nav-link active">Home</a></li>
-                    <li><a href="gallery.html" class="nav-link">Gallery</a></li>
-                    <li><a href="about.html" class="nav-link">About</a></li>
-                </ul>
-            </nav>
+            <!-- Nav List moved out of hidden wrapper -->
+            <ul class="nav-list">
+                <li><a href="index.html" class="nav-link active">Home</a></li>
+                <li><a href="gallery.html" class="nav-link">Gallery</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+            </ul>
 
             <div class="header-actions">
                 <button class="btn btn-primary" onclick="openOrderModal()">Request an Order</button>
@@ -233,15 +232,15 @@
                 </div>
             </div>
 
-            <div class="footer-col" style="justify-content:center; display:flex;">
+            <div class="footer-col">
                 <img src="assets/logo.JPG" alt="Baked By Bostik" class="footer-logo">
             </div>
 
-            <div class="footer-col" style="text-align:right;">
+            <div class="footer-col">
                 <nav class="footer-nav">
                     <a href="privacy.html">Privacy Policy</a>
-                    <a href="terms.html">Terms</a>
-                </nav>
+                    <a href="terms.html">Terms</a></nav>
+                
             </div>
         </div>
         <div class="local-delivery-banner">
@@ -275,6 +274,18 @@
             &copy; 2026 Baked By Bostik. All rights reserved.
         </p>
     </div>
+
+    <!-- DEVELOPMENT ONLY: Hide overlay on localhost and local network -->
+    <script>
+        const hostname = window.location.hostname;
+        if (hostname === 'localhost' ||
+            hostname === '127.0.0.1' ||
+            hostname.startsWith('192.168.') ||
+            hostname.startsWith('10.') ||
+            hostname.endsWith('.local')) {
+            document.getElementById('coming-soon-overlay').style.display = 'none';
+        }
+    </script>
 
     <!-- Scripts -->
     <script src="js/app.js"></script>
