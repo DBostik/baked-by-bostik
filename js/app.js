@@ -233,16 +233,45 @@ function initOrderModal() {
         }
     });
 
-    form.onsubmit = (e) => {
+    form.onsubmit = async (e) => {
         e.preventDefault();
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
 
-        // Save to Session Storage
-        sessionStorage.setItem('orderStep1', JSON.stringify(data));
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerText;
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Processing...";
 
-        // Redirect
-        window.location.href = 'order.html';
+        // Retry logic: wait up to 15 seconds (30 attempts) for handler
+        let attempts = 0;
+        const maxAttempts = 30;
+
+        const checkHandler = async () => {
+            if (typeof window.handleOrderSubmit === 'function') {
+                await window.handleOrderSubmit(e, form);
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalText;
+                return true;
+            } else if (attempts < maxAttempts) {
+                attempts++;
+                // Update button when waiting longer
+                if (attempts > 3) submitBtn.innerText = "Connecting...";
+
+                console.log(`Handler not ready, retrying (${attempts}/${maxAttempts})...`);
+                await new Promise(r => setTimeout(r, 500));
+                return checkHandler();
+            } else {
+                return false;
+            }
+        };
+
+        const success = await checkHandler();
+
+        if (!success) {
+            submitBtn.disabled = false;
+            submitBtn.innerText = originalText;
+            console.error("Critical Error: window.handleOrderSubmit is not defined after waiting 15s.");
+            alert("System Error: The order system is not responding. \n\n1. Check your internet connection.\n2. Disable AdBlock (it may block Firebase).\n3. Refresh the page and try again.");
+        }
     };
 }
 
@@ -251,8 +280,12 @@ function openOrderModal() {
     if (modal) {
         modal.style.display = 'flex';
         document.body.classList.add('no-scroll');
+    } else {
+        console.error("Modal not found. initOrderModal failed?");
     }
 }
+// Expose to window for HTML onclick access
+window.openOrderModal = openOrderModal;
 
 function requestFromGallery(tags) {
     if (tags) {
@@ -266,6 +299,7 @@ function requestFromGallery(tags) {
         // document.body.classList.remove('no-scroll'); // openOrderModal adds this back
     }
 }
+window.requestFromGallery = requestFromGallery;
 
 /* Mobile Menu Logic */
 const mobileToggle = document.querySelector('.mobile-menu-toggle');

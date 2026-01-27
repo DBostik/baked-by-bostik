@@ -134,13 +134,13 @@
                 <img src="assets/logo.JPG" alt="Baked By Bostik" class="header-logo">
             </a>
 
-            
-                <ul class="nav-list">
-                    <li><a href="index.html" class="nav-link">Home</a></li>
-                    <li><a href="gallery.html" class="nav-link active">Gallery</a></li>
-                    <li><a href="about.html" class="nav-link">About</a></li>
-                </ul>
-            
+
+            <ul class="nav-list">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="gallery.html" class="nav-link active">Gallery</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+            </ul>
+
 
             <div class="header-actions">
                 <button class="btn btn-primary" onclick="openOrderModal()">Request an Order</button>
@@ -4751,15 +4751,16 @@
                 </div>
             </div>
 
-            <div class="footer-col" >
+            <div class="footer-col">
                 <img src="assets/logo.JPG" alt="Baked By Bostik" class="footer-logo">
             </div>
 
-            <div class="footer-col" >
+            <div class="footer-col">
                 <nav class="footer-nav">
                     <a href="privacy.html">Privacy Policy</a>
-                    <a href="terms.html">Terms</a></nav>
-                
+                    <a href="terms.html">Terms</a>
+                </nav>
+
             </div>
         </div>
         <div class="local-delivery-banner">
@@ -4784,11 +4785,7 @@
 
     <!-- Scripts -->
     <script src="js/app.js"></script>
-    <script>
-        // Gallery Logic Inline for simplicity or I can move to js/gallery.js.
-        // Let's keep it here for now or separate. Separation is cleaner.
-        // Moving to js/app.js or new file. I'll put it in js/app.js if it's small, otherwise js/gallery.js.
-    </script>
+    <script type="module" src="js/firebase-handler.js?v=2"></script>
     <script src="js/gallery.js"></script>
 </body>
 

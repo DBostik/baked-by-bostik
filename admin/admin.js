@@ -1,0 +1,2001 @@
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+    getAuth, signInWithEmailAndPassword,
+    onAuthStateChanged,
+    signOut,
+    sendPasswordResetEmail
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, where, getDocs, updateDoc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getStorage, ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+import { firebaseConfig } from '../js/firebase-config.js';
+
+// Init Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// State
+let currentUser = null;
+let requests = [];
+let customers = {}; // Cache: { id: { name, email } }
+let currentView = 'list'; // 'list' or 'board'
+let currentQuoteRequest = null;
+let currentQuoteItems = [];
+let selectedCustomerIds = new Set(); // ADDED for bulk delete
+let orders = []; // ADDED for Milestone 4
+
+// DOM Elements
+const els = {
+    loading: document.getElementById('loading-overlay'),
+    authView: document.getElementById('auth-view'),
+    dashboardView: document.getElementById('dashboard-view'),
+    loginForm: document.getElementById('login-form'),
+    loginError: document.getElementById('login-error'),
+    userEmail: document.getElementById('user-email-display'),
+    logoutBtn: document.getElementById('logout-btn'),
+    // Requests View
+    btnViewList: document.getElementById('view-list'),
+    btnViewBoard: document.getElementById('view-board'),
+    btnViewCalendar: document.getElementById('view-calendar'),
+    requestsListView: document.getElementById('requests-list-view'),
+    requestsBoardView: document.getElementById('requests-board-view'),
+    requestsCalendarView: document.getElementById('requests-calendar-view'), // ADDED
+    calTitle: document.getElementById('cal-title'),
+    calPrev: document.getElementById('cal-prev'),
+    calNext: document.getElementById('cal-next'),
+    calGrid: document.getElementById('calendar-grid'),
+    tableBody: document.getElementById('requests-table-body'),
+    boardColumns: {
+        NEW: document.getElementById('col-NEW'),
+        AWAITING_DETAILS: document.getElementById('col-AWAITING_DETAILS'), // ADDED
+        QUOTING: document.getElementById('col-QUOTING'),
+        BOOKED: document.getElementById('col-BOOKED'),
+        COMPLETED: document.getElementById('col-COMPLETED')
+    },
+    // Stats
+    countNew: document.getElementById('count-new'),
+    countPending: document.getElementById('count-pending'),
+    countTotal: document.getElementById('count-total'),
+    emptyState: document.getElementById('empty-state'),
+    refreshBtn: document.getElementById('refresh-requests'),
+    // Modal
+    modal: document.getElementById('detail-modal'),
+    modalBody: document.getElementById('modal-body'),
+    closeModalBtns: document.querySelectorAll('.close-modal'),
+    // Quote Modal
+    quoteModal: document.getElementById('quote-modal'),
+    quoteCustName: document.getElementById('quote-cust-name'),
+    quoteReqId: document.getElementById('quote-req-id'),
+    quoteItemsBody: document.getElementById('quote-items-body'),
+    btnAddItem: document.getElementById('btn-add-item'),
+    quoteSubtotal: document.getElementById('quote-subtotal'),
+    quoteDelivery: document.getElementById('quote-delivery'),
+    quoteRush: document.getElementById('quote-rush'),
+    quoteTotal: document.getElementById('quote-total'),
+    quoteResult: document.getElementById('quote-result'),
+    quotePdfLink: document.getElementById('quote-pdf-link'),
+    btnGeneratePdf: document.getElementById('btn-generate-pdf'),
+    btnSendEmail: document.getElementById('btn-send-email'),
+    // Customers View
+    customerSearch: document.getElementById('customer-search'),
+    customersTableBody: document.getElementById('customers-table-body'),
+    customersEmptyState: document.getElementById('customers-empty-state'),
+    // Bulk Delete
+    btnDeleteSelected: document.getElementById('btn-delete-selected'),
+    selectedCountSpan: document.getElementById('selected-count'),
+    selectAllCheckbox: document.getElementById('select-all-customers'),
+    // Customer Modal
+    customerModal: document.getElementById('customer-modal'),
+    editCustId: document.getElementById('edit-cust-id'),
+    editCustName: document.getElementById('edit-cust-name'),
+    editCustEmail: document.getElementById('edit-cust-email'),
+    editCustPhone: document.getElementById('edit-cust-phone'),
+    btnSaveCustomer: document.getElementById('btn-save-customer'),
+    // Manual Entry
+    btnNewRequest: document.getElementById('btn-new-request'),
+    btnAddCustomer: document.getElementById('btn-add-customer'),
+    newReqModal: document.getElementById('new-request-modal'),
+    newReqForm: document.getElementById('new-req-form'),
+    newReqCustomer: document.getElementById('new-req-customer'),
+    linkCreateCustInline: document.getElementById('link-create-cust-inline'),
+    // Visualization
+    globalSearch: document.getElementById('global-search'),
+    custHistoryList: document.getElementById('cust-history-list'),
+    // Stats - Revenue
+    countRevenue: document.getElementById('count-revenue'),
+    // Record Deposit
+    btnRecordDeposit: document.getElementById('btn-record-deposit'),
+    depositModal: document.getElementById('deposit-modal'),
+    depositForm: document.getElementById('deposit-form'),
+    depositReqId: document.getElementById('deposit-req-id'),
+    depositCustId: document.getElementById('deposit-cust-id'),
+    depositTotal: document.getElementById('deposit-total'),
+    depositAmount: document.getElementById('deposit-amount'),
+    depositNote: document.getElementById('deposit-note'),
+    // Mobile Nav
+    mobileMenuBtn: document.getElementById('mobile-menu-btn'),
+    sidebarOverlay: document.getElementById('sidebar-overlay'),
+    sidebar: document.querySelector('.sidebar')
+};
+
+// --- AUTH LOGIC ---
+
+onAuthStateChanged(auth, (user) => {
+    currentUser = user;
+    if (user) {
+        initDashboard(user);
+    } else {
+        showLogin();
+    }
+    // Fade out loading
+    setTimeout(() => {
+        els.loading.classList.add('fade-out');
+    }, 500);
+});
+
+function showLogin() {
+    els.authView.classList.remove('hidden');
+    els.dashboardView.classList.add('hidden');
+}
+
+async function initDashboard(user) {
+    els.authView.classList.add('hidden');
+    els.dashboardView.classList.remove('hidden');
+    els.userEmail.textContent = user.email;
+
+    // Initial Load
+    await fetchRequests();
+
+    // Init Drag and Drop
+    initDragAndDrop();
+
+    // Init Quote Logic
+    initQuoteLogic();
+
+    // Init Customers
+    initCustomersLogic();
+    await fetchAllCustomers();
+
+    // Init Manual Entry
+    initNewRequestLogic();
+
+    // Init Manual Entry
+    initNewRequestLogic();
+
+    // Init Record Deposit (Milestone 4)
+    initRecordDepositLogic();
+
+    // Init Deposit Modal Close Button (User Feedback Fix)
+    const depositCloseBtn = els.depositModal.querySelector('.close-modal');
+    if (depositCloseBtn) {
+        depositCloseBtn.addEventListener('click', () => {
+            els.depositModal.classList.add('hidden');
+        });
+    }
+
+    await fetchOrders(); // Fetch orders for revenue stats
+
+    // Init Global Search
+    if (els.globalSearch) {
+        els.globalSearch.addEventListener('input', () => {
+            renderTable();
+            renderBoard();
+        });
+    }
+}
+
+els.loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    els.loginError.textContent = '';
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+        console.error("Login Error:", error);
+        els.loginError.textContent = `Error: ${error.code} - ${error.message}`;
+        alert(`Login Error Detail:\nCode: ${error.code}\nMessage: ${error.message}`);
+    }
+});
+
+const togglePasswordBtn = document.getElementById('toggle-password');
+if (togglePasswordBtn) {
+    // Ensure button is clickable over input
+    togglePasswordBtn.style.zIndex = "10";
+    togglePasswordBtn.addEventListener('click', (e) => {
+        e.preventDefault(); // Prevent accidental submits
+        const passwordInput = document.getElementById('password');
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+
+        // Update Icon
+        if (type === 'text') {
+            togglePasswordBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye-off"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M1 1l22 22"></path><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path></svg>';
+        } else {
+            togglePasswordBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+        }
+    });
+}
+
+const forgotPasswordBtn = document.getElementById('forgot-password-btn');
+if (forgotPasswordBtn) {
+    forgotPasswordBtn.addEventListener('click', async () => {
+        const emailInput = document.getElementById('email');
+        const email = emailInput.value;
+        if (!email) {
+            alert("Please enter your email address in the box above first.");
+            emailInput.focus();
+            return;
+        }
+        try {
+            await sendPasswordResetEmail(auth, email);
+            // With Email Enumeration Protection, this may succeed even if email is not found.
+            alert(`If an account exists for ${email}, a password reset link has been sent. Please check your inbox and spam folder.`);
+        } catch (error) {
+            console.error("Reset Error:", error);
+            let msg = "Error sending reset email.";
+            if (error.code === 'auth/user-not-found') {
+                msg = "No admin account found with this email.";
+            } else if (error.code === 'auth/invalid-email') {
+                msg = "Invalid email address format.";
+            }
+            alert(msg + "\n\n(Technical: " + error.message + ")");
+        }
+    });
+}
+
+els.logoutBtn.addEventListener('click', () => {
+    signOut(auth);
+});
+
+
+// --- NAVIGATION LOGIC ---
+
+document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        // Remove active class from all
+        document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+        // Add to current
+        e.currentTarget.parentElement.classList.add('active'); // Use currentTarget
+
+        const pageName = e.currentTarget.dataset.page; // Use currentTarget
+        showPage(pageName);
+
+        // Close Mobile Menu
+        if (window.innerWidth <= 768) {
+            els.sidebar.classList.remove('open');
+            els.sidebarOverlay.classList.remove('active');
+        }
+    });
+});
+
+// --- MOBILE MENU LOGIC ---
+if (els.mobileMenuBtn) {
+    els.mobileMenuBtn.addEventListener('click', () => {
+        els.sidebar.classList.add('open');
+        els.sidebarOverlay.classList.add('active');
+    });
+}
+
+if (els.sidebarOverlay) {
+    els.sidebarOverlay.addEventListener('click', () => {
+        els.sidebar.classList.remove('open');
+        els.sidebarOverlay.classList.remove('active');
+    });
+}
+
+function showPage(pageName) {
+    // Hide all main pages
+    document.getElementById('page-requests').classList.add('hidden');
+    document.getElementById('page-customers').classList.add('hidden');
+
+    // Show target
+    const target = document.getElementById(`page-${pageName}`);
+    if (target) target.classList.remove('hidden');
+}
+
+// --- VIEW SWITCHING ---
+
+let currentCalDate = new Date(); // State for Calendar
+
+els.btnViewList.addEventListener('click', () => switchView('list'));
+els.btnViewBoard.addEventListener('click', () => switchView('board'));
+if (els.btnViewCalendar) els.btnViewCalendar.addEventListener('click', () => switchView('calendar'));
+
+if (els.calPrev) els.calPrev.addEventListener('click', () => changeCalMonth(-1));
+if (els.calNext) els.calNext.addEventListener('click', () => changeCalMonth(1));
+
+function switchView(view) {
+    currentView = view;
+
+    // Reset buttons
+    els.btnViewList.classList.remove('active');
+    els.btnViewBoard.classList.remove('active');
+    if (els.btnViewCalendar) els.btnViewCalendar.classList.remove('active');
+
+    // Hide Views
+    els.requestsListView.classList.add('hidden');
+    els.requestsBoardView.classList.add('hidden');
+    if (els.requestsCalendarView) els.requestsCalendarView.classList.add('hidden');
+
+    if (view === 'list') {
+        els.btnViewList.classList.add('active');
+        els.requestsListView.classList.remove('hidden');
+    } else if (view === 'board') {
+        els.btnViewBoard.classList.add('active');
+        els.requestsBoardView.classList.remove('hidden');
+    } else if (view === 'calendar') {
+        if (els.btnViewCalendar) els.btnViewCalendar.classList.add('active');
+        if (els.requestsCalendarView) els.requestsCalendarView.classList.remove('hidden');
+        renderCalendar();
+    }
+}
+
+function changeCalMonth(delta) {
+    currentCalDate.setMonth(currentCalDate.getMonth() + delta);
+    renderCalendar();
+}
+
+function renderCalendar() {
+    if (!els.calGrid) return;
+
+    const year = currentCalDate.getFullYear();
+    const month = currentCalDate.getMonth();
+
+    // Update Title
+    els.calTitle.textContent = currentCalDate.toLocaleDateString('default', { month: 'long', year: 'numeric' });
+
+    // Clear Grid (keep headers)
+    const headers = els.calGrid.querySelectorAll('.cal-day-header');
+    els.calGrid.innerHTML = '';
+    headers.forEach(h => els.calGrid.appendChild(h));
+
+    // Calculate Days
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startDay = firstDay.getDay(); // 0 = Sun
+
+    // Empty cells before start
+    for (let i = 0; i < startDay; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'cal-day empty';
+        els.calGrid.appendChild(cell);
+    }
+
+    // Days
+    for (let day = 1; day <= daysInMonth; day++) {
+        const cell = document.createElement('div');
+        cell.className = 'cal-day';
+        cell.innerHTML = `<div class="day-num">${day}</div>`;
+
+        // Find events
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+        // Filter requests for this date
+        const events = requests.filter(r => {
+            return r.step1_data && r.step1_data.event_date === dateStr;
+        });
+
+        events.forEach(req => {
+            const eventEl = document.createElement('div');
+            eventEl.className = `cal-event status-${req.status}`;
+            eventEl.textContent = `${customers[req.customer_id]?.name || 'Unknown'} - ${req.step1_data.category}`;
+            eventEl.title = `${req.status}`;
+            eventEl.onclick = () => openModal(req.id);
+            cell.appendChild(eventEl);
+        });
+
+        els.calGrid.appendChild(cell);
+    }
+}
+
+// --- DASHBOARD DATA ---
+
+els.refreshBtn.addEventListener('click', async () => {
+    // Visual feedback
+    const icon = els.refreshBtn.querySelector('svg');
+    icon.style.animation = "spin 1s linear infinite";
+    els.refreshBtn.disabled = true;
+
+    await fetchRequests();
+
+    // Stop animation
+    setTimeout(() => {
+        icon.style.animation = "";
+        els.refreshBtn.disabled = false;
+    }, 500);
+});
+
+let unsubscribeRequests = null;
+
+async function fetchRequests() {
+    if (unsubscribeRequests) unsubscribeRequests();
+
+    const q = query(collection(db, "requests"), orderBy("created_at", "desc"));
+
+    unsubscribeRequests = onSnapshot(q, async (snapshot) => {
+        requests = [];
+        const missingCustomerIds = new Set();
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            data.id = doc.id;
+            // Normalize status just in case
+            if (!data.status) data.status = 'NEW';
+
+            requests.push(data);
+            if (data.customer_id && !customers[data.customer_id]) {
+                missingCustomerIds.add(data.customer_id);
+            }
+        });
+
+        // Batch fetch missing customers
+        if (missingCustomerIds.size > 0) {
+            const ids = Array.from(missingCustomerIds);
+            const chunks = chunkArray(ids, 10);
+
+            for (const chunk of chunks) {
+                await Promise.all(chunk.map(fetchCustomer));
+            }
+        }
+
+        renderTable();
+        renderBoard();
+        updateStats();
+    }, (error) => {
+        console.error("Error fetching requests:", error);
+        if (error.code === 'permission-denied') {
+            alert("Permissions Error: Ensure you are logged in as an admin.");
+        }
+    });
+}
+
+function updateStats() {
+    const newCount = requests.filter(r => r.status === 'NEW').length;
+    const pendingCount = requests.filter(r => ['AWAITING_DETAILS', 'QUOTING'].includes(r.status)).length;
+    const totalCount = requests.length;
+
+    if (els.countNew) els.countNew.textContent = newCount;
+    if (els.countPending) els.countPending.textContent = pendingCount;
+    if (els.countTotal) els.countTotal.textContent = totalCount;
+
+    // Revenue Stat (Milestone 4 - Refined: Cash Collected)
+    if (els.countRevenue) {
+        // Sum of all payments (approximated by 'amount_paid' on order doc, 
+        // assuming we maintain that field. Or we can default to total_price if paid is missing for backward compat)
+        const totalRevenue = orders.reduce((sum, order) => sum + (parseFloat(order.amount_paid) || 0), 0);
+        els.countRevenue.textContent = `$${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    }
+}
+
+let unsubscribeOrders = null;
+
+async function fetchOrders() {
+    if (unsubscribeOrders) unsubscribeOrders();
+    const q = query(collection(db, "orders")); // Simple fetch all for now
+    unsubscribeOrders = onSnapshot(q, (snapshot) => {
+        orders = [];
+        snapshot.forEach(doc => {
+            orders.push({ id: doc.id, ...doc.data() });
+        });
+        updateStats();
+    }, (error) => {
+        console.error("Error fetching orders:", error);
+    });
+}
+
+
+async function fetchCustomer(id) {
+    if (customers[id]) return;
+    try {
+        const docRef = doc(db, "customers", id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            customers[id] = docSnap.data();
+        } else {
+            customers[id] = { name: "Unknown" };
+        }
+    } catch (e) {
+        console.error("Error loading customer", id, e);
+        customers[id] = { name: "Error" };
+    }
+}
+
+function renderTable() {
+    els.tableBody.innerHTML = '';
+
+    // Filter Requests
+    const term = els.globalSearch ? els.globalSearch.value.toLowerCase() : '';
+    const filtered = requests.filter(req => {
+        if (!term) return true;
+        const custName = customers[req.customer_id] ? customers[req.customer_id].name.toLowerCase() : '';
+        const custEmail = customers[req.customer_id] ? customers[req.customer_id].email.toLowerCase() : '';
+        const id = req.id.toLowerCase();
+        return custName.includes(term) || custEmail.includes(term) || id.includes(term);
+    });
+
+    if (filtered.length === 0) {
+        els.emptyState.classList.remove('hidden');
+        return;
+    }
+    els.emptyState.classList.add('hidden');
+
+    filtered.forEach(req => {
+        const tr = document.createElement('tr');
+
+        // Data prep
+        const date = req.created_at ? new Date(req.created_at.seconds * 1000).toLocaleDateString() : 'N/A';
+        const custName = customers[req.customer_id] ? customers[req.customer_id].name : 'Loading...';
+        const eventDate = req.step1_data?.event_date || '-';
+        const type = req.step1_data?.category || '-';
+        const status = req.status || 'NEW';
+
+        tr.innerHTML = `
+            <td>${date}</td>
+            <td><strong>${custName}</strong></td>
+            <td>${eventDate}</td>
+            <td>${type}</td>
+            <td><span class="status-badge status-${status}">${status}</span></td>
+            <td>
+                <button class="btn-sm btn-view" data-id="${req.id}">View</button>
+            </td>
+        `;
+
+        els.tableBody.appendChild(tr);
+    });
+
+    // Re-attach listeners
+    els.tableBody.querySelectorAll('.btn-view').forEach(btn => {
+        btn.addEventListener('click', () => openModal(btn.dataset.id));
+    });
+}
+
+
+function renderBoard() {
+    // Ensure ALL columns are found (Lazy re-fetch if any are missing)
+    if (!els.boardColumns.NEW || !els.boardColumns.AWAITING_DETAILS || !els.boardColumns.QUOTING) {
+        console.log("Re-fetching board columns...");
+        els.boardColumns.NEW = document.getElementById('col-NEW');
+        els.boardColumns.AWAITING_DETAILS = document.getElementById('col-AWAITING_DETAILS');
+        els.boardColumns.QUOTING = document.getElementById('col-QUOTING');
+        els.boardColumns.BOOKED = document.getElementById('col-BOOKED');
+        els.boardColumns.COMPLETED = document.getElementById('col-COMPLETED');
+    }
+
+    // Verify critical elements exists
+    if (!els.boardColumns.NEW) {
+        console.error("Board columns not found in DOM");
+        return;
+    }
+
+    // Clear columns
+    Object.values(els.boardColumns).forEach(col => {
+        if (col) col.innerHTML = '';
+    });
+
+    console.log(`Rendering Board. Total Requests: ${requests.length}`);
+
+    // Filter Requests
+    const term = els.globalSearch ? els.globalSearch.value.toLowerCase() : '';
+    const filtered = requests.filter(req => {
+        if (!term) return true;
+        const custName = customers[req.customer_id] ? customers[req.customer_id].name.toLowerCase() : '';
+        const custEmail = customers[req.customer_id] ? customers[req.customer_id].email.toLowerCase() : '';
+        const id = req.id.toLowerCase();
+        return custName.includes(term) || custEmail.includes(term) || id.includes(term);
+    });
+
+    filtered.forEach(req => {
+        // Robust status normalization
+        let rawStatus = req.status || 'NEW';
+        if (typeof rawStatus !== 'string') rawStatus = 'NEW';
+        const status = rawStatus.trim().toUpperCase();
+
+        // Debug log for tricky statuses
+        // console.log(`Req ${req.id} status: ${status}`);
+
+        // Skip if status not in our columns (e.g. DECLINED or custom)
+        if (!els.boardColumns[status]) {
+            console.warn("Skipping request with unknown status:", status, req.id);
+            return;
+        }
+
+        const custName = customers[req.customer_id] ? customers[req.customer_id].name : 'Loading...';
+
+        let date = 'N/A';
+        if (req.created_at) {
+            // Handle both Firestore Timestamp and plain strings/dates if mismatched
+            const seconds = req.created_at.seconds || (new Date(req.created_at).getTime() / 1000);
+            if (seconds) {
+                date = new Date(seconds * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+            }
+        }
+
+        // Determine Icon based on Category
+        const cat = (req.step1_data?.category || '').toLowerCase();
+        let iconPath = '';
+        /* SVG Paths (Better Quality) */
+        if (cat.includes('cake') && !cat.includes('cup')) {
+            // Cake Slice Icon
+            iconPath = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16s.5-1 2-1 2.5 1 4 1 2.5-1 4-1 2.5 1 4 1 2-1 2-1"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 21h20"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 8v2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8v2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 4h.01"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4h.01"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 4h.01"/>';
+        } else if (cat.includes('cupcake') || cat.includes('cup')) {
+            // Cupcake Icon
+            iconPath = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 21c-1.125-9.625 2-10 7-10s8.125.375 7 10"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 21h14"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 21s1-6 2-6 5 6 5 6 4-6 5-6 2 6 2 6"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 11C8 2 16 2 12 11z"/>';
+        } else if (cat.includes('cookie')) {
+            // Cookie Icon (Circle with dots)
+            iconPath = '<circle cx="12" cy="12" r="10" stroke-width="1.5"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.5 9.5h.01"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.5 11.5h.01"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.5 15.5h.01"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 8h.01"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12h.01"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 7h.01"/>';
+        } else {
+            // Default "Bag" Icon
+            iconPath = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />';
+        }
+
+        const card = document.createElement('div');
+        card.className = `kanban-card status-${status}`;
+        card.draggable = true;
+        card.dataset.id = req.id;
+
+        card.innerHTML = `
+            <div class="card-header">
+                <span class="card-date">${date}</span>
+                <div class="card-icon" title="${req.step1_data?.category || 'Order'}">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity:0.6;">
+                        ${iconPath}
+                    </svg>
+                </div>
+            </div>
+            <strong class="card-title">${custName}</strong>
+            
+            <div class="card-body-compact">
+                <div class="card-row">
+                    <span>${req.step1_data?.category || 'General'}</span>
+                    ${req.step1_data?.quantity_value ? `<span>· ${req.step1_data.quantity_value}</span>` : ''}
+                </div>
+                 ${req.step1_data?.event_date ? `<div class="card-row text-xs">${req.step1_data.event_date}</div>` : ''}
+            </div>
+
+            ${req.step1_data?.rush_flag ? '<span class="card-tag tag-rush">URGENT</span>' : ''}
+        `;
+
+        // Drag listeners for Card
+        card.addEventListener('dragstart', handleDragStart);
+        card.addEventListener('dragend', handleDragEnd);
+
+        // Click listener for Card (Open Modal)
+        card.addEventListener('click', () => {
+            openModal(req.id);
+        });
+
+        // Add staggered animation delay
+        // We can just rely on built-in animation, but for true stagger on load we need index.
+        // Since we are iterating all requests, we aren't iterating per column easily with index.
+        // Let's just set a random small delay or depend on natural render.
+        // Or better: set a style that depends on something unique if possible, but random is fun for "organic" feel.
+        card.style.animationDelay = `${Math.random() * 0.3}s`;
+
+        els.boardColumns[status].appendChild(card);
+    });
+
+    // Update Counts in Headers
+    document.querySelectorAll('.board-column').forEach(col => {
+        const countSpan = col.querySelector('.column-count');
+        const contentDiv = col.querySelector('.column-content');
+        if (countSpan && contentDiv) {
+            countSpan.textContent = contentDiv.children.length;
+        }
+    });
+}
+
+// --- DRAG AND DROP LOGIC ---
+
+let draggedItem = null;
+
+function initDragAndDrop() {
+    const columns = document.querySelectorAll('.board-column');
+
+    columns.forEach(column => {
+        column.addEventListener('dragover', e => {
+            e.preventDefault(); // Allow drop
+            column.style.background = '#e5e7eb'; // Highlight
+        });
+
+        column.addEventListener('dragleave', e => {
+            column.style.background = '#f3f4f6'; // Reset
+        });
+
+        column.addEventListener('drop', async e => {
+            e.preventDefault();
+            column.style.background = '#f3f4f6';
+
+            if (!draggedItem) return;
+
+            const newStatus = column.dataset.status;
+            const requestId = draggedItem.dataset.id;
+
+            // Optimistic UI Update handled by renderBoard when snapshot fires, 
+            // but we can move it visually just to be snappy if we want.
+            // For now, let's rely on Firestore real-time update.
+
+            try {
+                const reqRef = doc(db, "requests", requestId);
+                await updateDoc(reqRef, {
+                    status: newStatus,
+                    updated_at: new Date()
+                });
+                console.log(`Updated request ${requestId} to ${newStatus}`);
+            } catch (error) {
+                console.error("Error updating status:", error);
+                alert("Failed to update status.");
+            }
+        });
+    });
+}
+
+function handleDragStart(e) {
+    draggedItem = this;
+    setTimeout(() => this.classList.add('dragging'), 0);
+}
+
+function handleDragEnd(e) {
+    this.classList.remove('dragging');
+    draggedItem = null;
+}
+
+
+// --- MODAL & DETAIL VIEW ---
+
+// State for Modal Editing
+let isEditMode = false;
+let currentModalRequestId = null;
+
+function openModal(requestId) {
+    currentModalRequestId = requestId;
+    isEditMode = false; // Reset to view mode
+    renderModal();
+    els.modal.classList.remove('hidden');
+}
+
+function renderModal() {
+    const req = requests.find(r => r.id === currentModalRequestId);
+    if (!req) return;
+    const cust = customers[req.customer_id] || {};
+
+    els.modalBody.innerHTML = renderModalBody(req, cust, isEditMode);
+
+    updateModalFooter(req);
+}
+
+function renderModalBody(req, cust, isEditing) {
+    const s1 = req.step1_data || {};
+    const s2 = req.step2_data || {};
+
+    // Images Helper
+    let imagesHtml = '';
+    const imgs = s2.inspiration_images || [];
+    if (imgs.length > 0) {
+        imagesHtml = `<div class="gallery-grid">`;
+        imgs.forEach(url => {
+            imagesHtml += `<a href="${url}" target="_blank"><img src="${url}" class="gallery-img"></a>`;
+        });
+        imagesHtml += `</div>`;
+    } else {
+        imagesHtml = `<p class="text-muted">No images uploaded.</p>`;
+    }
+
+    if (!isEditing) {
+        // --- READ ONLY VIEW ---
+        return `
+        <div class="modal-hero">
+            <div class="hero-left">
+                <span class="hero-id">#${req.id.substr(0, 6)}</span>
+                <span class="hero-status status-${req.status}">${req.status}</span>
+            </div>
+            <div class="hero-right">
+                <span class="hero-date">${req.created_at ? new Date(req.created_at.seconds * 1000).toLocaleDateString() : 'N/A'}</span>
+            </div>
+        </div>
+
+        <div class="modal-grid">
+            <!-- Customer Card -->
+            <div class="modal-card">
+                <div class="modal-card-header">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    CUSTOMER
+                </div>
+                <div class="modal-card-body">
+                    <div class="info-group">
+                        <label>Name</label>
+                        <div class="info-value text-lg">${cust.name || 'Unknown'}</div>
+                    </div>
+                    <div class="info-group">
+                        <label>Email</label>
+                        <div class="info-value"><a href="mailto:${cust.email}">${cust.email || '-'}</a></div>
+                    </div>
+                    <div class="info-group">
+                        <label>Phone</label>
+                        <div class="info-value">${cust.phone || '-'}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event Card -->
+            <div class="modal-card">
+                <div class="modal-card-header">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    EVENT SPECS
+                </div>
+                <div class="modal-card-body">
+                    <div class="info-group">
+                        <label>Date & Type</label>
+                        <div class="info-value text-lg">${s1.event_date || 'TBD'} <span class="text-muted">·</span> ${s1.category || 'General'}</div>
+                    </div>
+                    <div class="info-group">
+                        <label>Quantity</label>
+                        <div class="info-value">${s1.quantity_value || '-'}</div>
+                    </div>
+                    <div class="info-group">
+                        <label>Fulfillment</label>
+                        <div class="info-value">${s1.fulfillment || '-'} ${s1.delivery_zip ? '(' + s1.delivery_zip + ')' : ''}</div>
+                    </div>
+                    ${s1.rush_flag ? '<div class="rush-badge">⚠️ RUSH ORDER</div>' : ''}
+                    
+                    ${req.quote_pdf_url ? `
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #eee;">
+                        <label>Quote Status</label>
+                        <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                            <a href="${req.quote_pdf_url}" target="_blank" class="text-blue-600 hover:underline" style="display:flex; align-items:center gap:0.25rem;">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:4px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                View PDF
+                            </a>
+                            ${req.quote_last_sent ? `<div class="text-xs text-gray-500">Sent: ${new Date(req.quote_last_sent.seconds * 1000).toLocaleDateString()}</div>` : '<div class="text-xs text-orange-500">Not sent yet</div>'}
+                            ${req.quote_total ? `<div class="text-xs font-semibold">Total: $${parseFloat(req.quote_total).toFixed(2)}</div>` : ''}
+                        </div>
+                    </div>` : ''}
+                </div>
+            </div>
+
+            <!-- Design Details (Full Width) -->
+            <div class="modal-card full-width">
+                <div class="modal-card-header">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    DESIGN & INSPO
+                </div>
+                <div class="modal-card-body" style="display: flex; gap: 1.5rem;">
+                    <!-- Left: Specs & Notes -->
+                    <div style="flex: 3;">
+                        <div class="design-grid" style="margin-bottom: 1rem;">
+                            <div class="info-group">
+                                <label>Theme</label>
+                                <div class="info-value">${s2.theme_keywords || '-'}</div>
+                            </div>
+                            <div class="info-group">
+                                <label>Colors</label>
+                                <div class="info-value">${s2.colors || '-'}</div>
+                            </div>
+                            <div class="info-group">
+                                <label>Occasion</label>
+                                <div class="info-value">${s2.occasion || '-'}</div>
+                            </div>
+                            <div class="info-group">
+                                <label>Budget</label>
+                                <div class="info-value">${s2.budget_range || '-'}</div>
+                            </div>
+                        </div>
+                        <div class="info-group">
+                            <label>Notes</label>
+                            <div class="notes-box" style="max-height: 80px; overflow-y: auto;">${s2.notes || 'No notes provided.'}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right: Photos -->
+                    <div style="flex: 2; border-left: 1px solid rgba(0,0,0,0.05); padding-left: 1.5rem; display: flex; flex-direction: column;">
+                        <label>Inspiration Photos</label>
+                        <div style="flex: 1; min-height: 0;">
+                            ${imagesHtml}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+    } else {
+        // --- EDIT VIEW ---
+        return `
+        <div class="modal-hero">
+            <div class="hero-left">
+                <span class="hero-id">#${req.id.substr(0, 6)}</span>
+                <span class="hero-status status-${req.status}">${req.status}</span>
+            </div>
+            <div class="hero-right">
+                <span class="text-sm font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded">EDITING MODE</span>
+            </div>
+        </div>
+
+        <form id="edit-request-form" class="modal-grid">
+            <!-- Customer (Linked Read Only) -->
+            <div class="modal-card">
+                 <div class="modal-card-header">CUSTOMER</div>
+                 <div class="modal-card-body">
+                      <p><strong>${cust.name || 'Unknown'}</strong></p>
+                      <p class="text-sm text-gray-500">Edit customer details via Customers tab.</p>
+                 </div>
+            </div>
+
+            <!-- Event Specs Edit -->
+            <div class="modal-card">
+                 <div class="modal-card-header">EVENT SPECS</div>
+                 <div class="modal-card-body" style="gap: 1rem; display: flex; flex-direction: column;">
+                      
+                      <div class="form-group">
+                         <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Category</label>
+                         <select name="category" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                             <option value="Custom Cake" ${s1.category === 'Custom Cake' ? 'selected' : ''}>Custom Cake</option>
+                             <option value="Cupcakes" ${s1.category === 'Cupcakes' ? 'selected' : ''}>Cupcakes</option>
+                             <option value="Cookies" ${s1.category === 'Cookies' ? 'selected' : ''}>Cookies</option>
+                             <option value="Other" ${(s1.category !== 'Custom Cake' && s1.category !== 'Cupcakes' && s1.category !== 'Cookies') ? 'selected' : ''}>Other</option>
+                         </select>
+                      </div>
+
+                      <div class="form-group">
+                         <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Event Date</label>
+                         <input type="date" name="event_date" value="${s1.event_date || ''}" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                      </div>
+
+                      <div class="form-group">
+                         <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Quantity / Size</label>
+                         <input type="text" name="quantity_value" value="${s1.quantity_value || ''}" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                      </div>
+
+                      <div class="form-group">
+                         <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Fulfillment</label>
+                         <div style="display:flex; gap:0.5rem;">
+                            <select name="fulfillment" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                                <option value="Pickup" ${s1.fulfillment === 'Pickup' ? 'selected' : ''}>Pickup</option>
+                                <option value="Delivery" ${s1.fulfillment === 'Delivery' ? 'selected' : ''}>Delivery</option>
+                            </select>
+                            <input type="text" name="delivery_zip" value="${s1.delivery_zip || ''}" placeholder="Zip Code" style="width:80px; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                         </div>
+                      </div>
+
+                      <div style="margin-top:0.5rem;">
+                         <label style="display:inline-flex; align-items:center;">
+                            <input type="checkbox" name="rush_flag" ${s1.rush_flag ? 'checked' : ''}>
+                            <span style="font-size:0.9rem; margin-left:6px; font-weight:600; color:#dc2626;">Rush Order</span>
+                         </label>
+                      </div>
+                 </div>
+            </div>
+
+            <!-- Design Edit -->
+            <div class="modal-card full-width">
+                 <div class="modal-card-header">DESIGN DETAILS</div>
+                 <div class="modal-card-body">
+                      
+                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom:1rem;">
+                           <div class="form-group">
+                               <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Theme / Keywords</label>
+                               <input type="text" name="theme_keywords" value="${s2.theme_keywords || ''}" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                           </div>
+                            <div class="form-group">
+                               <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Colors</label>
+                               <input type="text" name="colors" value="${s2.colors || ''}" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                           </div>
+                            <div class="form-group">
+                               <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Occasion</label>
+                               <input type="text" name="occasion" value="${s2.occasion || ''}" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                           </div>
+                            <div class="form-group">
+                               <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Budget Range</label>
+                               <input type="text" name="budget_range" value="${s2.budget_range || ''}" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                           </div>
+                      </div>
+
+                      <div class="form-group">
+                           <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Notes</label>
+                           <textarea name="notes" rows="3" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">${s2.notes || ''}</textarea>
+                      </div>
+                      
+                      <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid #eee;">
+                         <label class="text-sm font-medium">Inspiration Images (Read-Only)</label>
+                         ${imagesHtml}
+                      </div>
+                 </div>
+            </div>
+        </form>
+        `;
+    }
+}
+
+function updateModalFooter(req) {
+    const footer = els.modal.querySelector('.modal-footer');
+    if (!footer) return;
+
+    footer.innerHTML = ''; // Rebuild
+
+    // Left Side: Delete or Cancel
+    const leftDiv = document.createElement('div');
+    leftDiv.style.marginRight = 'auto'; // push others to right
+    footer.appendChild(leftDiv);
+
+    if (isEditMode) {
+        // CANCEL Button
+        const btnCancel = document.createElement('button');
+        btnCancel.className = 'btn-text';
+        btnCancel.textContent = 'Cancel Edit';
+        btnCancel.onclick = () => {
+            isEditMode = false;
+            renderModal();
+        };
+        leftDiv.appendChild(btnCancel);
+
+    } else {
+        // DELETE Button (Existing logic)
+        const delBtn = document.createElement('button');
+        delBtn.className = 'btn-sm btn-delete-request';
+        delBtn.style.color = '#dc2626'; // Text color instead of heavy background
+        delBtn.style.background = 'none';
+        delBtn.style.border = 'none';
+        delBtn.textContent = 'Delete Request';
+        delBtn.onclick = async () => {
+            if (confirm('Are you sure you want to PERMANENTLY delete this request? This cannot be undone.')) {
+                try {
+                    await deleteDoc(doc(db, "requests", req.id));
+                    els.modal.classList.add('hidden');
+                } catch (err) {
+                    console.error("Error deleting:", err);
+                    alert("Failed to delete request.");
+                }
+            }
+        };
+        leftDiv.appendChild(delBtn);
+    }
+
+    // Right Side: Actions
+    const rightDiv = document.createElement('div');
+    rightDiv.style.display = 'flex';
+    rightDiv.style.gap = '8px';
+    footer.appendChild(rightDiv);
+
+    if (isEditMode) {
+        // SAVE Button
+        const btnSave = document.createElement('button');
+        btnSave.className = 'btn-primary';
+        btnSave.textContent = 'Save Changes';
+        btnSave.onclick = saveRequestDetails;
+        rightDiv.appendChild(btnSave);
+
+    } else {
+        // VIEW MODE Buttons
+
+        // 1. Edit Details Button
+        const btnEdit = document.createElement('button');
+        btnEdit.className = 'btn-secondary';
+        btnEdit.textContent = 'Edit Details';
+        btnEdit.onclick = () => {
+            isEditMode = true;
+            renderModal();
+        };
+        rightDiv.appendChild(btnEdit);
+
+        // 2. Record Deposit (Conditional)
+        if (['AWAITING_DETAILS', 'QUOTING'].includes(req.status)) {
+            const btnDeposit = document.createElement('button');
+            btnDeposit.className = 'btn-secondary';
+            btnDeposit.innerText = 'Record Deposit';
+            btnDeposit.onclick = () => openDepositModal(req);
+            rightDiv.appendChild(btnDeposit);
+        }
+
+        // 3. Create Quote
+        const btnQuote = document.createElement('button');
+        btnQuote.className = 'btn-primary';
+        btnQuote.innerText = 'Create Quote';
+        btnQuote.onclick = () => {
+            els.modal.classList.add('hidden');
+            openQuoteModal(req.id);
+        };
+        rightDiv.appendChild(btnQuote);
+    }
+}
+
+async function saveRequestDetails() {
+    if (!currentModalRequestId) return;
+    const form = document.getElementById('edit-request-form');
+    if (!form) return;
+
+    // Gather data
+    const formData = new FormData(form);
+    const updates = {
+        'step1_data.category': formData.get('category'),
+        'step1_data.event_date': formData.get('event_date'),
+        'step1_data.quantity_value': formData.get('quantity_value'),
+        'step1_data.fulfillment': formData.get('fulfillment'),
+        'step1_data.delivery_zip': formData.get('delivery_zip'),
+        'step1_data.rush_flag': formData.get('rush_flag') === 'on',
+
+        'step2_data.theme_keywords': formData.get('theme_keywords'),
+        'step2_data.colors': formData.get('colors'),
+        'step2_data.occasion': formData.get('occasion'),
+        'step2_data.budget_range': formData.get('budget_range'),
+        'step2_data.notes': formData.get('notes'),
+
+        updated_at: new Date()
+    };
+
+    const btn = els.modal.querySelector('.btn-primary'); // Save button
+    const oldText = btn.textContent;
+    btn.textContent = 'Saving...';
+    btn.disabled = true;
+
+    try {
+        await updateDoc(doc(db, "requests", currentModalRequestId), updates);
+
+        // Success
+        isEditMode = false;
+        // The onSnapshot listener in fetchRequests may trigger re-render of board/table,
+        // but it WON'T automatically re-render the open modal unless we tell it to.
+        // However, since we update the 'requests' array in onSnapshot, we can just re-render:
+
+        // Wait minor delay for snapshot to propagate if we rely on that, OR update local 'requests' state?
+        // Admin.js architecture: 'requests' is updated by onSnapshot.
+        // If we renderModal() immediately, 'requests' array might still have old data until snapshot returns.
+        // Optimistic: Update the local 'requests' array manually?
+
+        // Better: Wait a moment or just optimistic render.
+        // Let's rely on snapshot for consistency, but for UX we just switch view mode.
+        // If snapshot comes in, renderModal might be called? No, fetchRequests calls renderTable/renderBoard.
+        // It DOES NOT call renderModal. So we need to call renderModal() ourselves.
+        // BUT we need updated data.
+
+        // Let's manually update the local 'requests' object for immediate feedback
+        const reqIndex = requests.findIndex(r => r.id === currentModalRequestId);
+        if (reqIndex !== -1) {
+            // Deep merge is hard, simple merge:
+            const req = requests[reqIndex];
+            if (!req.step1_data) req.step1_data = {};
+            if (!req.step2_data) req.step2_data = {};
+
+            req.step1_data.category = updates['step1_data.category'];
+            req.step1_data.event_date = updates['step1_data.event_date'];
+            req.step1_data.quantity_value = updates['step1_data.quantity_value'];
+            req.step1_data.fulfillment = updates['step1_data.fulfillment'];
+            req.step1_data.delivery_zip = updates['step1_data.delivery_zip'];
+            req.step1_data.rush_flag = updates['step1_data.rush_flag'];
+
+            req.step2_data.theme_keywords = updates['step2_data.theme_keywords'];
+            req.step2_data.colors = updates['step2_data.colors'];
+            req.step2_data.occasion = updates['step2_data.occasion'];
+            req.step2_data.budget_range = updates['step2_data.budget_range'];
+            req.step2_data.notes = updates['step2_data.notes'];
+        }
+
+        renderModal(); // Re-render with (optimistically) updated data
+
+    } catch (e) {
+        console.error("Error updating request:", e);
+        alert("Failed to save changes: " + e.message);
+        btn.textContent = oldText;
+        btn.disabled = false;
+    }
+}
+
+els.closeModalBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        els.modal.classList.add('hidden');
+        els.quoteModal.classList.add('hidden');
+        if (els.customerModal) els.customerModal.classList.add('hidden');
+        if (els.newReqModal) els.newReqModal.classList.add('hidden'); // Fix 1: Close new modal
+    });
+});
+
+// Utils
+function chunkArray(array, size) {
+    const result = [];
+    for (let i = 0; i < array.length; i += size) {
+        result.push(array.slice(i, i + size));
+    }
+    return result;
+}
+
+// --- QUOTE ENGINE LOGIC ---
+
+function initQuoteLogic() {
+    if (els.btnAddItem) els.btnAddItem.addEventListener('click', addQuoteItem);
+
+    if (els.quoteDelivery) els.quoteDelivery.addEventListener('input', updateQuoteTotals);
+    if (els.quoteRush) els.quoteRush.addEventListener('input', updateQuoteTotals);
+
+    if (els.btnGeneratePdf) els.btnGeneratePdf.addEventListener('click', generatePDF);
+    if (els.btnSendEmail) els.btnSendEmail.addEventListener('click', sendEmail);
+}
+
+function openQuoteModal(requestId) {
+    const req = requests.find(r => r.id === requestId);
+    if (!req) return;
+
+    currentQuoteRequest = req;
+    currentQuoteItems = [];
+
+    // Reset UI
+    els.quoteCustName.textContent = customers[req.customer_id]?.name || 'Unknown';
+    els.quoteReqId.textContent = '#' + req.id.slice(0, 6);
+    els.quoteItemsBody.innerHTML = '';
+    els.quoteDelivery.value = 0;
+    els.quoteRush.value = 0;
+    els.quoteResult.classList.add('hidden');
+    els.btnSendEmail.disabled = true;
+    els.btnSendEmail.style.opacity = '0.5';
+    if (document.getElementById('quote-email-message')) {
+        document.getElementById('quote-email-message').value = `Hi ${customers[req.customer_id]?.name || 'Valued Customer'},\n\nPlease find your quote attached at the link below.\n\nBest,\nBaked By Bostik`;
+    }
+
+    // Add default item from request
+    if (req.step1_data) {
+        currentQuoteItems.push({
+            name: `${req.step1_data.category} (${req.step1_data.quantity_value}) - ${req.step1_data.fulfillment}`,
+            qty: 1,
+            price: 0
+        });
+    }
+
+    renderQuoteItems();
+    els.quoteModal.classList.remove('hidden');
+}
+
+function addQuoteItem() {
+    currentQuoteItems.push({ name: '', qty: 1, price: 0 });
+    renderQuoteItems();
+}
+
+function renderQuoteItems() {
+    els.quoteItemsBody.innerHTML = '';
+
+    currentQuoteItems.forEach((item, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="padding:0.5rem;"><input type="text" class="q-name" value="${item.name}" placeholder="Item Description" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px;"></td>
+            <td style="padding:0.5rem;"><input type="number" class="q-qty" value="${item.qty}" min="1" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px;"></td>
+            <td style="padding:0.5rem;"><input type="number" class="q-price" value="${item.price}" min="0" step="0.01" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px;"></td>
+            <td style="padding:0.5rem; text-align:right;" class="q-row-total">$${(item.qty * item.price).toFixed(2)}</td>
+            <td style="padding:0.5rem; text-align:center;"><button class="btn-text" style="color:red;">&times;</button></td>
+        `;
+
+        // Listeners for inputs
+        const inputs = tr.querySelectorAll('input');
+        const totalCell = tr.querySelector('.q-row-total');
+
+        // Name
+        inputs[0].addEventListener('input', (e) => { item.name = e.target.value; });
+
+        // Qty
+        inputs[1].addEventListener('input', (e) => {
+            item.qty = Number(e.target.value);
+            totalCell.textContent = '$' + (item.qty * item.price).toFixed(2);
+            updateQuoteTotals();
+        });
+
+        // Price
+        inputs[2].addEventListener('input', (e) => {
+            item.price = Number(e.target.value);
+            totalCell.textContent = '$' + (item.qty * item.price).toFixed(2);
+            updateQuoteTotals();
+        });
+
+        // Delete
+        tr.querySelector('button').addEventListener('click', () => {
+            currentQuoteItems.splice(index, 1);
+            renderQuoteItems(); // Re-render needed for delete
+        });
+
+        els.quoteItemsBody.appendChild(tr);
+    });
+
+    updateQuoteTotals();
+}
+
+function updateQuoteTotals() {
+    const subtotal = currentQuoteItems.reduce((acc, item) => acc + (item.qty * item.price), 0);
+    const delivery = Number(els.quoteDelivery.value) || 0;
+    const rush = Number(els.quoteRush.value) || 0;
+    const total = subtotal + delivery + rush;
+
+    els.quoteSubtotal.textContent = '$' + subtotal.toFixed(2);
+    els.quoteTotal.textContent = '$' + total.toFixed(2);
+
+    return { subtotal, delivery, rush, total };
+}
+
+async function generatePDF() {
+    const btn = els.btnGeneratePdf;
+    const originalText = btn.textContent;
+    btn.textContent = 'Generating...';
+    btn.disabled = true;
+
+    try {
+        const totals = updateQuoteTotals();
+        const customerName = customers[currentQuoteRequest.customer_id]?.name || 'Valued Customer';
+
+        const projectId = firebaseConfig.authDomain ? firebaseConfig.authDomain.split('.')[0] : 'baked-by-bostik';
+        const fnUrl = `https://us-central1-${projectId}.cloudfunctions.net/createQuotePDF`; // Updated to V2
+
+        const quoteNotes = document.getElementById('quote-notes').value;
+
+        const res = await fetch(fnUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                requestId: currentQuoteRequest.id,
+                customerName: customerName,
+                items: currentQuoteItems,
+                totals: totals,
+                notes: quoteNotes // Added
+            })
+        });
+
+        if (!res.ok) {
+            const txt = await res.text();
+            throw new Error("Server Error: " + txt);
+        }
+
+        const data = await res.json();
+
+        let pdfDownloadUrl = '';
+        let pdfStoragePath = '';
+
+        // Success: Handle both URL (legacy) and storagePath (new)
+        if (data.storagePath) {
+            pdfStoragePath = data.storagePath;
+            const fileRef = ref(storage, data.storagePath);
+            pdfDownloadUrl = await getDownloadURL(fileRef);
+            els.quotePdfLink.href = pdfDownloadUrl;
+        } else if (data.url) {
+            pdfDownloadUrl = data.url;
+            // If only URL is returned, we don't have a storagePath to save.
+        } else {
+            throw new Error("No URL or storagePath returned from server");
+        }
+
+        els.quotePdfLink.href = pdfDownloadUrl;
+        els.btnSendEmail.dataset.pdfUrl = pdfDownloadUrl;
+
+        // Persist Quote Data
+        const reqRef = doc(db, "requests", currentQuoteRequest.id);
+
+        // Calculate Quote Total for Persistence
+        const quoteTotalValue = totals.total;
+
+        const updateData = {
+            quote_total: quoteTotalValue,
+            quote_generated_at: new Date()
+        };
+        if (pdfStoragePath) { // Only save storagePath if it was provided
+            updateData.quote_pdf_url = pdfStoragePath;
+        } else if (pdfDownloadUrl) { // Otherwise, save the direct URL if available
+            updateData.quote_pdf_url = pdfDownloadUrl;
+        }
+        await updateDoc(reqRef, updateData);
+
+        // Update local object immediately for UI responsiveness
+        currentQuoteRequest.quote_total = quoteTotalValue;
+        currentQuoteRequest.quote_pdf_url = pdfStoragePath || pdfDownloadUrl; // Update with what was saved
+
+        els.quoteResult.classList.remove('hidden');
+        els.btnSendEmail.disabled = false;
+        els.btnSendEmail.style.opacity = '1';
+
+    } catch (error) {
+        console.error("PDF Error:", error);
+        alert("Error: " + error.message);
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
+}
+
+async function sendEmail() {
+    const btn = els.btnSendEmail;
+    const originalText = btn.textContent;
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+
+    try {
+        const pdfUrl = btn.dataset.pdfUrl;
+        const cust = customers[currentQuoteRequest.customer_id];
+        const emailMessage = document.getElementById('quote-email-message').value;
+
+        const projectId = firebaseConfig.authDomain ? firebaseConfig.authDomain.split('.')[0] : 'baked-by-bostik';
+        const fnUrl = `https://us-central1-${projectId}.cloudfunctions.net/dispatchQuoteEmail`;
+
+        const res = await fetch(fnUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                customerEmail: cust.email,
+                customerName: cust.name,
+                pdfUrl: pdfUrl,
+                emailMessage: emailMessage
+            })
+        });
+
+        if (!res.ok) throw new Error("Failed to send email");
+
+        const data = await res.json();
+
+        if (data.message && data.message.includes("Simulation")) {
+            alert("⚠️ SIMULATION MODE\n\nEmail was NOT sent because SMTP credentials are missing in the server configuration.\n\nPlease add SMTP_EMAIL and SMTP_PASSWORD to your Firebase Functions environment variables.");
+        } else {
+            alert("Email sent successfully!");
+            // Move to 'QUOTING' column if not already booked/completed
+            // Move to 'QUOTING' column if not already booked/completed
+            const updates = {
+                quote_last_sent: new Date(),
+                status: 'QUOTING'
+            };
+            // Only update status if meaningful
+            if (currentQuoteRequest.status === 'BOOKED' || currentQuoteRequest.status === 'COMPLETED') {
+                delete updates.status;
+            }
+
+            const reqRef = doc(db, "requests", currentQuoteRequest.id);
+            await updateDoc(reqRef, updates);
+        }
+
+        els.quoteModal.classList.add('hidden');
+
+    } catch (error) {
+        console.error(error);
+        alert("Error sending email: " + error.message);
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
+}
+
+// --- CUSTOMERS LOGIC ---
+
+function initCustomersLogic() {
+    if (els.customerSearch) {
+        els.customerSearch.addEventListener('input', (e) => {
+            renderCustomersTable(e.target.value);
+        });
+    }
+    if (els.selectAllCheckbox) {
+        els.selectAllCheckbox.addEventListener('change', toggleSelectAllCustomers);
+    }
+    if (els.btnDeleteSelected) {
+        els.btnDeleteSelected.addEventListener('click', deleteSelectedCustomers);
+    }
+    if (els.btnSaveCustomer) {
+        els.btnSaveCustomer.addEventListener('click', saveCustomer);
+    }
+}
+
+async function fetchAllCustomers() {
+    try {
+        const q = query(collection(db, "customers"), orderBy("name")); // Order by name
+        const snapshot = await getDocs(q);
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            customers[doc.id] = data; // Update cache
+        });
+
+        renderCustomersTable();
+
+    } catch (error) {
+        console.error("Error fetching customers:", error);
+    }
+}
+
+function updateBulkDeleteUI() {
+    const count = selectedCustomerIds.size;
+    els.selectedCountSpan.textContent = count;
+    if (count > 0) {
+        els.btnDeleteSelected.classList.remove('hidden');
+    } else {
+        els.btnDeleteSelected.classList.add('hidden');
+    }
+
+    // Update Select All Checkbox state
+    const visibleRows = document.querySelectorAll('.customer-checkbox');
+    if (visibleRows.length > 0 && visibleRows.length === count) {
+        els.selectAllCheckbox.checked = true;
+        els.selectAllCheckbox.indeterminate = false;
+    } else if (count > 0) {
+        els.selectAllCheckbox.checked = false;
+        els.selectAllCheckbox.indeterminate = true;
+    } else {
+        els.selectAllCheckbox.checked = false;
+        els.selectAllCheckbox.indeterminate = false;
+    }
+}
+
+function toggleSelectAllCustomers(e) {
+    const isChecked = e.target.checked;
+    const inputs = document.querySelectorAll('.customer-checkbox');
+
+    inputs.forEach(input => {
+        input.checked = isChecked;
+        if (isChecked) {
+            selectedCustomerIds.add(input.dataset.id);
+        } else {
+            selectedCustomerIds.delete(input.dataset.id);
+        }
+    });
+    updateBulkDeleteUI();
+}
+
+async function deleteSelectedCustomers() {
+    const count = selectedCustomerIds.size;
+    if (count === 0) return;
+
+    if (confirm(`Are you sure you want to PERMANENTLY delete ${count} customers? This cannot be undone.`)) {
+        const btn = els.btnDeleteSelected;
+        btn.textContent = 'Deleting...';
+        btn.disabled = true;
+
+        try {
+            const promises = [];
+            selectedCustomerIds.forEach(id => {
+                promises.push(deleteDoc(doc(db, "customers", id)));
+                delete customers[id]; // Update local cache immediately
+            });
+
+            await Promise.all(promises);
+
+            selectedCustomerIds.clear();
+            renderCustomersTable(els.customerSearch.value);
+            updateBulkDeleteUI();
+            alert(`Successfully deleted ${count} customers.`);
+
+        } catch (error) {
+            console.error("Bulk delete error:", error);
+            alert("Error deleting customers: " + error.message);
+        } finally {
+            btn.innerHTML = `Delete Selected (<span id="selected-count">0</span>)`;
+            btn.disabled = false;
+            els.selectedCountSpan = document.getElementById('selected-count'); // Re-bind if lost? No, innerHTML replaced it.
+            // Better restore safely
+            btn.innerHTML = `Delete Selected (<span id="selected-count">${selectedCustomerIds.size}</span>)`;
+            // Re-bind specific element ref if needed, but els.selectedCountSpan holds the old node which is gone.
+            els.selectedCountSpan = document.getElementById('selected-count');
+            updateBulkDeleteUI();
+        }
+    }
+}
+
+function renderCustomersTable(searchTerm = '') {
+    // Note: selectedCustomerIds is global, we keep selections even if filtered out, 
+    // unless we want to clear them. For now, let's keep them.
+
+    if (!els.customersTableBody) return;
+    els.customersTableBody.innerHTML = '';
+
+
+    // Convert cache to array
+    const all = Object.entries(customers).map(([id, data]) => ({ id, ...data }));
+
+    // Configure Search
+    const lowerTerm = searchTerm.toLowerCase();
+    const filtered = all.filter(c => {
+        return (c.name || '').toLowerCase().includes(lowerTerm) ||
+            (c.email || '').toLowerCase().includes(lowerTerm) ||
+            (c.phone || '').includes(lowerTerm);
+    });
+
+    if (filtered.length === 0) {
+        els.customersEmptyState.classList.remove('hidden');
+        return;
+    }
+    els.customersEmptyState.classList.add('hidden');
+
+    filtered.forEach(c => {
+        const tr = document.createElement('tr');
+        // Handle timestamp or missing date
+        let lastOrder = '-';
+        if (c.last_updated && c.last_updated.seconds) {
+            lastOrder = new Date(c.last_updated.seconds * 1000).toLocaleDateString();
+        }
+
+        tr.innerHTML = `
+            <td><input type="checkbox" class="customer-checkbox" data-id="${c.id}" ${selectedCustomerIds.has(c.id) ? 'checked' : ''}></td>
+            <td><strong>${c.name || 'Unknown'}</strong></td>
+
+            <td><a href="mailto:${c.email}">${c.email || '-'}</a></td>
+            <td>${c.phone || '-'}</td>
+            <td>${lastOrder}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-icon btn-edit-customer" data-id="${c.id}" title="Edit">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    </button>
+                    <button class="btn-icon btn-view-history" data-id="${c.id}" title="History">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </button>
+                    <button class="btn-icon btn-delete-customer delete" data-id="${c.id}" title="Delete">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+            </td>
+        `;
+
+        // Checkbox listener
+        tr.querySelector('.customer-checkbox').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                selectedCustomerIds.add(c.id);
+            } else {
+                selectedCustomerIds.delete(c.id);
+            }
+            updateBulkDeleteUI();
+        });
+
+        // Edit Button
+        tr.querySelector('.btn-edit-customer').addEventListener('click', () => {
+            openCustomerModal(c.id);
+        });
+
+        // History button placeholder
+        tr.querySelector('.btn-view-history').addEventListener('click', () => {
+            alert("Customer History coming soon!");
+        });
+
+        // Delete Customer Logic
+        tr.querySelector('.btn-delete-customer').addEventListener('click', async () => {
+            if (confirm(`Are you sure you want to delete customer "${c.name}" (${c.email})?\n\nThis cannot be undone.`)) {
+                try {
+                    await deleteDoc(doc(db, "customers", c.id));
+                    // Also remove from local cache for instant feedback
+                    delete customers[c.id];
+                    renderCustomersTable(els.customerSearch ? els.customerSearch.value : '');
+                } catch (err) {
+                    console.error("Error deleting customer:", err);
+                    alert("Failed to delete customer: " + err.message);
+                }
+            }
+        });
+
+        els.customersTableBody.appendChild(tr);
+    });
+}
+
+function openCustomerModal(id) {
+    els.editCustId.value = id || '';
+
+    if (id) {
+        // Edit Mode
+        const cust = customers[id];
+        if (!cust) return;
+        els.editCustName.value = cust.name || '';
+        els.editCustEmail.value = cust.email || '';
+        els.editCustPhone.value = cust.phone || '';
+        els.customerModal.querySelector('h2').textContent = 'Edit Customer';
+    } else {
+        // Create Mode
+        els.editCustName.value = '';
+        els.editCustEmail.value = '';
+        els.editCustPhone.value = '';
+        els.customerModal.querySelector('h2').textContent = 'New Customer';
+        if (els.custHistoryList) els.custHistoryList.innerHTML = '<p class="text-muted">New customer (no history).</p>';
+    }
+
+    // Populate History
+    if (id && els.custHistoryList) {
+        els.custHistoryList.innerHTML = '';
+        const customerRequests = requests.filter(r => r.customer_id === id).sort((a, b) => (b.created_at?.seconds || 0) - (a.created_at?.seconds || 0));
+
+        if (customerRequests.length === 0) {
+            els.custHistoryList.innerHTML = '<p class="text-muted">No past orders found.</p>';
+        } else {
+            customerRequests.forEach(req => {
+                const date = req.created_at ? new Date(req.created_at.seconds * 1000).toLocaleDateString() : 'N/A';
+                const status = req.status || 'NEW';
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                item.style.padding = '0.5rem';
+                item.style.borderBottom = '1px solid #eee';
+                item.innerHTML = `
+                    <div style="display:flex; justify-content:space-between;">
+                        <span><strong>#${req.id.slice(0, 6)}</strong> - ${date}</span>
+                        <span class="status-badge status-${status}" style="font-size:0.75rem; padding:2px 6px;">${status}</span>
+                    </div>
+                    <div style="font-size:0.85rem; color:#666;">
+                        ${req.step1_data?.category || 'Order'} · ${req.step1_data?.event_date || 'No Date'}
+                    </div>
+                 `;
+                els.custHistoryList.appendChild(item);
+            });
+        }
+    }
+
+    els.customerModal.classList.remove('hidden');
+}
+
+async function saveCustomer(e) {
+    if (e) e.preventDefault(); // In case it's a form submit
+
+    const id = els.editCustId.value;
+    const name = els.editCustName.value.trim();
+    const email = els.editCustEmail.value.trim();
+    const phone = els.editCustPhone.value.trim();
+
+    if (!name || !email) {
+        alert("Name and Email are required.");
+        return;
+    }
+
+    const btn = els.btnSaveCustomer;
+    const originalText = btn.textContent;
+    btn.textContent = 'Saving...';
+    btn.disabled = true;
+
+    try {
+        let finalId = id;
+        if (id) {
+            // Update
+            const custRef = doc(db, "customers", id);
+            const updates = {
+                name: name,
+                email: email,
+                phone: phone,
+                updated_at: new Date()
+            };
+            await updateDoc(custRef, updates);
+
+            // Local Cache
+            if (customers[id]) customers[id] = { ...customers[id], ...updates };
+            alert("Customer updated successfully!");
+        } else {
+            // Create
+            const newCust = {
+                name: name,
+                email: email,
+                phone: phone,
+                created_at: new Date(),
+                updated_at: new Date()
+            };
+            const docRef = await addDoc(collection(db, "customers"), newCust);
+            finalId = docRef.id;
+
+            // Local Cache
+            customers[docRef.id] = newCust;
+            alert("Customer created successfully!");
+        }
+
+        renderCustomersTable(els.customerSearch ? els.customerSearch.value : '');
+        els.customerModal.classList.add('hidden');
+
+        // If invoked from Request Modal (inline creation)
+        if (els.newReqModal && !els.newReqModal.classList.contains('hidden')) {
+            populateCustomerDropdown();
+            els.newReqCustomer.value = finalId;
+        }
+
+    } catch (error) {
+        console.error("Error saving customer:", error);
+        alert("Failed to save customer.");
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
+}
+
+// --- MANUAL ENTRY LOGIC ---
+
+function initNewRequestLogic() {
+    // New Request Button
+    if (els.btnNewRequest) {
+        els.btnNewRequest.addEventListener('click', () => {
+            // Populate customer dropdown
+            populateCustomerDropdown();
+            // Reset form
+            if (els.newReqForm) els.newReqForm.reset();
+            // Set default date to today or tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('new-req-date').valueAsDate = tomorrow;
+
+            els.newReqModal.classList.remove('hidden');
+        });
+    }
+
+    // New Customer Button (Customers Page)
+    if (els.btnAddCustomer) {
+        els.btnAddCustomer.addEventListener('click', () => {
+            openCustomerModal(null); // null means create mode
+        });
+    }
+
+    // Inline Create Customer (New Request Modal)
+    if (els.linkCreateCustInline) {
+        els.linkCreateCustInline.addEventListener('click', (e) => {
+            e.preventDefault();
+            els.newReqModal.classList.add('hidden');
+            openCustomerModal(null);
+            // We could add logic to reopen request modal after save, 
+            // but for now, let's keep it simple. User can re-open.
+        });
+    }
+
+    // New Request Form Submit
+    if (els.newReqForm) {
+        els.newReqForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = els.newReqForm.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            btn.textContent = 'Creating...';
+            btn.disabled = true;
+
+            try {
+                const custId = els.newReqCustomer.value;
+                const date = document.getElementById('new-req-date').value;
+                const cat = document.getElementById('new-req-cat').value;
+                const notes = document.getElementById('new-req-notes').value;
+
+                if (!custId) throw new Error("Please select a customer.");
+
+                // Create Request Doc
+                const reqData = {
+                    customer_id: custId,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+                    status: 'NEW',
+                    step1_data: {
+                        category: cat,
+                        event_date: date, // Format YYYY-MM-DD
+                        fulfillment: 'Pickup', // Default to Pickup for manual
+                        quantity_value: '1', // Default
+                        rush_flag: false
+                    },
+                    step2_data: {
+                        notes: notes,
+                        budget_range: 'TBD',
+                        theme_keywords: 'Manual Entry'
+                    }
+                };
+
+                const docRef = await addDoc(collection(db, "requests"), reqData);
+                console.log("Created request:", docRef.id);
+
+                els.newReqModal.classList.add('hidden');
+
+                // Open the detail modal for further editing/viewing
+                // Need to wait for snapshot to update requests array?
+                // Snapshot listener is fast, but we can verify.
+                // Or just open it directly if we fetch it?
+                // Let's wait a small delay or rely on snapshot.
+                // Ideally, we just push to local requests array temporarily or wait.
+                // Let's just alert for now or try to open.
+
+                setTimeout(() => {
+                    openModal(docRef.id);
+                }, 500);
+
+            } catch (error) {
+                console.error("Error creating request:", error);
+                alert("Error: " + error.message);
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        });
+    }
+}
+
+function populateCustomerDropdown() {
+    if (!els.newReqCustomer) return;
+
+    els.newReqCustomer.innerHTML = '<option value="">Select a Customer...</option>';
+
+    // Sort customers by name
+    const sorted = Object.entries(customers)
+        .map(([id, data]) => ({ id, ...data }))
+        .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+    sorted.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${c.name} (${c.email})`;
+        els.newReqCustomer.appendChild(opt);
+    });
+}
+
+// --- MILESTONE 4: DEPOSIT & ORDERS ---
+
+function openDepositModal(req) {
+    if (!els.depositModal) return;
+
+    // Prefill
+    els.depositReqId.value = req.id;
+    els.depositCustId.value = req.customer_id;
+
+    // Attempt to guess total from Quote items if available
+    // (This works if we stored quote items in local state when generating PDF, 
+    // but we didn't explicitly persist them in 'req' yet. 
+    // We can leave it 0 or try to use currentQuoteItems if the user just viewed the quote modal)
+    els.depositTotal.value = '';
+    els.depositAmount.value = '';
+
+    els.depositModal.classList.remove('hidden');
+
+    // Auto-fill Total from Quote if available (User Feedback)
+    if (req.quote_total) {
+        els.depositTotal.value = req.quote_total;
+        // Optional: Set deposit to 50%?
+        // els.depositAmount.value = (req.quote_total * 0.5).toFixed(2);
+    }
+}
+
+function initRecordDepositLogic() {
+    if (!els.depositForm) return;
+
+    els.depositForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const btn = els.depositForm.querySelector('button[type="submit"]');
+        const originalText = btn.textContent;
+        btn.textContent = 'Processing...';
+        btn.disabled = true;
+
+        try {
+            const reqId = els.depositReqId.value;
+            const custId = els.depositCustId.value;
+            const total = parseFloat(els.depositTotal.value);
+            const amount = parseFloat(els.depositAmount.value);
+            const note = els.depositNote.value;
+
+            if (!reqId || !custId) throw new Error("Missing request context.");
+
+            // 1. Create Order
+            const orderData = {
+                customer_id: custId,
+                request_id: reqId,
+                total_price: total,
+                amount_paid: amount, // Track collected cash
+                balance_due: total - amount,
+                status: 'OPEN',
+                created_at: new Date(),
+                updated_at: new Date()
+            };
+
+            const orderRef = await addDoc(collection(db, "orders"), orderData);
+            console.log("Order created:", orderRef.id);
+
+            // 2. Add Payment
+            if (amount > 0) {
+                const paymentData = {
+                    amount: amount,
+                    date: new Date(),
+                    note: note || 'Initial Deposit',
+                    method: 'Manual'
+                };
+                await addDoc(collection(db, "orders", orderRef.id, "payments"), paymentData);
+            }
+
+            // 3. Update Request Status
+            const reqRef = doc(db, "requests", reqId);
+            await updateDoc(reqRef, {
+                status: 'BOOKED',
+                updated_at: new Date()
+            });
+
+            // UI Cleanup
+            alert("Deposit recorded! Request marked as BOOKED.");
+            els.depositModal.classList.add('hidden');
+            els.modal.classList.add('hidden'); // Close detail modal too
+
+            // Render will update automatically via listeners
+
+        } catch (error) {
+            console.error("Error recording deposit:", error);
+            alert("Error: " + error.message);
+        } finally {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
+    });
+}

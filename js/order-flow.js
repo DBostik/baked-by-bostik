@@ -1,4 +1,5 @@
 /* Order Flow Step 2 Script */
+import { db, doc, updateDoc, serverTimestamp, storage, ref, uploadBytes, getDownloadURL } from './firebase-init.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     loadStep1Data();
@@ -43,11 +44,27 @@ function loadStep1Data() {
 function initFormSubmit() {
     const form = document.getElementById('step2Form');
 
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
+    // File Input UI Feedback
+    const fileInput = document.getElementById('inspirationImages');
+    const fileListDisplay = document.getElementById('file-list');
 
-        // In a real app, we would POST this data to a backend.
-        // For this demo, we simulate success.
+    if (fileInput) {
+        fileInput.addEventListener('change', () => {
+            fileListDisplay.innerHTML = '';
+            if (fileInput.files.length > 0) {
+                Array.from(fileInput.files).forEach(file => {
+                    const div = document.createElement('div');
+                    div.style.fontSize = "0.9em";
+                    div.style.marginBottom = "0.25rem";
+                    div.innerHTML = `✅ <strong>${file.name}</strong> (${(file.size / 1024).toFixed(1)} KB)`;
+                    fileListDisplay.appendChild(div);
+                });
+            }
+        });
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
         const btn = form.querySelector('button[type="submit"]');
         const originalText = btn.innerText;
@@ -55,11 +72,76 @@ function initFormSubmit() {
         btn.disabled = true;
         btn.innerText = "Sending...";
 
-        setTimeout(() => {
-            // alert("Thanks, Kristen will follow up by email within 24 to 48 hours.");
-            sessionStorage.removeItem('orderStep1'); // Clear data
-            sessionStorage.removeItem('galleryReference'); // Clear any ref
+        try {
+            const requestId = sessionStorage.getItem('requestId');
+            if (!requestId) {
+                // Determine fallback if ID missing? For now, alert.
+                // In production, we might want to fail gracefully or just create a new orphaned request.
+                // But for this flow, ID is required.
+                throw new Error("Missing Request ID. Please start over.");
+            }
+
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            // --- IMAGE UPLOAD LOGIC ---
+            const imageUrls = [];
+            const files = document.getElementById('inspirationImages').files;
+
+            if (files && files.length > 0) {
+                btn.innerText = "Uploading Photos...";
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    // Create path: requests/{requestId}/{timestamp}_{filename}
+                    const filePath = `requests/${requestId}/${Date.now()}_${file.name}`;
+                    const storageRef = ref(storage, filePath);
+
+                    try {
+                        const snapshot = await uploadBytes(storageRef, file);
+                        const downloadURL = await getDownloadURL(snapshot.ref);
+                        imageUrls.push(downloadURL);
+                    } catch (uploadErr) {
+                        console.error("Upload failed for", file.name, uploadErr);
+                        alert(`Failed to upload ${file.name}. Check your internet or Storage Rules. Error: ${uploadErr.message}`);
+                    }
+                }
+            }
+
+            btn.innerText = "Saving Details...";
+
+            // Prepare update payload matching Data Model
+            const updatePayload = {
+                status: 'AWAITING_DETAILS',
+                step2_data: {
+                    occasion: data.occasion,
+                    occasion_other: (data.occasion === 'other') ? "See notes" : null, // or add field if UI exists
+                    theme_keywords: data.theme,
+                    colors: data.colors,
+                    complexity: data.complexity,
+                    budget_range: data.budget,
+                    notes: data.notes,
+                    inspiration_images: imageUrls,
+                    email_opt_in: !!data.emailOptIn
+                },
+                updated_at: serverTimestamp()
+            };
+
+            const requestRef = doc(db, "requests", requestId);
+            await updateDoc(requestRef, updatePayload);
+
+            // Clean up session
+            sessionStorage.removeItem('orderStep1');
+            sessionStorage.removeItem('galleryReference');
+            sessionStorage.removeItem('requestId');
+
             window.location.href = 'thank-you.html';
-        }, 1500);
+
+        } catch (error) {
+            console.error("Error updating request:", error);
+            alert("Error sending request: " + error.message);
+            btn.disabled = false;
+            btn.innerText = originalText;
+        }
     });
 }

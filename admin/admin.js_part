@@ -1,0 +1,120 @@
+
+// --- MANUAL ENTRY LOGIC ---
+
+function initNewRequestLogic() {
+    // New Request Button
+    if (els.btnNewRequest) {
+        els.btnNewRequest.addEventListener('click', () => {
+            // Populate customer dropdown
+            populateCustomerDropdown();
+            // Reset form
+            if (els.newReqForm) els.newReqForm.reset();
+            // Set default date to today or tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('new-req-date').valueAsDate = tomorrow;
+
+            els.newReqModal.classList.remove('hidden');
+        });
+    }
+
+    // New Customer Button (Customers Page)
+    if (els.btnAddCustomer) {
+        els.btnAddCustomer.addEventListener('click', () => {
+            openCustomerModal(null); // null means create mode
+        });
+    }
+
+    // Inline Create Customer (New Request Modal)
+    if (els.linkCreateCustInline) {
+        els.linkCreateCustInline.addEventListener('click', (e) => {
+            e.preventDefault();
+            els.newReqModal.classList.add('hidden');
+            openCustomerModal(null);
+            // We could add logic to reopen request modal after save, 
+            // but for now, let's keep it simple. User can re-open.
+        });
+    }
+
+    // New Request Form Submit
+    if (els.newReqForm) {
+        els.newReqForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = els.newReqForm.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            btn.textContent = 'Creating...';
+            btn.disabled = true;
+
+            try {
+                const custId = els.newReqCustomer.value;
+                const date = document.getElementById('new-req-date').value;
+                const cat = document.getElementById('new-req-cat').value;
+                const notes = document.getElementById('new-req-notes').value;
+
+                if (!custId) throw new Error("Please select a customer.");
+
+                // Create Request Doc
+                const reqData = {
+                    customer_id: custId,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+                    status: 'NEW',
+                    step1_data: {
+                        category: cat,
+                        event_date: date, // Format YYYY-MM-DD
+                        fulfillment: 'Pickup', // Default to Pickup for manual
+                        quantity_value: '1', // Default
+                        rush_flag: false
+                    },
+                    step2_data: {
+                        notes: notes,
+                        budget_range: 'TBD',
+                        theme_keywords: 'Manual Entry'
+                    }
+                };
+
+                const docRef = await addDoc(collection(db, "requests"), reqData);
+                console.log("Created request:", docRef.id);
+
+                els.newReqModal.classList.add('hidden');
+                
+                // Open the detail modal for further editing/viewing
+                // Need to wait for snapshot to update requests array?
+                // Snapshot listener is fast, but we can verify.
+                // Or just open it directly if we fetch it?
+                // Let's wait a small delay or rely on snapshot.
+                // Ideally, we just push to local requests array temporarily or wait.
+                // Let's just alert for now or try to open.
+                
+                setTimeout(() => {
+                    openModal(docRef.id);
+                }, 500);
+
+            } catch (error) {
+                console.error("Error creating request:", error);
+                alert("Error: " + error.message);
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        });
+    }
+}
+
+function populateCustomerDropdown() {
+    if (!els.newReqCustomer) return;
+    
+    els.newReqCustomer.innerHTML = '<option value="">Select a Customer...</option>';
+    
+    // Sort customers by name
+    const sorted = Object.entries(customers)
+        .map(([id, data]) => ({ id, ...data }))
+        .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+    sorted.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${c.name} (${c.email})`;
+        els.newReqCustomer.appendChild(opt);
+    });
+}

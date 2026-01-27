@@ -1,0 +1,47 @@
+/* CALENDAR STYLES */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: #e5e7eb;
+    border: 1px solid #e5e7eb;
+}
+.cal-day-header {
+    background: #f9fafb;
+    padding: 0.5rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+.cal-day {
+    background: white;
+    min-height: 100px;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.cal-day.empty {
+    background: #f9fafb;
+}
+.day-num {
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+    color: #374151;
+}
+.cal-event {
+    font-size: 0.75rem;
+    padding: 2px 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    background: #eff6ff;
+    color: #1e3a8a;
+    border-left: 3px solid #3b82f6;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.cal-event.status-NEW { border-left-color: #3b82f6; background: #eff6ff; }
+.cal-event.status-QUOTING { border-left-color: #8b5cf6; background: #f5f3ff; }
+.cal-event.status-BOOKED { border-left-color: #10b981; background: #ecfdf5; }
+.cal-event.status-COMPLETED { border-left-color: #6b7280; background: #f3f4f6; color: #6b7280; }

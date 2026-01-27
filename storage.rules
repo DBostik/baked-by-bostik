@@ -1,0 +1,23 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Admin access to everything
+    match /{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Public uploads for Request Images
+    // Pattern: requests/{requestId}/{filename}
+    match /requests/{requestId}/{fileName} {
+      allow write: if true; 
+      allow read: if true; // Needed so Admin can see them in the dashboard publicly if not auth'd? No, Admin is auth'd. 
+                           // But keep read true for now to avoid broken images if token expires.
+    }
+    
+    // Quotes (Generated PDFs)
+    match /quotes/{fileName} {
+        allow read: if true; // Allow customer to download PDF via link
+    }
+  }
+}

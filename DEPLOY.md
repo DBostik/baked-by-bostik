@@ -18,13 +18,14 @@ This is the "home" where your code will live online.
 Once you give me the **GitHub URL**:
 1.  I will handle the terminal commands to upload your site.
 
-## Phase 3: Go Live on Vercel
-1.  Log into [Vercel.com](https://vercel.com).
-2.  Click **"Add New..."** -> **"Project"**.
-3.  Import `baked-by-bostik`.
-4.  Click **Deploy**.
+## Phase 3: Connect Custom Domain (Optional)
+If you want to use `bakedbybostik.com` with this deployment:
 
-## Phase 4: Connect Domain
-1.  Vercel Dashboard -> **Settings** -> **Domains**.
-2.  Add `bakedbybostik.com`.
-3.  Update DNS records in **Hostinger** (A Record & CNAME) as shown by Vercel.
+1.  Go to the [Firebase Hosting Console](https://console.firebase.google.com/project/bakedbybostik-5eb55/hosting).
+2.  Click **Add Custom Domain**.
+3.  Enter `bakedbybostik.com`.
+4.  Follow the instructions to update your DNS records (A Records) at Hostinger.
+    -   This will replace the Vercel connection.
+    -   It may take up to 24 hours to propagate.
+
+

@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# OS Files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Firebase
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+
+# Environment
+.env
+functions/.env
