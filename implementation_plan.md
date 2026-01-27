@@ -1,5 +1,9 @@
 # Implementation Plan: Baked By Bostik CRM
 
+> [!IMPORTANT]
+> **GIT SAFETY WARNING**: Before making any changes to this file or the `changelog.md`, ensure the current version has been committed to Git.
+> Run: `git add . && git commit -m "Backup before docs update"` to preserve history.
+
 ## Project Overview
 **Goal**: Build a custom, "premium" CRM and Admin Dashboard to manage a bakery business.
 **Tech Stack**: Firebase (Auth, Firestore, Storage, Functions), Vanilla JS, Tailwind-like CSS.
