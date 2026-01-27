@@ -45,3 +45,6 @@
 - [ ] **Kitchen Display System (KDS)**: "Kitchen View" mode for tablets (large text, checkbox steps).
 - [ ] **Label Printing**: One-click generation of box labels (Order #, flavor, allergy info).
 - [ ] **Mobile App**: PWA or Native wrapper for easier admin access on the go.
+
+### 🟡 Milestone 10: Admin Refinement
+- [ ] **Editable Request Details**: Allow admins to edit event specs (Date, Qty, Fulfillment) and design details directly in the modal.
