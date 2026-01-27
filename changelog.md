@@ -1,16 +1,25 @@
 # Project Changelog & History
 
-> [!IMPORTANT]
-> **GIT SAFETY WARNING**: Before making any changes to this file or the `implementation_plan.md`, ensure the current version has been committed to Git.
-> Run: `git add . && git commit -m "Backup before docs update"` to preserve history.
+> [!CAUTION]
+> **STOP! DATA LOSS VISIBLE**
+> **AGENTS**: You **MUST** run a git commit *before* editing this file.
+> If you overwrite this file without committing, history will be lost.
+> 
+> **RUN THIS NOW**: `git add . && git commit -m "Pre-edit backup"`
 
 **Project**: Baked By Bostik CRM
 **Tech Stack**: Firebase, Vanilla JS
-**Status**: Milestone 4.5 Completed (Jan 27, 2026)
+**Status**: Milestone 10 Started (Jan 27, 2026)
 
 ---
 
 ## 📅 January 2026
+
+### 🟡 Milestone 10: Admin Refinement
+- **Editable Details**:
+    - **Logic**: Refactored `admin/admin.js` `openModal` to support "Edit Mode".
+    - **UI**: Added "Edit Details" button to modal footer.
+    - **Functions**: Admins can now modify Event Specs (Date, Category, Qty, Fulfillment) and Design Details (Theme, Budget, Notes) directly; changes persist to Firestore.
 
 ### 🟢 Milestone 4.5: Premium Invoice Design (COMPLETE)
 **Goal**: Visual overhaul of the PDF Invoice to match "Premium" Mockup.

@@ -1,8 +1,11 @@
 # Implementation Plan: Baked By Bostik CRM
 
-> [!IMPORTANT]
-> **GIT SAFETY WARNING**: Before making any changes to this file or the `changelog.md`, ensure the current version has been committed to Git.
-> Run: `git add . && git commit -m "Backup before docs update"` to preserve history.
+> [!CAUTION]
+> **STOP! DATA LOSS VISIBLE**
+> **AGENTS**: You **MUST** run a git commit *before* editing this file.
+> If you overwrite this file without committing, previous milestones and notes will be lost forever.
+> 
+> **RUN THIS NOW**: `git add . && git commit -m "Pre-edit backup"`
 
 ## Project Overview
 **Goal**: Build a custom, "premium" CRM and Admin Dashboard to manage a bakery business.
