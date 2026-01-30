@@ -5,6 +5,7 @@
  */
 
 const { onRequest } = require("firebase-functions/v2/https");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { setGlobalOptions } = require("firebase-functions/v2");
 const admin = require("firebase-admin");
 const PDFDocument = require("pdfkit");
@@ -273,5 +274,120 @@ exports.dispatchQuoteEmail = onRequest({ cors: true, invoker: 'public' }, async 
     } catch (error) {
         console.error("Email Error", error);
         res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+     * 3. Scheduled Weekly Report
+     * Triggers every Monday at 9:00 AM (Timezone: America/New_York or default UTC, let's assume default for now or specify)
+     */
+exports.scheduledWeeklyReport = onSchedule("every monday 09:00", async (event) => {
+    try {
+        const db = admin.firestore();
+        const now = new Date();
+        const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+        // 1. Calculate Last Week's Revenue
+        // Query orders created/paid in last 7 days
+        // Note: Ideally query by range, but for simplicity fetch recent and filter
+        const ordersSnapshot = await db.collection('orders')
+            .where('created_at', '>=', admin.firestore.Timestamp.fromDate(lastWeek))
+            .get();
+
+        let weeklyRevenue = 0;
+        let ordersCount = 0;
+
+        ordersSnapshot.forEach(doc => {
+            const data = doc.data();
+            // Double check limit (Firestore filter is >= so it handles defaults)
+            weeklyRevenue += (parseFloat(data.amount_paid) || parseFloat(data.total_price) || 0);
+            ordersCount++;
+        });
+
+        // 2. Get Upcoming Orders (Next 7 Days)
+        // Query requests where event_date is between today and next week
+        // Storing dates as strings YYYY-MM-DD in step1_data.event_date
+        // We'll need to fetch active requests and filter in JS because of string format storage
+        const requestsSnapshot = await db.collection('requests')
+            .where('status', '==', 'BOOKED') // Only confirmed orders
+            .get();
+
+        const upcomingOrders = [];
+        const nextWeekStr = nextWeek.toISOString().slice(0, 10);
+        const todayStr = now.toISOString().slice(0, 10);
+
+        requestsSnapshot.forEach(doc => {
+            const data = doc.data();
+            const eventDate = data.step1_data?.event_date;
+            if (eventDate && eventDate >= todayStr && eventDate <= nextWeekStr) {
+                upcomingOrders.push({
+                    customer: data.customer_id, // We might need name, but let's just list date/cat
+                    date: eventDate,
+                    category: data.step1_data.category
+                });
+            }
+        });
+
+        // Sort upcoming
+        upcomingOrders.sort((a, b) => a.date.localeCompare(b.date));
+
+        // 3. Construct Email
+        const revenueFormatted = `$${weeklyRevenue.toFixed(2)}`;
+
+        let reportText = `Weekly Bakery Performance Report\n\n`;
+        reportText += `--- Last Week (since ${lastWeek.toLocaleDateString()}) ---\n`;
+        reportText += `Revenue Collected: ${revenueFormatted}\n`;
+        reportText += `Orders Processed: ${ordersCount}\n\n`;
+
+        reportText += `--- Upcoming Week (Next 7 Days) ---\n`;
+        if (upcomingOrders.length === 0) {
+            reportText += `No Booked events found.\n`;
+        } else {
+            upcomingOrders.forEach(o => {
+                reportText += `[${o.date}] ${o.category}\n`;
+            });
+        }
+
+        const reportHtml = reportText.replace(/\n/g, '<br>');
+
+        // 4. Send Email
+        const SMTP_EMAIL = process.env.SMTP_EMAIL;
+        const SMTP_PASSWORD = process.env.SMTP_PASSWORD;
+        // const ADMIN_EMAIL = process.env.ADMIN_EMAIL || SMTP_EMAIL; // Send to self
+
+        if (SMTP_EMAIL && SMTP_PASSWORD) {
+            const transporter = nodemailer.createTransport({
+                host: "smtp.hostinger.com",
+                port: 465, secure: true,
+                auth: { user: SMTP_EMAIL, pass: SMTP_PASSWORD }
+            });
+
+            await transporter.sendMail({
+                from: `"BBB Admin Bot" <${SMTP_EMAIL}>`,
+                to: SMTP_EMAIL, // Sending to the admin email
+                subject: `Weekly Report: ${revenueFormatted} Revenue`,
+                text: reportText,
+                html: `<div style="font-family: sans-serif; color: #333;">
+                        <h2>Weekly Performance Report</h2>
+                        <div style="background: #f3f4f6; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                            <h3 style="margin-top:0;">Last Week</h3>
+                            <p style="font-size: 24px; font-weight: bold; color: #10b981; margin: 10px 0;">${revenueFormatted}</p>
+                            <p>${ordersCount} new orders</p>
+                        </div>
+                        <div>
+                            <h3>Upcoming Events</h3>
+                            ${upcomingOrders.length ? '<ul>' + upcomingOrders.map(o => `<li><strong>${o.date}</strong>: ${o.category}</li>`).join('') + '</ul>' : '<p>No confirmed events.</p>'}
+                        </div>
+                       </div>`
+            });
+            console.log("Weekly report sent.");
+        } else {
+            console.log("SMTP not configured, skipping email.");
+            console.log(reportText);
+        }
+
+    } catch (error) {
+        console.error("Weekly Report Error:", error);
     }
 });

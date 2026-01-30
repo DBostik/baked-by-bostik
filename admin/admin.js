@@ -167,6 +167,9 @@ async function initDashboard(user) {
     // Init Record Deposit (Milestone 4)
     initRecordDepositLogic();
 
+    // Init Analytics (Milestone 5)
+    initAnalyticsLogic();
+
     // Init Deposit Modal Close Button (User Feedback Fix)
     const depositCloseBtn = els.depositModal.querySelector('.close-modal');
     if (depositCloseBtn) {
@@ -293,6 +296,8 @@ function showPage(pageName) {
     // Hide all main pages
     document.getElementById('page-requests').classList.add('hidden');
     document.getElementById('page-customers').classList.add('hidden');
+    const analyticsPage = document.getElementById('page-analytics');
+    if (analyticsPage) analyticsPage.classList.add('hidden');
 
     // Show target
     const target = document.getElementById(`page-${pageName}`);
@@ -471,6 +476,11 @@ function updateStats() {
         // assuming we maintain that field. Or we can default to total_price if paid is missing for backward compat)
         const totalRevenue = orders.reduce((sum, order) => sum + (parseFloat(order.amount_paid) || 0), 0);
         els.countRevenue.textContent = `$${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    }
+
+    // Update Analytics Charts if available
+    if (typeof updateCharts === 'function') {
+        updateCharts();
     }
 }
 
@@ -1998,4 +2008,255 @@ function initRecordDepositLogic() {
             btn.disabled = false;
         }
     });
+}
+
+
+// --- ANALYTICS LOGIC (Milestone 5) ---
+
+let revenueChartInstance = null;
+let productMixChartInstance = null;
+
+function initAnalyticsLogic() {
+    const btnExport = document.getElementById('btn-export-csv');
+    if (btnExport) {
+        btnExport.addEventListener('click', exportCSV);
+    }
+
+    // Set Dynamic Year
+    const titleEl = document.getElementById('revenue-chart-title');
+    if (titleEl) {
+        titleEl.textContent = `Monthly Revenue (${new Date().getFullYear()})`;
+    }
+}
+
+function updateCharts() {
+    const ctxRevenue = document.getElementById('revenueChart');
+    if (ctxRevenue) {
+        // Aggregate Data
+        const revenueByMonth = {};
+        const monthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const currentYear = new Date().getFullYear();
+
+        monthLabels.forEach(m => revenueByMonth[m] = 0);
+
+        // For Table
+        const revenueItems = [];
+
+        orders.forEach(order => {
+            let date = null;
+            if (order.created_at && order.created_at.seconds) {
+                date = new Date(order.created_at.seconds * 1000);
+            } else if (order.date) {
+                date = new Date(order.date); // Fallback string
+            }
+
+            // REVENUE CORRECTION: Only count what is actually paid.
+            const collected = parseFloat(order.amount_paid) || 0;
+            const total = parseFloat(order.total_price) || 0;
+            const outstanding = total - collected;
+
+            if (date && date.getFullYear() === currentYear) {
+                const monthName = monthLabels[date.getMonth()];
+                revenueByMonth[monthName] += collected;
+            }
+
+            // Lookup Linked Request for details
+            const linkedReq = requests.find(r => r.id === order.request_id);
+            const itemsStr = linkedReq ? (linkedReq.step1_data?.category || "Custom Order") : "Unknown Request";
+
+            // Collect for table
+            revenueItems.push({
+                dateObj: date || new Date(0), // for sort
+                dateStr: date ? date.toLocaleDateString() : 'N/A',
+                custName: order.customer_name || (customers[order.customer_id]?.name) || "Unknown",
+                items: itemsStr,
+                collected: collected,
+                outstanding: outstanding,
+                reqId: order.request_id // Store for click handler
+            });
+        });
+
+        const dataValues = monthLabels.map(m => revenueByMonth[m]);
+
+        if (revenueChartInstance) {
+            revenueChartInstance.data.datasets[0].data = dataValues;
+            revenueChartInstance.update();
+        } else {
+            revenueChartInstance = new Chart(ctxRevenue, {
+                type: 'bar',
+                data: {
+                    labels: monthLabels,
+                    datasets: [{
+                        label: 'Cash Collected ($)',
+                        data: dataValues,
+                        backgroundColor: '#10b981',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: function (value) { return '$' + value; } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render Revenue Table
+        const tableBody = document.getElementById('revenue-table-body');
+        if (tableBody) {
+            tableBody.innerHTML = '';
+
+            // Hack: Update header if it exists to match new columns
+            const tableHeader = document.querySelector('#page-analytics .data-table thead tr');
+            if (tableHeader) {
+                tableHeader.innerHTML = `
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Items</th>
+                    <th>Collected</th>
+                    <th>Outstanding</th>
+                `;
+            }
+
+            // Sort by Date Descending
+            revenueItems.sort((a, b) => b.dateObj - a.dateObj);
+
+            if (revenueItems.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:1rem;">No revenue recorded yet.</td></tr>';
+            } else {
+                revenueItems.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.style.cursor = 'pointer';
+                    // Inline hover effect for simplicity
+                    tr.onmouseover = function () { this.style.backgroundColor = '#f3f4f6'; };
+                    tr.onmouseout = function () { this.style.backgroundColor = ''; };
+
+                    // Add Click Handler
+                    tr.onclick = function () {
+                        if (item.reqId) {
+                            openModal(item.reqId);
+                        } else {
+                            alert("No linked request details found (ID missing on order).");
+                        }
+                    };
+
+                    const outstandingClass = item.outstanding > 0 ? 'color: #ef4444; font-weight:bold;' : 'color: #d1d5db;';
+
+                    tr.innerHTML = `
+                        <td>${item.dateStr}</td>
+                        <td><strong>${item.custName}</strong></td>
+                        <td>${item.items}</td>
+                        <td style="color: #10b981; font-weight:bold;">$${item.collected.toFixed(2)}</td>
+                        <td style="${outstandingClass}">$${item.outstanding.toFixed(2)}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            }
+        }
+    }
+
+    // Check Product Mix Chart as well to ensure it updates if on same page
+    const ctxMix = document.getElementById('productMixChart');
+    if (ctxMix) {
+        const counts = {};
+
+        requests.forEach(req => {
+            const cat = req.step1_data?.category || 'Other';
+            counts[cat] = (counts[cat] || 0) + 1;
+        });
+
+        const labels = Object.keys(counts);
+        const data = Object.values(counts);
+
+        const backgroundColors = [
+            '#F472B6', '#60A5FA', '#FBBF24', '#A78BFA', '#34D399', '#9CA3AF'
+        ];
+
+        if (productMixChartInstance) {
+            productMixChartInstance.data.labels = labels;
+            productMixChartInstance.data.datasets[0].data = data;
+            productMixChartInstance.update();
+        } else {
+            productMixChartInstance = new Chart(ctxMix, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+    }
+
+}
+
+function exportCSV() {
+    if (!orders || orders.length === 0) {
+        alert("No orders available to export.");
+        return;
+    }
+
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Date,Order ID,Customer Name,Customer Email,Items Summary,Amount Paid ($)\n";
+
+    orders.forEach(order => {
+        let dateStr = "N/A";
+        if (order.created_at && order.created_at.seconds) {
+            dateStr = new Date(order.created_at.seconds * 1000).toLocaleDateString();
+        }
+
+        const id = order.id || "";
+
+        let custName = order.customer_name || "Unknown";
+        let custEmail = order.customer_email || "";
+
+        if (custName === "Unknown" && order.customer_id && customers[order.customer_id]) {
+            custName = customers[order.customer_id].name;
+            custEmail = customers[order.customer_id].email;
+        }
+
+        let itemsStr = "";
+        if (order.items && Array.isArray(order.items)) {
+            itemsStr = order.items.map(i => `${i.qty}x ${i.name}`).join("; ");
+        } else if (order.step1_data) {
+            itemsStr = `${order.step1_data.category}`;
+        }
+        itemsStr = itemsStr.replace(/"/g, '""');
+
+        const amount = order.amount_paid || order.total_price || 0;
+
+        const row = [
+            dateStr,
+            id,
+            `"${custName}"`,
+            custEmail,
+            `"${itemsStr}"`,
+            amount
+        ].join(",");
+
+        csvContent += row + "\n";
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    const filename = `orders_export_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }

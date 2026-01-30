@@ -9,6 +9,8 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="admin.css?v=3">
+    <!-- Chart.js via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Using similar color scheme as public site if possible, but keeping it clean admin style -->
 </head>
 
@@ -89,6 +91,17 @@
                                 </path>
                             </svg>
                             Customers
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-page="analytics">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                style="margin-right:0.75rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                                </path>
+                            </svg>
+                            Analytics
                         </a>
                     </li>
                     <!-- Future: Settings -->
@@ -329,6 +342,65 @@
                         </table>
                         <div id="customers-empty-state" class="empty-state hidden">
                             <p>No customers found.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ANALYTICS PAGE -->
+                <div id="page-analytics" class="page-section hidden">
+                    <header class="page-header">
+                        <h1>Analytics</h1>
+                        <div class="controls">
+                            <button id="btn-export-csv" class="btn-secondary">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    style="margin-right:6px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                                Export CSV
+                            </button>
+                        </div>
+                    </header>
+
+                    <div class="analytics-grid"
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                        <!-- Revenue Chart -->
+                        <div class="chart-card"
+                            style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                            <h3 id="revenue-chart-title" style="margin-top:0; color:#374151; font-size:1.1rem;">Monthly
+                                Revenue</h3>
+                            <div style="position: relative; height: 300px; width: 100%;">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Product Mix Chart -->
+                        <div class="chart-card"
+                            style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                            <h3 style="margin-top:0; color:#374151; font-size:1.1rem;">Orders by Category</h3>
+                            <div style="position: relative; height: 300px; width: 100%;">
+                                <canvas id="productMixChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Revenue Details Logic -->
+                    <div class="table-card" style="margin-top: 2rem;">
+                        <h3 style="margin: 0 0 1rem 0; color: #374151;">Recent Revenue Sources</h3>
+                        <div style="overflow-x: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Customer</th>
+                                        <th>Items</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="revenue-table-body">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

@@ -1,45 +1,44 @@
-# Prompt for Engineer: Milestone 3.5 - Workflow Enhancements
+# Prompt for Engineer: Milestone 5 - Advanced Analytics & Reporting
 
 **Context:**
-We are building a "CRM-lite" dashboard for a bakery using Firebase (Firestore, Auth, Functions) and Vanilla JS.
-The core CRUD operations and Quote features are built. Now we need to polish the workflow based on user feedback.
+We are building a "premium" custom CRM for a bakery using Firebase (Firestore, Functions) and Vanilla JS.
+Milestone 4 (Orders & Payments) is complete. We now have an `orders` collection with payment data.
 
 **Primary Objective:**
-Execute **Milestone 3.5** from `implementation_plan.md`. This focuses on fixing critical bugs and adding manual entry capabilities.
+Execute **Milestone 5** from `implementation_plan.md`. This focuses on visualizing business performance (Analytics) and automating reports.
 
 **Scope of Work (in recommended order):**
 
-### 1. High-Priority Fixes
-- **Email Attachments**: Modify `functions/index.js` (specifically `dispatchQuoteEmail`) to attach the actual PDF file content to the email, instead of just sending a link.
-    - *Note:* You'll need to fetch the file from Storage or pass the buffer if possible (though fetching from Storage URL in the cloud function is cleaner).
-- **Kanban Logic**: The "Auto-move to Quoting" logic in `admin/admin.js` currently only works if the card is in 'NEW'. Update it so sending an email moves the card to 'QUOTING' from *any* status (unless already 'BOOKED' or 'COMPLETED').
+### 1. Analytics Dashboard (Frontend)
+-   **Files**: `admin/index.html`, `admin/admin.js`
+-   **Task**: Create a new "Analytics" tab/view.
+-   **Tech**: Use **Chart.js** (load via CDN in `index.html`, do not use npm/bundlers for this).
+-   **Components**:
+    -   **Revenue Chart**: Bar chart showing monthly revenue for the current year. Data source: Aggregate `orders` collection (sum `amount_paid`).
+    -   **Product Mix**: Pie chart showing orders by Category (Cake, Cookie, etc). Data source: Aggregate `requests` or `orders`.
 
-### 2. New Features (Admin Dashboard)
-- **Manual Customer Entry**:
-    - Add a "New Customer" button to the Customers view.
-    - Open a modal to input Name, Email, Phone.
-    - Save to `customers` collection.
-- **Manual Request Entry**:
-    - Add a "New Request" button (Sidebar or Requests View).
-    - Open a modal to select an existing Customer (or create new) + input basic Order Details (Date, Category, Notes).
-    - Save to `requests` collection with status 'NEW'.
-- **Calendar View**:
-    - Implement a new view in the dashboard (toggle between List/Board/Calendar).
-    - Display requests on a monthly calendar based on `step1_data.event_date`.
-- **Global Search**:
-    - Implement a global search bar in the header.
-    - Search across `customers` (Name/Email) and `requests` (ID).
-- **Customer History**:
-    - In the Customer Detail modal, display a list of their past requests/orders.
+### 2. Data Export
+-   **Task**: Add an "Export CSV" button in the Analytics view.
+-   **Logic**: Generate a CSV file client-side from the `orders` data.
+-   **Columns**: Date, Customer Name, Items Summary, Amount Paid.
 
-**Key Files:**
-- `implementation_plan.md`: The source of truth.
-- `admin/admin.js`: Frontend logic.
-- `admin/index.html`: Dashboard HTML structure.
-- `functions/index.js`: Backend logic for Email/PDF.
+### 3. Automated Weekly Report (Backend)
+-   **Files**: `functions/index.js`
+-   **Task**: Create a Scheduled Cloud Function (`scheduledWeeklyReport`).
+-   **Trigger**: Weekly (e.g., Every Monday @ 9:00 AM).
+-   **Logic**:
+    1.  Query `orders` for "Last Week's Revenue".
+    2.  Query `requests` for "Upcoming Orders" (next 7 days).
+    3.  Send an email summary to the admin email using `nodemailer` (reuse existing email logic).
+
+**Key Resources:**
+-   `implementation_plan.md`: Detailed specs.
+-   `admin/admin.js`: Existing frontend logic (reference `fetchOrders` and `orders` array).
+-   `functions/index.js`: Existing email/PDF logic.
 
 **Instructions:**
 1.  Read `implementation_plan.md` carefully.
-2.  Start with the **Fixes** (Email + Kanban).
-3.  Then proceed to **Manual Entry** features.
-4.  Verify each feature works locally or in dev.
+2.  Implement the Frontend Analytics first (Charts).
+3.  Implement the CSV Export.
+4.  Implement the Backend Scheduled Function.
+5.  Verify the charts render correctly with existing data.

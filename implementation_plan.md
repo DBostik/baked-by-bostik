@@ -18,13 +18,7 @@
 
 ## � ROADMAP (Future Milestones)
 
-### 🟡 Milestone 5: Advanced Analytics & Reporting
-**Goal**: Deep insights into business performance.
-- [ ] **Charts & Graphs**: 
-    - Monthly Revenue Bar Chart.
-    - Orders by Category (Pie Chart).
-- [ ] **Export**: CSV Export for Tax/Accounting purposes.
-- [ ] **Automated Reports**: Weekly email summary of upcoming orders & revenue.
+
 
 ### 🟡 Milestone 6: Customer Portal
 **Goal**: Self-service experience for clients.

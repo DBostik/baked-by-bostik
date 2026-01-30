@@ -15,6 +15,14 @@
 
 ## 📅 January 2026
 
+### 🟢 Milestone 5: Analytics & Reporting (COMPLETE) - Jan 28, 2026
+- **Analytics Dashboard**:
+    - Charts: Monthly Revenue (Bar) and Product Mix (Doughnut).
+    - Data: Tracks "Cash Collected" vs "Outstanding Balance".
+    - Revenue Table with clickable rows for details.
+- **Export**: CSV Export functionality for Orders.
+- **Automation**: `scheduledWeeklyReport` Cloud Function sends revenue/schedule summary every Monday.
+
 ### 🟡 Milestone 10: Admin Refinement
 - **Editable Details**:
     - **Logic**: Refactored `admin/admin.js` `openModal` to support "Edit Mode".

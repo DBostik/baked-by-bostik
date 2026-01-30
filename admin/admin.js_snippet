@@ -1,0 +1,205 @@
+
+// --- ANALYTICS LOGIC (Milestone 5) ---
+
+let revenueChartInstance = null;
+let productMixChartInstance = null;
+
+function initAnalyticsLogic() {
+    const btnExport = document.getElementById('btn-export-csv');
+    if (btnExport) {
+        btnExport.addEventListener('click', exportCSV);
+    }
+    // Charts will be initialized/updated in updateCharts() called by data listeners
+}
+
+function updateCharts() {
+    // 1. Revenue Chart (by Month)
+    const ctxRevenue = document.getElementById('revenueChart');
+    if (ctxRevenue) { // Only run if element exists (i.e. we are on a page with this element, or just check existence)
+        
+        // Aggregate Data
+        const revenueByMonth = {};
+        const monthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const currentYear = new Date().getFullYear();
+
+        // Initialize with 0
+        monthLabels.forEach(m => revenueByMonth[m] = 0);
+
+        orders.forEach(order => {
+            // Use created_at or payment_date using fallback logic
+            // Assuming order has created_at timestamp
+            let date = null;
+            if (order.created_at && order.created_at.seconds) {
+                date = new Date(order.created_at.seconds * 1000);
+            } else if (order.date) {
+                date = new Date(order.date);
+            }
+
+            if (date && date.getFullYear() === currentYear) {
+                const monthName = monthLabels[date.getMonth()];
+                const amount = parseFloat(order.amount_paid) || parseFloat(order.total_price) || 0;
+                revenueByMonth[monthName] += amount;
+            }
+        });
+
+        const dataValues = monthLabels.map(m => revenueByMonth[m]);
+
+        if (revenueChartInstance) {
+            revenueChartInstance.data.datasets[0].data = dataValues;
+            revenueChartInstance.update();
+        } else {
+             // Create Chart
+             revenueChartInstance = new Chart(ctxRevenue, {
+                type: 'bar',
+                data: {
+                    labels: monthLabels,
+                    datasets: [{
+                        label: 'Revenue ($)',
+                        data: dataValues,
+                        backgroundColor: '#10b981', // Emerald 500
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) { return '$' + value; }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+
+    // 2. Product Mix Chart (by Category)
+    const ctxMix = document.getElementById('productMixChart');
+    if (ctxMix) {
+        // Aggregate Data from REQUESTS (as purely orders might miss some granular details or we want demand)
+        // Adjust logic: Use Orders for confirmed sales mix? Or Requests for demand?
+        // Prompt says "Data source: Aggregate requests or orders". Let's use Requests to show ALL demand.
+        
+        const counts = {};
+        
+        requests.forEach(req => {
+            const cat = req.step1_data?.category || 'Other';
+            counts[cat] = (counts[cat] || 0) + 1;
+        });
+
+        const labels = Object.keys(counts);
+        const data = Object.values(counts);
+        
+        // Colors
+        const backgroundColors = [
+            '#F472B6', // Pink 400
+            '#60A5FA', // Blue 400
+            '#FBBF24', // Amber 400
+            '#A78BFA', // Violet 400
+            '#34D399', // Emerald 400
+            '#9CA3AF'  // Gray 400
+        ];
+
+        if (productMixChartInstance) {
+            productMixChartInstance.data.labels = labels;
+            productMixChartInstance.data.datasets[0].data = data;
+            productMixChartInstance.update();
+        } else {
+            productMixChartInstance = new Chart(ctxMix, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+    }
+}
+
+function exportCSV() {
+    if (!orders || orders.length === 0) {
+        alert("No orders available to export.");
+        return;
+    }
+
+    // CSV Header
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Date,Order ID,Customer Name,Customer Email,Items Summary,Amount Paid ($)\n";
+
+    orders.forEach(order => {
+        // Prepare fields
+        let dateStr = "N/A";
+        if (order.created_at && order.created_at.seconds) {
+            dateStr = new Date(order.created_at.seconds * 1000).toLocaleDateString();
+        }
+
+        const id = order.id || "";
+        // Customer info might be directly on order or need lookup. 
+        // Implement Plan said "Customer Name". 
+        // Milestone 4 likely saved snapshot of customer data on order. 
+        // If not, we might need to look up from `customers` map if we have `customer_id`.
+        
+        let custName = order.customer_name || "Unknown";
+        let custEmail = order.customer_email || "";
+        
+        if (custName === "Unknown" && order.customer_id && customers[order.customer_id]) {
+            custName = customers[order.customer_id].name;
+            custEmail = customers[order.customer_id].email;
+        }
+
+        // Items Summary
+        let itemsStr = "";
+        if (order.items && Array.isArray(order.items)) {
+            itemsStr = order.items.map(i => `${i.qty}x ${i.name}`).join("; ");
+        } else if (order.step1_data) {
+             // Fallback if structure differs
+             itemsStr = `${order.step1_data.category}`;
+        }
+        // Escape quotes in items
+        itemsStr = itemsStr.replace(/"/g, '""');
+
+        const amount = order.amount_paid || order.total_price || 0;
+
+        // Build Row
+        const row = [
+            dateStr,
+            id,
+            `"${custName}"`, // Quote name to handle commas
+            custEmail,
+            `"${itemsStr}"`,
+            amount
+        ].join(",");
+        
+        csvContent += row + "\n";
+    });
+
+    // Create Download Trigger
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    const filename = `orders_export_${new Date().toISOString().slice(0,10)}.csv`;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link); // Required for FF
+    link.click();
+    document.body.removeChild(link);
+}
