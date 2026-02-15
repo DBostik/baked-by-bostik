@@ -162,9 +162,6 @@ async function initDashboard(user) {
     // Init Manual Entry
     initNewRequestLogic();
 
-    // Init Manual Entry
-    initNewRequestLogic();
-
     // Init Record Deposit (Milestone 4)
     initRecordDepositLogic();
 
@@ -1060,7 +1057,9 @@ function updateModalFooter(req) {
         delBtn.style.background = 'none';
         delBtn.style.border = 'none';
         delBtn.textContent = 'Delete Request';
-        delBtn.onclick = async () => {
+        delBtn.type = 'button';
+        delBtn.onclick = async (e) => {
+            if (e) e.preventDefault();
             if (confirm('Are you sure you want to PERMANENTLY delete this request? This cannot be undone.')) {
                 try {
                     await deleteDoc(doc(db, "requests", req.id));

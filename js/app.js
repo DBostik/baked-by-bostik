@@ -276,12 +276,20 @@ function initOrderModal() {
 }
 
 function openOrderModal() {
+    console.log("openOrderModal called");
     const modal = document.getElementById('orderModal');
     if (modal) {
         modal.style.display = 'flex';
         document.body.classList.add('no-scroll');
     } else {
         console.error("Modal not found. initOrderModal failed?");
+        // Retry init if missing?
+        initOrderModal();
+        const retryModal = document.getElementById('orderModal');
+        if (retryModal) {
+            retryModal.style.display = 'flex';
+            document.body.classList.add('no-scroll');
+        }
     }
 }
 // Expose to window for HTML onclick access

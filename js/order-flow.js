@@ -135,7 +135,8 @@ function initFormSubmit() {
             sessionStorage.removeItem('galleryReference');
             sessionStorage.removeItem('requestId');
 
-            window.location.href = 'thank-you.html';
+            console.log("Order submitted successfully. Redirecting to thank-you.html...");
+            window.location.href = '/thank-you.html';
 
         } catch (error) {
             console.error("Error updating request:", error);
