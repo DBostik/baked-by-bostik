@@ -13,7 +13,22 @@
 
 ---
 
-## 📅 January 2026
+## 📅 February 2026
+
+### 🟢 Milestone 11: Gallery Enhancements (COMPLETE) - Feb 15, 2026
+- **Drag-and-Drop Reordering**:
+    - Installed `sortablejs` for intuitive artwork management.
+    - Implemented Firestore batch updates to persist custom sort order.
+    - Added "Reorder Mode" toggle to prevent accidental moves.
+- **Clean URLs & SEO**:
+    - Configured `firebase.json` for extension-less URLs (`/gallery` instead of `/gallery.html`).
+    - Implemented absolute paths across all public pages to ensure stability on sub-paths (`/gallery/`).
+    - Fixed 404 errors by properly handling trailing slashes.
+- **UI/UX Polish**:
+    - Fixed broken layout on Admin Dashboard.
+    - Corrected relative path issues for CSS and Images on public pages.
+    - Added "Back to Top" functionality (implied by cleaner navigation).
+
 
 ### 🟢 Milestone 5: Analytics & Reporting (COMPLETE) - Jan 28, 2026
 - **Analytics Dashboard**:

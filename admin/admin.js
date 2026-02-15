@@ -6,7 +6,7 @@ import {
     signOut,
     sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, where, getDocs, updateDoc, deleteDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, where, getDocs, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getStorage, ref, getDownloadURL, uploadBytes, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 import { firebaseConfig } from '../js/firebase-config.js';
 
@@ -2279,6 +2279,9 @@ let galleryItems = []; // All items
 let galleryCategories = []; // All categories
 let currentGalleryFilter = 'all';
 let selectedFiles = [];
+// Drag-and-Drop State
+let isReordering = false;
+let sortableInstance = null;
 
 async function initGallery() {
     // Fetch categories
@@ -2292,10 +2295,117 @@ async function initGallery() {
     renderGalleryFilters();
     renderGalleryGrid();
     updateGalleryStats();
+    initSortable(); // Initialize drag-and-drop
 
     // Event listeners
     document.getElementById('btn-upload-images').addEventListener('click', openUploadModal);
     document.getElementById('btn-manage-categories').addEventListener('click', openCategoryManagerModal);
+}
+
+// Initialize SortableJS
+function initSortable() {
+    const grid = document.getElementById('admin-gallery-grid');
+    sortableInstance = new Sortable(grid, {
+        animation: 150,
+        disabled: true, // Disabled by default until "Reorder" is clicked
+        ghostClass: 'sortable-ghost',
+        dragClass: 'sortable-drag',
+        onEnd: handleReorder
+    });
+}
+
+// Toggle Reorder Mode
+window.toggleReorderMode = function () {
+    isReordering = !isReordering;
+    const btn = document.getElementById('btn-reorder-mode');
+    const grid = document.getElementById('admin-gallery-grid');
+
+    if (isReordering) {
+        // Enable Sorting
+        sortableInstance.option("disabled", false);
+        grid.classList.add('reorder-mode');
+        btn.classList.add('active');
+        btn.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 13l4 4L19 7" />
+            </svg>
+            Done Reordering
+        `;
+        // Disable other controls
+        document.getElementById('btn-upload-images').disabled = true;
+        document.getElementById('btn-manage-categories').disabled = true;
+        // Check if filter is 'all'
+        if (currentGalleryFilter !== 'all') {
+            alert("Note: You can only reorder when viewing 'All' items. Switching to All now.");
+            filterGallery('all');
+        }
+    } else {
+        // Disable Sorting
+        sortableInstance.option("disabled", true);
+        grid.classList.remove('reorder-mode');
+        btn.classList.remove('active');
+        btn.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+            </svg>
+            Reorder Items
+        `;
+        // Enable other controls
+        document.getElementById('btn-upload-images').disabled = false;
+        document.getElementById('btn-manage-categories').disabled = false;
+
+        // Refresh grid to ensure sort order conformity (optional but safe)
+        renderGalleryGrid();
+    }
+};
+
+// Handle Drop Event
+async function handleReorder(evt) {
+    if (evt.oldIndex === evt.newIndex) return;
+
+    const itemEl = evt.item;
+    const movedItemId = itemEl.dataset.id;
+
+    // Get current visible items (should be ALL if enforced)
+    // We reuse galleryItems because we force 'all' filter
+    // But wait, renderGalleryGrid() might filter items visually. 
+    // Sortable works on DOM elements.
+    // If filter is active, indices won't match global galleryItems indices.
+    // We forced 'all' filter in toggleReorderMode, so grid matches galleryItems (mostly).
+    // EXCEPT hidden items? No, admins see hidden items.
+    // So grid should match galleryItems exactly if filtered by 'all'.
+
+    // 1. Update local array
+    const movedItem = galleryItems[evt.oldIndex];
+    galleryItems.splice(evt.oldIndex, 1);
+    galleryItems.splice(evt.newIndex, 0, movedItem);
+
+    // 2. Prepare Batch Update
+    const batch = writeBatch(db);
+    let updateCount = 0;
+
+    // Optimally, only update items strictly between min(old, new) and max(old, new)
+    // But updating all is safer for consistency if array is small < 500
+    // Let's update all for simplicity and robustness
+
+    galleryItems.forEach((item, index) => {
+        if (item.sort_order !== index) {
+            item.sort_order = index; // Update local
+            const ref = doc(db, 'gallery_items', item.id);
+            batch.update(ref, { sort_order: index });
+            updateCount++;
+        }
+    });
+
+
+    try {
+        await batch.commit();
+        showNotification('✓ New order saved!', 'success');
+    } catch (err) {
+        console.error("Error reordering:", err);
+        showNotification('Error saving order: ' + err.message, 'error');
+        // Revert UI if needed? For now, just alert.
+    }
 }
 
 function renderGalleryFilters() {

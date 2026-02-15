@@ -62,18 +62,16 @@ Marks Milestone 11 as complete.
   - Upload to `gallery/thumbs/`
   - Update Firestore `thumb_url`
 
-### 2. Drag-and-Drop Reordering
+### 2. Drag-and-Drop Reordering (COMPLETED)
 **Why**: Easier management than manually editing `sort_order` numbers.
-- **Plan**:
-  - Install `sortablejs` library
-  - Enable drag-and-drop on admin gallery grid
-  - On drop, calculate new sort orders
-  - Batch update Firestore documents
+- [x] Install `sortablejs` library
+- [x] Enable drag-and-drop on admin gallery grid
+- [x] On drop, calculate new sort orders
+- [x] Batch update Firestore documents
 
-### 3. Clean URLs
+### 3. Clean URLs (COMPLETED)
 **Why**: `gallery.html` looks cleaner as just `gallery`.
-- **Plan**:
-  - Update `firebase.json` with `"cleanUrls": true`
+- [x] Update `firebase.json` with `"cleanUrls": true`
 
 ---
 

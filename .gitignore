@@ -17,3 +17,4 @@ ui-debug.log*
 # Environment
 .env
 functions/.env
+scripts/service-account.json

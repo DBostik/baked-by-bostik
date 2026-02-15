@@ -16,9 +16,9 @@
         rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="css/variables.css">
-    <link rel="stylesheet" href="css/buttons.css">
-    <link rel="stylesheet" href="css/styles.css?v=6">
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/buttons.css">
+    <link rel="stylesheet" href="/css/styles.css?v=6">
     <style>
         /* Gallery Specific Inline for now, will move to styles.css */
         .gallery-filters {
@@ -151,7 +151,7 @@
             }
         }
     </style>
-    <link rel="icon" type="image/jpg" href="logo.JPG">
+    <link rel="icon" type="image/jpg" href="/logo.JPG">
 </head>
 
 <body>
@@ -159,18 +159,18 @@
     <!-- Header -->
     <header class="site-header">
         <div class="container header-inner">
-            <a href="index.html" class="logo-link">
+            <a href="/index.html" class="logo-link">
                 <!-- Logo Image -->
-                <img src="assets/logo.JPG" alt="Baked By Bostik" class="header-logo">
+                <img src="/assets/logo.JPG" alt="Baked By Bostik" class="header-logo">
             </a>
 
-
-            <ul class="nav-list">
-                <li><a href="index.html" class="nav-link">Home</a></li>
-                <li><a href="gallery.html" class="nav-link active">Gallery</a></li>
-                <li><a href="about.html" class="nav-link">About</a></li>
-            </ul>
-
+            <nav class="main-nav">
+                <ul class="nav-list">
+                    <li><a href="/index.html" class="nav-link">Home</a></li>
+                    <li><a href="/gallery.html" class="nav-link active">Gallery</a></li>
+                    <li><a href="/about.html" class="nav-link">About</a></li>
+                </ul>
+            </nav>
 
             <div class="header-actions">
                 <button class="btn btn-primary" onclick="openOrderModal()">Request an Order</button>
@@ -248,7 +248,7 @@
             </div>
 
             <div class="footer-col">
-                <img src="assets/logo.JPG" alt="Baked By Bostik" class="footer-logo">
+                <img src="/assets/logo.JPG" alt="Baked By Bostik" class="footer-logo">
             </div>
 
             <div class="footer-col">
@@ -282,7 +282,7 @@
     <!-- Scripts -->
     <script src="js/app.js"></script>
     <script type="module" src="js/firebase-handler.js?v=2"></script>
-    <script type="module" src="js/gallery.js?v=3"></script>
+    <script type="module" src="/js/gallery.js"></script>
 </body>
 
 </html>

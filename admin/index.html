@@ -8,7 +8,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="admin.css?v=3">
+    <link rel="stylesheet" href="/admin/admin.css?v=3">
     <!-- Chart.js via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Using similar color scheme as public site if possible, but keeping it clean admin style -->
@@ -422,6 +422,13 @@
                     <header class="page-header">
                         <h1>Gallery Manager</h1>
                         <div class="controls" style="display:flex; gap:0.5rem; align-items:center;">
+                            <button id="btn-reorder-mode" class="btn-secondary btn-sm" onclick="toggleReorderMode()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" style="margin-right:0.25rem;">
+                                    <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+                                </svg>
+                                Reorder Items
+                            </button>
                             <button id="btn-upload-images" class="btn-primary btn-sm">
                                 + Upload Images
                             </button>
@@ -456,7 +463,7 @@
                         <!-- Dynamically generated from gallery_categories -->
                     </div>
 
-                    <!-- Image Grid -->
+                    <!-- Firebase SDKs -->
                     <div class="gallery-grid" id="admin-gallery-grid"
                         style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
                         <!-- Dynamically rendered image cards -->
@@ -839,7 +846,9 @@
 
     <!-- ES Module Logic -->
 
-    <script type="module" src="admin.js?v=2"></script>
+    <!-- SortableJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script type="module" src="/admin/admin.js?v=2"></script>
 </body>
 
 </html>

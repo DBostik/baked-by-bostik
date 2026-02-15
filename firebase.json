@@ -22,6 +22,7 @@
     "hosting": {
         "public": ".",
         "cleanUrls": true,
+        "trailingSlash": true,
         "ignore": [
             "firebase.json",
             "**/.*",
@@ -31,12 +32,6 @@
             "*.md",
             "package.json",
             "package-lock.json"
-        ],
-        "rewrites": [
-            {
-                "source": "**",
-                "destination": "/index.html"
-            }
         ]
     }
 }
