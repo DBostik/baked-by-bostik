@@ -1,0 +1,12 @@
+{
+    "name": "gallery-migration",
+    "version": "1.0.0",
+    "description": "Script to migrate local gallery images to Firebase",
+    "main": "migrate_gallery.js",
+    "scripts": {
+        "migrate": "node migrate_gallery.js"
+    },
+    "dependencies": {
+        "firebase-admin": "^11.11.1"
+    }
+}

@@ -6,9 +6,10 @@ import {
     signOut,
     sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, where, getDocs, updateDoc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getStorage, ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, where, getDocs, updateDoc, deleteDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getStorage, ref, getDownloadURL, uploadBytes, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 import { firebaseConfig } from '../js/firebase-config.js';
+
 
 // Init Firebase
 const app = initializeApp(firebaseConfig);
@@ -298,11 +299,19 @@ function showPage(pageName) {
     document.getElementById('page-customers').classList.add('hidden');
     const analyticsPage = document.getElementById('page-analytics');
     if (analyticsPage) analyticsPage.classList.add('hidden');
+    const galleryPage = document.getElementById('page-gallery');
+    if (galleryPage) galleryPage.classList.add('hidden');
 
     // Show target
     const target = document.getElementById(`page-${pageName}`);
     if (target) target.classList.remove('hidden');
+
+    // Initialize page-specific data
+    if (pageName === 'gallery') {
+        initGallery();
+    }
 }
+
 
 // --- VIEW SWITCHING ---
 
@@ -2258,5 +2267,482 @@ function exportCSV() {
     link.setAttribute("download", filename);
     document.body.appendChild(link);
     link.click();
+
     document.body.removeChild(link);
 }
+
+// =============================================================================
+// GALLERY MANAGEMENT (Milestone 11)
+// =============================================================================
+
+let galleryItems = []; // All items
+let galleryCategories = []; // All categories
+let currentGalleryFilter = 'all';
+let selectedFiles = [];
+
+async function initGallery() {
+    // Fetch categories
+    const categoriesSnap = await getDocs(query(collection(db, 'gallery_categories'), orderBy('sort_order')));
+    galleryCategories = categoriesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    // Fetch items
+    const itemsSnap = await getDocs(query(collection(db, 'gallery_items'), orderBy('sort_order')));
+    galleryItems = itemsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    renderGalleryFilters();
+    renderGalleryGrid();
+    updateGalleryStats();
+
+    // Event listeners
+    document.getElementById('btn-upload-images').addEventListener('click', openUploadModal);
+    document.getElementById('btn-manage-categories').addEventListener('click', openCategoryManagerModal);
+}
+
+function renderGalleryFilters() {
+    const container = document.getElementById('admin-gallery-filters');
+    container.innerHTML = '';
+
+    galleryCategories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'filter-btn' + (cat.slug === currentGalleryFilter ? ' active' : '');
+        btn.textContent = cat.label;
+        btn.dataset.slug = cat.slug;
+        btn.addEventListener('click', () => {
+            currentGalleryFilter = cat.slug;
+            renderGalleryFilters();
+            renderGalleryGrid();
+        });
+        container.appendChild(btn);
+    });
+}
+
+function renderGalleryGrid() {
+    const grid = document.getElementById('admin-gallery-grid');
+    const emptyState = document.getElementById('gallery-empty-state');
+
+    let filteredItems = galleryItems;
+    if (currentGalleryFilter !== 'all') {
+        filteredItems = galleryItems.filter(item => item.categories && item.categories.includes(currentGalleryFilter));
+    }
+
+    if (filteredItems.length === 0) {
+        grid.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+    }
+
+    emptyState.classList.add('hidden');
+    grid.innerHTML = '';
+
+    filteredItems.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'gallery-card';
+        card.style.cssText = 'position:relative; border-radius:8px; overflow:hidden; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.1);' + (item.visible ? '' : 'opacity:0.5;');
+
+        const img = document.createElement('img');
+        img.src = item.thumb_url || item.image_url;
+        img.alt = item.display_name;
+        img.style.cssText = 'width:100%; height:200px; object-fit:cover;';
+        card.appendChild(img);
+
+        const overlay = document.createElement('div');
+        overlay.className = 'gallery-card-overlay';
+        overlay.style.cssText = 'position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; gap:0.5rem; opacity:0; transition:opacity 0.2s;';
+        card.addEventListener('mouseenter', () => overlay.style.opacity = '1');
+        card.addEventListener('mouseleave', () => overlay.style.opacity = '0');
+
+        // Edit button
+        const editBtn = document.createElement('button');
+        editBtn.innerHTML = '✏️';
+        editBtn.style.cssText = 'background:white; border:none; border-radius:50%; width:36px; height:36px; cursor:pointer; font-size:16px;';
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openEditImageModal(item.id);
+        });
+        overlay.appendChild(editBtn);
+
+        // Visibility toggle
+        const visBtn = document.createElement('button');
+        visBtn.innerHTML = item.visible ? '👁️' : '🙈';
+        visBtn.style.cssText = 'background:white; border:none; border-radius:50%; width:36px; height:36px; cursor:pointer; font-size:16px;';
+        visBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            await updateDoc(doc(db, 'gallery_items', item.id), { visible: !item.visible });
+            item.visible = !item.visible;
+            renderGalleryGrid();
+            updateGalleryStats();
+        });
+        overlay.appendChild(visBtn);
+
+        // Delete button
+        const delBtn = document.createElement('button');
+        delBtn.innerHTML = '🗑️';
+        delBtn.style.cssText = 'background:white; border:none; border-radius:50%; width:36px; height:36px; cursor:pointer; font-size:16px;';
+        delBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            if (!confirm(`Delete "${item.display_name}"?`)) return;
+
+            try {
+                // Delete from Firestore
+                await deleteDoc(doc(db, 'gallery_items', item.id));
+
+                // Delete from Storage
+                const storageRef = ref(storage, item.storage_path);
+                await deleteObject(storageRef);
+
+                // Remove from memory
+                galleryItems = galleryItems.filter(i => i.id !== item.id);
+                renderGalleryGrid();
+                updateGalleryStats();
+                alert('Image deleted successfully');
+            } catch (err) {
+                console.error('Delete error:', err);
+                alert('Error deleting image: ' + err.message);
+            }
+        });
+        overlay.appendChild(delBtn);
+
+        card.appendChild(overlay);
+        grid.appendChild(card);
+    });
+}
+
+function updateGalleryStats() {
+    document.getElementById('gallery-count-total').textContent = galleryItems.length;
+    document.getElementById('gallery-count-visible').textContent = galleryItems.filter(i => i.visible).length;
+    document.getElementById('gallery-count-hidden').textContent = galleryItems.filter(i => !i.visible).length;
+    document.getElementById('gallery-count-categories').textContent = galleryCategories.length;
+}
+
+// Upload Modal
+function openUploadModal() {
+    const modal = document.getElementById('upload-images-modal');
+    modal.classList.remove('hidden');
+
+    // Populate category checkboxes
+    const container = document.getElementById('upload-category-checkboxes');
+    container.innerHTML = '';
+    galleryCategories.filter(c => c.slug !== 'all').forEach(cat => {
+        const label = document.createElement('label');
+        label.style.cssText = 'display:flex; align-items:center; gap:0.25rem; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px; cursor:pointer;';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = cat.slug;
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(cat.label));
+        container.appendChild(label);
+    });
+
+    // Drag & drop
+    const dropzone = document.getElementById('upload-dropzone');
+    const fileInput = document.getElementById('upload-file-input');
+
+    dropzone.onclick = () => fileInput.click();
+
+    dropzone.ondragover = (e) => {
+        e.preventDefault();
+        dropzone.style.borderColor = '#10b981';
+    };
+
+    dropzone.ondragleave = () => {
+        dropzone.style.borderColor = '#e5e7eb';
+    };
+
+    dropzone.ondrop = (e) => {
+        e.preventDefault();
+        dropzone.style.borderColor = '#e5e7eb';
+        handleFileSelect(e.dataTransfer.files);
+    };
+
+    fileInput.onchange = () => handleFileSelect(fileInput.files);
+
+    // Upload button
+    document.getElementById('btn-start-upload').onclick = handleImageUpload;
+
+    // Close modal
+    modal.querySelector('.close-modal').onclick = () => {
+        modal.classList.add('hidden');
+        selectedFiles = [];
+        document.getElementById('upload-file-list').innerHTML = '';
+        document.getElementById('btn-start-upload').disabled = true;
+    };
+}
+
+function handleFileSelect(files) {
+    selectedFiles = Array.from(files);
+    const list = document.getElementById('upload-file-list');
+    list.innerHTML = '';
+
+    selectedFiles.forEach(file => {
+        const item = document.createElement('div');
+        item.textContent = file.name;
+        item.style.cssText = 'padding:0.25rem 0; color:#374151;';
+        list.appendChild(item);
+    });
+
+    document.getElementById('btn-start-upload').disabled = selectedFiles.length === 0;
+}
+
+async function handleImageUpload() {
+    const checkboxes = document.querySelectorAll('#upload-category-checkboxes input[type="checkbox"]:checked');
+    const selectedCategories = Array.from(checkboxes).map(cb => cb.value);
+
+    if (selectedCategories.length === 0) {
+        alert('Please select at least one category');
+        return;
+    }
+
+    if (selectedFiles.length === 0) {
+        alert('Please select images to upload');
+        return;
+    }
+
+    const progressContainer = document.getElementById('upload-progress-container');
+    const progressBar = document.getElementById('upload-progress');
+    const progressText = document.getElementById('upload-progress-text');
+    progressContainer.classList.remove('hidden');
+
+    let completed = 0;
+    const total = selectedFiles.length;
+
+    for (const file of selectedFiles) {
+        try {
+            // Upload to Storage
+            const storagePath = `gallery/${file.name}`;
+            const storageRef = ref(storage, storagePath);
+            await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(storageRef);
+
+            // Extract metadata
+            const nameWithoutExt = file.name.replace(/\.(jpg|jpeg|png)$/i, '');
+            const displayName = nameWithoutExt.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            const tags = nameWithoutExt.split('-').map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(', ');
+
+            // Create Firestore doc
+            const newDoc = await addDoc(collection(db, 'gallery_items'), {
+                image_url: downloadURL,
+                thumb_url: downloadURL,
+                storage_path: storagePath,
+                categories: selectedCategories,
+                display_name: displayName,
+                tags: tags,
+                sort_order: galleryItems.length + completed + 1,
+                visible: true,
+                uploaded_at: serverTimestamp(),
+                uploaded_by: currentUser.email
+            });
+
+            galleryItems.push({
+                id: newDoc.id,
+                image_url: downloadURL,
+                thumb_url: downloadURL,
+                storage_path: storagePath,
+                categories: selectedCategories,
+                display_name: displayName,
+                tags: tags,
+                sort_order: galleryItems.length + completed,
+                visible: true,
+                uploaded_by: currentUser.email
+            });
+
+            completed++;
+            progressBar.value = (completed / total) * 100;
+            progressText.textContent = `Uploaded ${completed}/${total}`;
+
+        } catch (err) {
+            console.error('Upload error:', err);
+            alert(`Error uploading ${file.name}: ${err.message}`);
+        }
+    }
+
+    // Close modal and refresh
+    document.getElementById('upload-images-modal').classList.add('hidden');
+    progressContainer.classList.add('hidden');
+    selectedFiles = [];
+    renderGalleryGrid();
+    updateGalleryStats();
+    alert(`Successfully uploaded ${completed}/${total} images`);
+}
+
+// Edit Image Modal
+function openEditImageModal(imageId) {
+    const item = galleryItems.find(i => i.id === imageId);
+    if (!item) return;
+
+    const modal = document.getElementById('edit-image-modal');
+    modal.classList.remove('hidden');
+
+    document.getElementById('edit-image-id').value = item.id;
+    document.getElementById('edit-image-name').value = item.display_name;
+    document.getElementById('edit-image-tags').value = item.tags;
+    document.getElementById('edit-image-visible').checked = item.visible;
+
+    // Populate category checkboxes
+    const container = document.getElementById('edit-image-category-checkboxes');
+    container.innerHTML = '';
+    galleryCategories.filter(c => c.slug !== 'all').forEach(cat => {
+        const label = document.createElement('label');
+        label.style.cssText = 'display:flex; align-items:center; gap:0.25rem; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px; cursor:pointer;';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = cat.slug;
+        checkbox.checked = item.categories && item.categories.includes(cat.slug);
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(cat.label));
+        container.appendChild(label);
+    });
+
+    // Save button
+    document.getElementById('btn-save-image').onclick = async () => {
+        const newName = document.getElementById('edit-image-name').value;
+        const newTags = document.getElementById('edit-image-tags').value;
+        const newVisible = document.getElementById('edit-image-visible').checked;
+        const checkboxes = document.querySelectorAll('#edit-image-category-checkboxes input[type="checkbox"]:checked');
+        const newCategories = Array.from(checkboxes).map(cb => cb.value);
+
+        try {
+            await updateDoc(doc(db, 'gallery_items', item.id), {
+                display_name: newName,
+                tags: newTags,
+                visible: newVisible,
+                categories: newCategories
+            });
+
+            // Update in memory
+            item.display_name = newName;
+            item.tags = newTags;
+            item.visible = newVisible;
+            item.categories = newCategories;
+
+            modal.classList.add('hidden');
+            renderGalleryGrid();
+            updateGalleryStats();
+            alert('Image updated successfully');
+        } catch (err) {
+            console.error('Update error:', err);
+            alert('Error updating image: ' + err.message);
+        }
+    };
+
+    // Close modal
+    modal.querySelector('.close-modal').onclick = () => modal.classList.add('hidden');
+}
+
+// Category Manager Modal
+function openCategoryManagerModal() {
+    const modal = document.getElementById('manage-categories-modal');
+    modal.classList.remove('hidden');
+
+    renderCategoriesTable();
+
+    // Add category button
+    document.getElementById('btn-add-category').onclick = async () => {
+        // Single prompt for Category Name (acts as label)
+        const label = prompt('Enter new Category Name:\nExample: Custom Treats');
+
+        if (!label || label.trim() === '') {
+            return; // User cancelled or entered empty string
+        }
+
+        // Auto-generate slug from label
+        // 1. Lowercase
+        // 2. Replace spaces with hyphens
+        // 3. Remove non-alphanumeric chars (except hyphens)
+        const slug = label.trim().toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9-]/g, '');
+
+        // Final validation
+        if (slug.length < 2) {
+            alert('Could not generate a valid slug from that name. Please try a name with letters/numbers.');
+            return;
+        }
+
+        try {
+            const docRef = await addDoc(collection(db, 'gallery_categories'), {
+                slug: slug,
+                label: label.trim(),
+                sort_order: galleryCategories.length,
+                created_at: serverTimestamp()
+            });
+
+            galleryCategories.push({
+                id: docRef.id,
+                slug: slug,
+                label: label.trim(),
+                sort_order: galleryCategories.length
+            });
+
+            renderCategoriesTable();
+            renderGalleryFilters();
+            updateGalleryStats();
+
+            alert(`✓ Category "${label}" added successfully!`);
+        } catch (err) {
+            console.error('Error adding category:', err);
+            alert('Error adding category: ' + err.message);
+        }
+    };
+
+
+    // Close modal
+    modal.querySelector('.close-modal').onclick = () => modal.classList.add('hidden');
+}
+
+function renderCategoriesTable() {
+    const tbody = document.getElementById('categories-table-body');
+    tbody.innerHTML = '';
+
+    galleryCategories.forEach(cat => {
+        const imageCount = galleryItems.filter(item => item.categories && item.categories.includes(cat.slug)).length;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${cat.label}</td>
+            <td>${cat.slug}</td>
+            <td>${cat.sort_order}</td>
+            <td>${imageCount}</td>
+            <td>
+                <button class="btn-text" style="color:#ef4444;" onclick="deleteCategory('${cat.id}', '${cat.slug}')">Delete</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+window.deleteCategory = async function (catId, slug) {
+    if (slug === 'all') {
+        alert('Cannot delete the "All" category');
+        return;
+    }
+
+    // Count images in this category
+    const imageCount = galleryItems.filter(item => item.categories && item.categories.includes(slug)).length;
+
+    // Strong confirmation - must type category name
+    const confirmText = prompt(
+        `⚠️ WARNING: Delete category "${slug}"?\n\n` +
+        `This category has ${imageCount} image(s).\n` +
+        `Images will NOT be deleted, but will lose this category tag.\n\n` +
+        `To confirm deletion, type the category name exactly: ${slug}`
+    );
+
+    if (confirmText !== slug) {
+        if (confirmText !== null) {
+            alert('Category deletion cancelled. Name did not match.');
+        }
+        return;
+    }
+
+    try {
+        await deleteDoc(doc(db, 'gallery_categories', catId));
+        galleryCategories = galleryCategories.filter(c => c.id !== catId);
+        renderCategoriesTable();
+        renderGalleryFilters();
+        updateGalleryStats();
+        alert(`✓ Category "${slug}" deleted successfully.\n\n${imageCount} image(s) still exist but are no longer tagged with this category.`);
+    } catch (err) {
+        console.error('Error deleting category:', err);
+        alert('Error deleting category: ' + err.message);
+    }
+};

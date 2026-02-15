@@ -16,7 +16,7 @@
 
 ---
 
-## � ROADMAP (Future Milestones)
+##  ROADMAP (Future Milestones)
 
 
 
@@ -45,3 +45,52 @@
 
 ### 🟡 Milestone 10: Admin Refinement
 - [ ] **Editable Request Details**: Allow admins to edit event specs (Date, Qty, Fulfillment) and design details directly in the modal.
+
+### Phase 5: Deployment & Cleanup (COMPLETED)
+#### [MODIFY] [implementation_plan.md](file:///Users/davebostik/Desktop/BBB%20Website/implementation_plan.md)
+Marks Milestone 11 as complete.
+
+---
+
+## Milestone 12: Future Enhancements (Backlog)
+
+### 1. Thumbnail Generation Cloud Function
+**Why**: Optimization for performance. Currently, the gallery loads full-size images (~100KB-500KB each). On slow connections, this effectively slows down the grid loading.
+- **Plan**:
+  - Create Cloud Function `onGalleryUpload`
+  - Use `sharp` to resize images to 400px width
+  - Upload to `gallery/thumbs/`
+  - Update Firestore `thumb_url`
+
+### 2. Drag-and-Drop Reordering
+**Why**: Easier management than manually editing `sort_order` numbers.
+- **Plan**:
+  - Install `sortablejs` library
+  - Enable drag-and-drop on admin gallery grid
+  - On drop, calculate new sort orders
+  - Batch update Firestore documents
+
+### 3. Clean URLs
+**Why**: `gallery.html` looks cleaner as just `gallery`.
+- **Plan**:
+  - Update `firebase.json` with `"cleanUrls": true`
+
+---
+
+## Verification Plan (Completed)
+
+### Manual Verification Results
+- **Migration**: 316 unique images successfully migrated to Firestore/Storage.
+- **Admin UI**: Fully functional (Upload, Edit, Delete, Category Management working).
+- **Public Gallery**:
+  - Loads 316 images dynamically.
+  - Filtering by category works correctly.
+  - Pagination works and "Load More" button is centered.
+  - Lightbox opens with correct details.
+  - URL params (`?theme=cookies`) work.
+- **Deployment**: Live on `bakedbybostik.com` via Firebase Hosting.
+
+## User Questions (Resolved)
+1. **Service Account Key**: Handled during migration.
+2. **Unique "All" folder file**: Handled during migration.
+3. **Migration timing**: Completed successfully.

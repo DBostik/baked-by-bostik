@@ -104,7 +104,19 @@
                             Analytics
                         </a>
                     </li>
+                    <li>
+                        <a href="#" data-page="gallery">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                style="margin-right:0.75rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                </path>
+                            </svg>
+                            Gallery
+                        </a>
+                    </li>
                     <!-- Future: Settings -->
+
                 </ul>
                 <div class="user-info">
                     <small id="user-email-display"></small>
@@ -404,7 +416,59 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- GALLERY PAGE -->
+                <div id="page-gallery" class="page-section hidden">
+                    <header class="page-header">
+                        <h1>Gallery Manager</h1>
+                        <div class="controls" style="display:flex; gap:0.5rem; align-items:center;">
+                            <button id="btn-upload-images" class="btn-primary btn-sm">
+                                + Upload Images
+                            </button>
+                            <button id="btn-manage-categories" class="btn-secondary btn-sm">
+                                Manage Categories
+                            </button>
+                        </div>
+                    </header>
+
+                    <!-- Stats Bar -->
+                    <div class="stats-row">
+                        <div class="stat-card">
+                            <span class="stat-label">Total Images</span>
+                            <span class="stat-number" id="gallery-count-total">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Visible</span>
+                            <span class="stat-number" id="gallery-count-visible">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Hidden</span>
+                            <span class="stat-number" id="gallery-count-hidden">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Categories</span>
+                            <span class="stat-number" id="gallery-count-categories">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Category Filter Tabs -->
+                    <div class="gallery-filters" id="admin-gallery-filters" style="margin-bottom: 1.5rem;">
+                        <!-- Dynamically generated from gallery_categories -->
+                    </div>
+
+                    <!-- Image Grid -->
+                    <div class="gallery-grid" id="admin-gallery-grid"
+                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+                        <!-- Dynamically rendered image cards -->
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="gallery-empty-state" class="empty-state hidden">
+                        <p>No images found. Click "Upload Images" to get started.</p>
+                    </div>
+                </div>
             </main>
+
         </div>
 
         <!-- DETAIL MODAL (Hidden by default) -->
@@ -665,7 +729,116 @@
         </div>
     </div>
 
+    <!-- UPLOAD IMAGES MODAL -->
+    <div id="upload-images-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>Upload Images</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:500;">Select Categories</label>
+                    <div id="upload-category-checkboxes" style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:500;">Images</label>
+                    <div id="upload-dropzone"
+                        style="border:2px dashed #e5e7eb; border-radius:8px; padding:2rem; text-align:center; cursor:pointer;">
+                        <p style="margin:0; color:#6b7280;">Drag & drop images here or click to browse</p>
+                        <input type="file" id="upload-file-input" multiple accept="image/*" style="display:none;">
+                    </div>
+                    <div id="upload-file-list" style="margin-top:1rem;">
+                        <!-- Preview Selected Files -->
+                    </div>
+                </div>
+
+                <button id="btn-start-upload" class="btn-primary" style="width:100%;" disabled>Upload</button>
+                <div id="upload-progress-container" class="hidden" style="margin-top:1rem;">
+                    <progress id="upload-progress" value="0" max="100" style="width:100%;"></progress>
+                    <p id="upload-progress-text" style="margin-top:0.5rem; text-align:center; color:#6b7280;"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT IMAGE MODAL -->
+    <div id="edit-image-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>Edit Image</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-image-id">
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label for="edit-image-name" style="display:block; margin-bottom:0.5rem; font-weight:500;">Display
+                        Name</label>
+                    <input type="text" id="edit-image-name"
+                        style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px;">
+                </div>
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label for="edit-image-tags"
+                        style="display:block; margin-bottom:0.5rem; font-weight:500;">Tags</label>
+                    <input type="text" id="edit-image-tags"
+                        style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px;">
+                </div>
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:500;">Categories</label>
+                    <div id="edit-image-category-checkboxes" style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                        <input type="checkbox" id="edit-image-visible">
+                        <span>Visible on public gallery</span>
+                    </label>
+                </div>
+                <button id="btn-save-image" class="btn-primary" style="width:100%;">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MANAGE CATEGORIES MODAL -->
+    <div id="manage-categories-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>Manage Categories</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom:1rem;">
+                    <button id="btn-add-category" class="btn-secondary btn-sm">+ Add Category</button>
+                </div>
+                <div class="table-card">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Label</th>
+                                <th>Slug</th>
+                                <th>Order</th>
+                                <th>Image Count</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categories-table-body">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ES Module Logic -->
+
     <script type="module" src="admin.js?v=2"></script>
 </body>
 

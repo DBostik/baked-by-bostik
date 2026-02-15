@@ -1,131 +1,196 @@
-/* Gallery Filter & Lightbox Logic */
-document.addEventListener('DOMContentLoaded', () => {
-    initGalleryFilters();
-    initLightbox();
-    checkUrlParams();
+// Gallery Dynamic Loading from Firestore (Milestone 11)
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, query, where, orderBy, limit, getDocs, startAfter } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { firebaseConfig } from './firebase-config.js';
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// State
+let categories = [];
+let allItems = [];
+let currentFilter = 'all';
+let lastDoc = null;
+const ITEMS_PER_PAGE = 32;
+
+// DOM Elements
+const filterContainer = document.getElementById('gallery-filters-dynamic');
+const gridContainer = document.getElementById('gallery-grid-dynamic');
+const skeletonContainer = document.getElementById('gallery-skeleton');
+const loadMoreBtn = document.getElementById('loadMoreBtn');
+const lightboxModal = document.getElementById('lightboxModal');
+const lightboxImg = lightboxModal.querySelector('.lightbox-img');
+const lightboxTitle = document.getElementById('lightboxTitle');
+const lightboxTags = document.getElementById('lightboxTags');
+const closeLightbox = lightboxModal.querySelector('.close-lightbox');
+
+// Initialize Gallery
+async function initGallery() {
+    try {
+        // Show skeleton
+        skeletonContainer.classList.remove('hidden');
+
+        // Fetch categories
+        const categoriesSnap = await getDocs(query(collection(db, 'gallery_categories'), orderBy('sort_order')));
+        categories = categoriesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Render filter buttons
+        renderFilters();
+
+        // Fetch initial items
+        await loadItems(true);
+
+        // Hide skeleton, show grid
+        skeletonContainer.classList.add('hidden');
+        gridContainer.classList.remove('hidden');
+
+        // Check for theme URL param (e.g., ?theme=cakes)
+        const urlParams = new URLSearchParams(window.location.search);
+        const themeParam = urlParams.get('theme');
+        if (themeParam) {
+            const matchingCategory = categories.find(cat => cat.slug === themeParam);
+            if (matchingCategory) {
+                currentFilter = themeParam;
+                renderFilters();
+                await loadItems(true);
+            }
+        }
+
+    } catch (error) {
+        console.error('Error initializing gallery:', error);
+        skeletonContainer.classList.add('hidden');
+        gridContainer.innerHTML = '<p style="text-align:center; color:var(--color-text-muted);">Error loading gallery. Please refresh the page.</p>';
+    }
+}
+
+// Render Filter Buttons
+function renderFilters() {
+    filterContainer.innerHTML = '';
+
+    categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'filter-btn' + (cat.slug === currentFilter ? ' active' : '');
+        btn.textContent = cat.label;
+        btn.dataset.filter = cat.slug;
+        btn.addEventListener('click', async () => {
+            if (currentFilter === cat.slug) return; // Already active
+            currentFilter = cat.slug;
+            renderFilters();
+            gridContainer.innerHTML = ''; // Clear grid
+            lastDoc = null; // Reset pagination
+            await loadItems(true);
+        });
+        filterContainer.appendChild(btn);
+    });
+}
+
+// Load Gallery Items
+async function loadItems(resetGrid = false) {
+    try {
+        if (resetGrid) {
+            gridContainer.innerHTML = '';
+            lastDoc = null;
+        }
+
+        // Build query
+        let q;
+        if (currentFilter === 'all') {
+            q = query(
+                collection(db, 'gallery_items'),
+                where('visible', '==', true),
+                orderBy('sort_order'),
+                limit(ITEMS_PER_PAGE)
+            );
+        } else {
+            q = query(
+                collection(db, 'gallery_items'),
+                where('visible', '==', true),
+                where('categories', 'array-contains', currentFilter),
+                orderBy('sort_order'),
+                limit(ITEMS_PER_PAGE)
+            );
+        }
+
+        // Add pagination cursor if not first load
+        if (lastDoc) {
+            q = query(q, startAfter(lastDoc));
+        }
+
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+            if (resetGrid) {
+                gridContainer.innerHTML = '<p style="text-align:center; color:var(--color-text-muted); padding:3rem 0;">No images found in this category.</p>';
+            }
+            loadMoreBtn.style.display = 'none';
+            return;
+        }
+
+        // Render items
+        snapshot.docs.forEach(doc => {
+            const item = { id: doc.id, ...doc.data() };
+            renderGalleryItem(item);
+        });
+
+        // Update pagination
+        lastDoc = snapshot.docs[snapshot.docs.length - 1];
+        loadMoreBtn.style.display = snapshot.docs.length === ITEMS_PER_PAGE ? 'block' : 'none';
+
+    } catch (error) {
+        console.error('Error loading items:', error);
+        gridContainer.innerHTML += '<p style="text-align:center; color:var(--color-text-muted);">Error loading images.</p>';
+    }
+}
+
+// Render Single Gallery Item
+function renderGalleryItem(item) {
+    const card = document.createElement('div');
+    card.className = 'gallery-item';
+    card.dataset.id = item.id;
+    card.dataset.category = (item.categories || []).join(',');
+    card.dataset.tags = item.tags || '';
+
+    const img = document.createElement('img');
+    img.src = item.thumb_url || item.image_url;
+    img.alt = item.display_name || 'Gallery Image';
+    img.loading = 'lazy';
+
+    card.appendChild(img);
+
+    // Click to open lightbox
+    card.addEventListener('click', () => {
+        openLightbox(item);
+    });
+
+    gridContainer.appendChild(card);
+}
+
+// Open Lightbox
+function openLightbox(item) {
+    lightboxImg.src = item.image_url;
+    lightboxImg.alt = item.display_name || 'Gallery Image';
+    lightboxTitle.textContent = item.display_name || 'Custom Creation';
+    lightboxTags.textContent = item.tags || '';
+    lightboxModal.classList.add('active');
+}
+
+// Close Lightbox
+closeLightbox.addEventListener('click', () => {
+    lightboxModal.classList.remove('active');
 });
 
-/* Filter & Pagination Logic */
-let currentFilter = 'all';
-let itemsToShow = 32;
-const itemsIncrement = 32;
-
-function initGalleryFilters() {
-    const buttons = document.querySelectorAll('.filter-btn');
-    const loadMoreBtn = document.getElementById('loadMoreBtn');
-
-    // Initial Render
-    filterAndRender();
-
-    buttons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            // UI Update
-            buttons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            // Logic Update
-            currentFilter = btn.getAttribute('data-filter');
-            itemsToShow = itemsIncrement; // Reset count
-            filterAndRender();
-        });
-    });
-
-    if (loadMoreBtn) {
-        loadMoreBtn.addEventListener('click', () => {
-            itemsToShow += itemsIncrement;
-            filterAndRender();
-        });
+lightboxModal.addEventListener('click', (e) => {
+    if (e.target === lightboxModal) {
+        lightboxModal.classList.remove('active');
     }
-}
+});
 
-function filterAndRender() {
-    const items = Array.from(document.querySelectorAll('.gallery-item'));
-    const loadMoreBtn = document.getElementById('loadMoreBtn');
+// Load More Button
+loadMoreBtn.addEventListener('click', async () => {
+    await loadItems(false);
+});
 
-    // 1. Identify valid items based on filter
-    const visibleItems = items.filter(item => {
-        const categories = item.getAttribute('data-category');
-        return currentFilter === 'all' || categories.includes(currentFilter);
-    });
-
-    // 2. Hide ALL items first (simplest approach)
-    items.forEach(item => item.style.display = 'none');
-
-    // 3. Show the subset based on itemsToShow
-    const slice = visibleItems.slice(0, itemsToShow);
-
-    slice.forEach(item => {
-        item.style.display = 'block';
-        // Simple fade in if not already visible
-        if (item.style.opacity !== '1') {
-            item.style.opacity = '0';
-            setTimeout(() => item.style.opacity = '1', 50);
-        }
-    });
-
-    // 4. Update Button State
-    if (loadMoreBtn) {
-        if (itemsToShow >= visibleItems.length) {
-            loadMoreBtn.style.display = 'none';
-        } else {
-            loadMoreBtn.style.display = 'inline-block';
-        }
-    }
-}
-
-function checkUrlParams() {
-    const params = new URLSearchParams(window.location.search);
-    const theme = params.get('theme');
-
-    if (theme) {
-        const filterBtn = document.querySelector(`.filter-btn[data-filter="${theme}"]`);
-        if (filterBtn) {
-            filterBtn.click();
-        }
-    }
-}
-
-function initLightbox() {
-    const modal = document.getElementById('lightboxModal');
-    const modalImg = date = modal.querySelector('.lightbox-img');
-    const modalTitle = document.getElementById('lightboxTitle');
-    const modalTags = document.getElementById('lightboxTags'); // New element
-    const closeBtn = document.querySelector('.close-lightbox');
-    const items = document.querySelectorAll('.gallery-item');
-
-    items.forEach(item => {
-        item.addEventListener('click', () => {
-            const img = item.querySelector('img');
-            const tags = item.getAttribute('data-tags');
-
-            modal.querySelector('.lightbox-img').src = img.src;
-            // Use tags if available, else fallback
-            modalTitle.innerText = "Custom Creation";
-            if (modalTags) {
-                modalTags.innerText = tags ? tags : "";
-            }
-
-            modal.classList.add('active');
-            document.body.classList.add('no-scroll');
-
-            // Update button onclick
-            const requestBtn = modal.querySelector('.btn-primary');
-            if (requestBtn) {
-                requestBtn.onclick = () => requestFromGallery(tags);
-            }
-        });
-    });
-
-    closeBtn.addEventListener('click', closeLightbox);
-
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            closeLightbox();
-        }
-    });
-
-    function closeLightbox() {
-        modal.classList.remove('active');
-        document.body.classList.remove('no-scroll');
-    }
-}
+// Initialize on Page Load
+document.addEventListener('DOMContentLoaded', initGallery);
