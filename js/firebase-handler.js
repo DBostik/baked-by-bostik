@@ -51,7 +51,7 @@ window.handleOrderSubmit = async (e, form) => {
         sessionStorage.setItem('orderStep1', JSON.stringify(data));
 
         // 4. Redirect
-        window.location.href = 'order.html';
+        window.location.href = '/order.html';
 
     } catch (error) {
         console.error("Error submitting request:", error);
