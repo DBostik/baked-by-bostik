@@ -1,31 +1,51 @@
-# Simple Deployment Guide (Under Construction Mode)
+# Deployment & Technology Stack Guide
 
-We are deploying the site in **Under Construction** mode. This allows you to get the domain live while we work on the custom CMS/Forms features later.
+This document explains how the **Baked By Bostik** website is built, hosted, and deployed. Use this guide to instruct future developers or AI agents.
 
-## Phase 1: Create the GitHub Repository
-This is the "home" where your code will live online.
+## 1. The Technology Stack
 
-1.  Log into [GitHub.com](https://github.com).
-2.  Click the **+** icon in the top right -> **New repository**.
-3.  **Repository name**: `baked-by-bostik`
-4.  **Public/Private**: Either is fine.
-5.  **Important**: Leave "Add a README file" **UNCHECKED**.
-6.  Click **Create repository**.
-7.  Copy the URL (e.g., `https://github.com/davebostik/baked-by-bostik.git`).
-8.  **PASTE THAT URL HERE IN THE CHAT.**
+| Component | Service | Role | Key URL |
+| :--- | :--- | :--- | :--- |
+| **Code Repository** | **GitHub** | **Source of Truth.** All code lives here. | `https://github.com/DBostik/baked-by-bostik` |
+| **Frontend (Live)** | **Vercel** | **Production Hosting.** Deploys automatically when code is pushed to the `main` branch. | `https://bakedbybostik.com` |
+| **Frontend (Staging)** | **Firebase Hosting** | **Testing/Staging.** Useful for verifying backend features before going live. | `https://bakedbybostik-5eb55.web.app` |
+| **Backend** | **Firebase** | **Database, Auth, Storage.** Handles all dynamic data (Gallery Items, Orders, Admin Login). | Firebase Console |
 
-## Phase 2: I Push the Code (My Turn)
-Once you give me the **GitHub URL**:
-1.  I will handle the terminal commands to upload your site.
+---
 
-## Phase 3: Connect Custom Domain (Optional)
-If you want to use `bakedbybostik.com` with this deployment:
+## 2. Default Workflow for Agents
 
-1.  Go to the [Firebase Hosting Console](https://console.firebase.google.com/project/bakedbybostik-5eb55/hosting).
-2.  Click **Add Custom Domain**.
-3.  Enter `bakedbybostik.com`.
-4.  Follow the instructions to update your DNS records (A Records) at Hostinger.
-    -   This will replace the Vercel connection.
-    -   It may take up to 24 hours to propagate.
+**"I need to make a change to the website."**
 
+1.  **Code Locally:**
+    -   Switch to a new feature branch (e.g., `git checkout -b feature/new-page`).
+    -   Make edits to HTML/CSS/JS files.
+    -   Use absolute paths for assets (e.g., `/css/styles.css`, not `css/styles.css`).
 
+2.  **Test Locally:**
+    -   Run a local server: `python3 -m http.server 8080` (or `npx serve`).
+    -   Verify changes at `http://localhost:8080`.
+
+3.  **Verify on Staging (Optional but Recommended):**
+    -   Deploy to Firebase Hosting: `npx firebase deploy --only hosting`.
+    -   Check `https://bakedbybostik-5eb55.web.app`.
+    -   *Note: This does NOT affect the live `bakedbybostik.com` site.*
+
+4.  **Deploy to Production (Live):**
+    -   Commit changes: `git add . && git commit -m "Description of change"`.
+    -   Merge to Main: `git checkout main && git merge feature/branch-name`.
+    -   **Push to GitHub:** `git push origin main`.
+    -   **Result:** Vercel automatically detects the push and updates `bakedbybostik.com` within minutes.
+
+---
+
+## 3. Troubleshooting & FAQs
+
+### Why two hosting providers (Vercel & Firebase)?
+*   **Vercel** creates the fastest, most optimized global delivery for your public website (`bakedbybostik.com`). It is very good at "static" sites like yours.
+*   **Firebase Hosting** is included with your backend. We use it as a "Staging" environment to test complex features (like the Admin Dashboard or Gallery logic) before breaking the live site.
+
+### "My changes aren't showing up!"
+*   **Did you push to `main`?** Pushing to a `feature` branch only updates GitHub, not the live site.
+*   **Permissions Error?** If the backend (Gallery/Orders) fails, check `firestore.rules` in the codebase.
+*   **404 Not Found?** Ensure you are using **absolute paths** (starting with `/`) for all links, scripts, and images.

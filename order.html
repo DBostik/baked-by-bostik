@@ -161,6 +161,22 @@
                 </div>
             </div>
 
+            <!-- Dietary Restrictions -->
+            <div class="form-section">
+                <h3>Dietary Restrictions</h3>
+                <div class="form-group">
+                    <label>Any Allergies?</label>
+                    <select name="allergies" id="allergiesSelect">
+                        <option value="no">No</option>
+                        <option value="yes">Yes</option>
+                    </select>
+                </div>
+                <div id="allergyDetailsContainer" style="display:none; margin-top:var(--space-2);">
+                    <label>Please list specifics:</label>
+                    <input type="text" name="allergy_details" placeholder="e.g. Peanuts, Gluten, Dairy">
+                </div>
+            </div>
+
             <!-- Complexity & Budget -->
             <div class="form-section">
                 <h3>Preferences</h3>
@@ -187,6 +203,25 @@
                 </div>
             </div>
 
+            <!-- Referral Source -->
+            <div class="form-section">
+                <h3>One Last Thing...</h3>
+                <div class="form-group">
+                    <label>How did you hear about us?</label>
+                    <select name="hear_about_us" id="hearAboutUsSelect">
+                        <option value="">Select...</option>
+                        <option value="Google Search">Google Search</option>
+                        <option value="Social Media (Instagram/Facebook)">Social Media (Instagram/Facebook)</option>
+                        <option value="Friend/Family Referral">Friend/Family Referral</option>
+                        <option value="Returning Customer">Returning Customer</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div id="referralNameContainer" style="display:none; margin-top:var(--space-2);">
+                    <label>Who should we thank?</label>
+                    <input type="text" name="referral_name" placeholder="Friend or Family Name">
+                </div>
+            </div>
             <div class="form-section">
                 <label>Notes / Inspiration</label>
                 <textarea name="notes" rows="4" placeholder="Describe what you have in mind..."></textarea>

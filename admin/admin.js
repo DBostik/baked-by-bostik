@@ -836,6 +836,11 @@ function renderModalBody(req, cust, isEditing) {
                         <label>Phone</label>
                         <div class="info-value">${cust.phone || '-'}</div>
                     </div>
+                    ${s2.hear_about_us ? `
+                    <div class="info-group" style="margin-top:0.5rem; border-top:1px dashed #eee; padding-top:0.5rem;">
+                        <label>Source</label>
+                        <div class="info-value text-sm text-gray-600">${s2.hear_about_us}</div>
+                    </div>` : ''}
                 </div>
             </div>
 
@@ -854,6 +859,11 @@ function renderModalBody(req, cust, isEditing) {
                         <label>Quantity</label>
                         <div class="info-value">${s1.quantity_value || '-'}</div>
                     </div>
+                    ${s2.allergies === 'yes' ? `
+                    <div class="info-group">
+                         <label style="color:#dc2626; font-weight:bold;">⚠️ ALLERGIES</label>
+                         <div class="info-value" style="color:#dc2626; font-weight:bold;">${s2.allergy_details || 'Yes'}</div>
+                    </div>` : ''}
                     <div class="info-group">
                         <label>Fulfillment</label>
                         <div class="info-value">${s1.fulfillment || '-'} ${s1.delivery_zip ? '(' + s1.delivery_zip + ')' : ''}</div>
@@ -1009,6 +1019,18 @@ function renderModalBody(req, cust, isEditing) {
                                <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Budget Range</label>
                                <input type="text" name="budget_range" value="${s2.budget_range || ''}" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
                            </div>
+
+                      </div>
+
+                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom:1rem;">
+                            <div class="form-group">
+                               <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Source</label>
+                               <input type="text" name="hear_about_us" value="${s2.hear_about_us || ''}" placeholder="e.g. Google" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                           </div>
+                           <div class="form-group">
+                               <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px; color:#dc2626;">Allergies (Details)</label>
+                               <input type="text" name="allergy_details" value="${s2.allergy_details || ''}" placeholder="Leave empty if None" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                           </div>
                       </div>
 
                       <div class="form-group">
@@ -1140,6 +1162,10 @@ async function saveRequestDetails() {
         'step2_data.colors': formData.get('colors'),
         'step2_data.occasion': formData.get('occasion'),
         'step2_data.budget_range': formData.get('budget_range'),
+
+        'step2_data.hear_about_us': formData.get('hear_about_us'),
+        'step2_data.allergy_details': formData.get('allergy_details'),
+        'step2_data.allergies': formData.get('allergy_details') ? 'yes' : 'no', // Derive yes/no
         'step2_data.notes': formData.get('notes'),
 
         updated_at: new Date()

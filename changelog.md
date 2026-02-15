@@ -15,6 +15,16 @@
 
 ## 📅 February 2026
 
+### 🟢 Milestone 11.5: Post-Launch Refinements (COMPLETE) - Feb 15, 2026
+- **Order Form**:
+    - Added "How did you hear about us?" to Step 2.
+    - Implemented conditional "Who should we thank?" input for referrals.
+- **Admin Dashboard**:
+    - Request Modal now displays "Source" and "Allergies" information.
+    - Added bold RED warning for allergies in Event Specs.
+- **Content**:
+    - Updated FAQ on About page to reflect correct payment methods (Cash/Check).
+
 ### 🟢 Milestone 11: Gallery Enhancements (COMPLETE) - Feb 15, 2026
 - **Drag-and-Drop Reordering**:
     - Installed `sortablejs` for intuitive artwork management.

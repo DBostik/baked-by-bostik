@@ -2,9 +2,11 @@
 
 > [!CAUTION]
 > **STOP! DATA LOSS VISIBLE**
-> **AGENTS**: You **MUST** run a git commit *before* editing this file.
-> If you overwrite this file without committing, previous milestones and notes will be lost forever.
-> 
+> **AGENTS**: This file contains the MASTER ROADMAP.
+> **DO NOT OVERWRITE THIS FILE.**
+> You must **ONLY** append new items or mark existing items as complete [x].
+> If you overwrite this file, you will destroy the project history and future roadmap.
+>
 > **RUN THIS NOW**: `git add . && git commit -m "Pre-edit backup"`
 
 ## Project Overview
@@ -18,7 +20,13 @@
 
 ##  ROADMAP (Future Milestones)
 
-
+### 🟡 Milestone 11.5: Post-Launch Refinements (CURRENT)
+**Goal**: Address immediate user feedback and content updates.
+- [ ] **FAQ Update**: Update "Payment Methods" on About page (Remove Zelle, add Checks/Cash).
+- [ ] **Order Form Data**: Add "How did you hear about us?" to Step 2.
+- [ ] **Admin Dashboard**:
+    - [ ] Show "Allergies" prominently in Request Modal.
+    - [ ] Show "How did you hear about us" in Customer card.
 
 ### 🟡 Milestone 6: Customer Portal
 **Goal**: Self-service experience for clients.

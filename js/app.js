@@ -73,7 +73,7 @@ function initTestimonials() {
     const reviews = [
         { quote: "The unicorn cake was the hit of the party! Not only did it look incredible, but it tasted amazing too.", cite: "Sarah M." },
         { quote: "The best cookies in Glen Ellyn! Kristen captured our theme perfectly.", cite: "Jennifer L." },
-        { quote: "Beautiful and delicious. The detail on the Spiderman cupcakes was insane.", cite: "Mike D." },
+        { quote: "Beautiful and delicious. The detail on the Spiderman cake was insane.", cite: "Mike D." },
         { quote: "We order every year for our corporate holiday party. Professional and delicious!", cite: "James T." }
     ];
 

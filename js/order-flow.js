@@ -63,6 +63,48 @@ function initFormSubmit() {
         });
     }
 
+    // Allergy Toggle Logic
+    const allergySelect = document.getElementById('allergiesSelect');
+    const allergyDetails = document.getElementById('allergyDetailsContainer');
+
+    if (allergySelect && allergyDetails) {
+        allergySelect.addEventListener('change', (e) => {
+            if (e.target.value === 'yes') {
+                allergyDetails.style.display = 'block';
+                const input = allergyDetails.querySelector('input');
+                if (input) input.required = true;
+            } else {
+                allergyDetails.style.display = 'none';
+                const input = allergyDetails.querySelector('input');
+                if (input) {
+                    input.required = false;
+                    input.value = '';
+                }
+            }
+        });
+    }
+
+    // Referral Name Toggle Logic
+    const hearAboutUsSelect = document.getElementById('hearAboutUsSelect');
+    const referralDetails = document.getElementById('referralNameContainer');
+
+    if (hearAboutUsSelect && referralDetails) {
+        hearAboutUsSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'Friend/Family Referral') {
+                referralDetails.style.display = 'block';
+                const input = referralDetails.querySelector('input');
+                if (input) input.required = true;
+            } else {
+                referralDetails.style.display = 'none';
+                const input = referralDetails.querySelector('input');
+                if (input) {
+                    input.required = false;
+                    input.value = '';
+                }
+            }
+        });
+    }
+
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -75,10 +117,7 @@ function initFormSubmit() {
         try {
             const requestId = sessionStorage.getItem('requestId');
             if (!requestId) {
-                // Determine fallback if ID missing? For now, alert.
-                // In production, we might want to fail gracefully or just create a new orphaned request.
-                // But for this flow, ID is required.
-                throw new Error("Missing Request ID. Please start over.");
+                throw new Error("Missing request ID. Please restart the order.");
             }
 
             const formData = new FormData(form);
@@ -93,7 +132,6 @@ function initFormSubmit() {
 
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
-                    // Create path: requests/{requestId}/{timestamp}_{filename}
                     const filePath = `requests/${requestId}/${Date.now()}_${file.name}`;
                     const storageRef = ref(storage, filePath);
 
@@ -103,23 +141,31 @@ function initFormSubmit() {
                         imageUrls.push(downloadURL);
                     } catch (uploadErr) {
                         console.error("Upload failed for", file.name, uploadErr);
-                        alert(`Failed to upload ${file.name}. Check your internet or Storage Rules. Error: ${uploadErr.message}`);
                     }
                 }
             }
 
             btn.innerText = "Saving Details...";
 
-            // Prepare update payload matching Data Model
+            // Construct Source String
+            let source = data.hear_about_us || "Not specified";
+            if (data.hear_about_us === 'Friend/Family Referral' && data.referral_name) {
+                source += `: ${data.referral_name}`;
+            }
+
+            // Prepare update payload
             const updatePayload = {
                 status: 'AWAITING_DETAILS',
                 step2_data: {
                     occasion: data.occasion,
-                    occasion_other: (data.occasion === 'other') ? "See notes" : null, // or add field if UI exists
+                    occasion_other: (data.occasion === 'other') ? "See notes" : null,
                     theme_keywords: data.theme,
                     colors: data.colors,
                     complexity: data.complexity,
                     budget_range: data.budget,
+                    allergies: data.allergies,
+                    allergy_details: (data.allergies === 'yes') ? data.allergy_details : "None",
+                    hear_about_us: source,
                     notes: data.notes,
                     inspiration_images: imageUrls,
                     email_opt_in: !!data.emailOptIn
