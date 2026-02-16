@@ -153,8 +153,8 @@ function initOrderModal() {
                 </div>
 
                 <div class="form-group">
-                    <label id="qtyLabel">Quantity (Dozens) *</label>
-                    <input type="number" name="qty" required placeholder="Min 2 dozen">
+                    <label id="qtyLabel">How many? *</label>
+                    <input type="text" name="qty" required placeholder="e.g. 24">
                 </div>
 
                 <div class="form-row">
