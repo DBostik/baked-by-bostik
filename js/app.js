@@ -223,8 +223,8 @@ function initOrderModal() {
     // Helper text logic
     typeInput.addEventListener('change', (e) => {
         if (e.target.value === 'cakes') {
-            qtyLabel.innerText = "Size (e.g. 8-inch) *";
-            form.qty.placeholder = "Min 8-inch";
+            qtyLabel.innerText = "Number of people to serve *";
+            form.qty.placeholder = "e.g. 20 guests";
             form.qty.type = "text";
         } else {
             qtyLabel.innerText = "Quantity (Dozens) *";

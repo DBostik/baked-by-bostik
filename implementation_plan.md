@@ -50,14 +50,11 @@
   - [ ] Affiliate Links (Tools, Recommended Products).
   - [ ] Policies & Procedures.
 
-### 🟡 Milestone 14: Multi-Item Orders (Step 2 Add-ons) [/]
-**Goal**: Allow customers to add secondary items (e.g. cookies with a cake) without cluttering the initial "Quick Quote" form.
-**Strategy**: "Primary + Add-on" flow. Step 1 remains single-item. Step 2 offers an "Add to Order" section.
-- [ ] **Frontend (order.html)**: Add "Would you like to add anything else?" section below "Design Details".
-  - [ ] Checkboxes for standard types: Cookies, Cupcakes, Cake/Other.
-  - [ ] Conditional logic: Show Quantity/Size input when checked.
-- [ ] **Backend (order-flow.js)**: Capture `add_ons` array from form data and save to `step2_data` in Firestore.
-  - Structure: `add_ons: [{ type: 'cookies', qty: '2 dozen' }]`
+### 🟢 Milestone 14: Multi-Item Orders (Step 2 Add-ons) (COMPLETE)
+**Goal**: Allow customers to add secondary items (e.g. cookies with a cake).
+- [x] **Frontend**: "Add to Order" section with cookies/cupcakes/cake checkboxes.
+- [x] **Backend**: Captures `add_ons` array in `order-flow.js`.
+- [x] **Admin**: Admin dashboard now supports viewing and editing these add-ons (Milestone 10).
 - [ ] **Admin Dashboard**: Update `admin.js` request modal to display "Primary Item" and list any "Add-ons" clearly below it.
 
 ---
