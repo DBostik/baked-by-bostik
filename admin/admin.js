@@ -1482,7 +1482,12 @@ function openQuoteModal(requestId) {
 
     if (document.getElementById('quote-email-message')) {
         const custName = customers[req.customer_id]?.name || 'Valued Customer';
-        const dueDate = req.step1_data?.event_date ? new Date(req.step1_data.event_date).toLocaleDateString() : 'TBD';
+        // Fix off-by-one error: Parse YYYY-MM-DD manually to avoid UTC conversion shift
+        let dueDate = 'TBD';
+        if (req.step1_data?.event_date) {
+            const [y, m, d] = req.step1_data.event_date.split('-');
+            dueDate = `${m}/${d}/${y}`;
+        }
 
         document.getElementById('quote-email-message').value = `Hi ${custName},
 
