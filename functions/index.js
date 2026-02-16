@@ -164,15 +164,19 @@ exports.createQuotePDF = onRequest({ cors: true, invoker: 'public' }, async (req
         // -- FOOTER (Signature) --
 
         // Check if we need a new page based on current y position
-        if (y > 640) {
+        // Check if we need a new page based on current y position
+        // Lower threshold to ensure footer fits
+        if (y > 550) {
             doc.addPage();
             y = 50;
         }
 
         // Position Signature
         // Prefer bottom alignment (at 630), but if content pushes close, go flow-relative.
-        let sigY = 630;
-        if (y > 600) {
+        // Position Signature
+        // Move default up to 570 (was 630) to make room for disclaimer
+        let sigY = 570;
+        if (y > 540) {
             sigY = y + 30;
         }
 
@@ -184,14 +188,15 @@ exports.createQuotePDF = onRequest({ cors: true, invoker: 'public' }, async (req
         doc.moveTo(390, sigY + 10).lineTo(510, sigY + 10).strokeColor('#000000').stroke();
 
         // Branding Footer (Relative to SigY)
+        // Branding Footer (Relative to SigY) - Tightened spacing
         doc.fontSize(10).fillColor('#666666');
-        doc.text('Thank you for choosing Baked By Bostik!', 50, sigY + 50, { align: 'center', width: 510 });
-        doc.text('hello@bakedbybostik.com', 50, sigY + 65, { align: 'center', width: 510 });
+        doc.text('Thank you for choosing Baked By Bostik!', 50, sigY + 40, { align: 'center', width: 510 });
+        doc.text('hello@bakedbybostik.com', 50, sigY + 52, { align: 'center', width: 510 });
 
         // Disclaimer / Validity in Fine Print
         doc.fontSize(7).fillColor('#888888');
         const disclaimerText = "ESTIMATE VALIDITY: All pricing estimates are valid for 14 days from the date they are provided. After this period, prices may be subject to change based on ingredient costs and availability. DISCLAIMER: Made in a cottage food bakery not subject to government food inspection. Dyes used may include, but are not limited to Red 40, Red 3, Yellow 5, Yellow 6, Blue 1 & Blue 2. All products are made in a home-based kitchen and may come in contact with known allergens including nuts, peanuts, and soy. You agree to notify your guests of this risk for any allergic reactions. We are not responsible for any allergic reactions to guests consuming the product.";
-        doc.text(disclaimerText, 50, sigY + 80, { align: 'center', width: 510 });
+        doc.text(disclaimerText, 50, sigY + 68, { align: 'center', width: 510 });
 
         doc.end();
 
