@@ -1459,7 +1459,17 @@ function openQuoteModal(requestId) {
     els.btnSendEmail.disabled = true;
     els.btnSendEmail.style.opacity = '0.5';
     if (document.getElementById('quote-email-message')) {
-        document.getElementById('quote-email-message').value = `Hi ${customers[req.customer_id]?.name || 'Valued Customer'},\n\nPlease find your quote attached at the link below.\n\nBest,\nBaked By Bostik`;
+        const custName = customers[req.customer_id]?.name || 'Valued Customer';
+        const dueDate = req.step1_data?.event_date ? new Date(req.step1_data.event_date).toLocaleDateString() : 'TBD';
+
+        document.getElementById('quote-email-message').value = `Hi ${custName},
+
+Thank you for your patience as I put together an estimate for you. Attached is a PDF of your order request, which is valid for 14 days. After this period, prices may be subject to change based on ingredient costs and availability.
+
+Look over the estimate and let me know if there’s anything you’d like to change. If you’re content with everything, at least 50% is due up front to confirm your order and officially secure a spot on my calendar. The remaining will be due upon pick up on ${dueDate}. Thank you for considering me and my small business! I appreciate it more than you’ll ever know.
+
+Kristen
+Baked By Bostik`;
     }
 
     // Add default item from request
