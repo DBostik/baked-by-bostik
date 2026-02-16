@@ -859,6 +859,13 @@ function renderModalBody(req, cust, isEditing) {
                         <label>Quantity</label>
                         <div class="info-value">${s1.quantity_value || '-'}</div>
                     </div>
+                    ${s2.add_ons && s2.add_ons.length > 0 ? `
+                    <div class="info-group" style="padding-top:0.5rem; margin-top:0.5rem; border-top:1px dashed #eee;">
+                         <label>➕ Add-ons</label>
+                         <div class="info-value">
+                            ${s2.add_ons.map(a => `<div>• <strong>${a.type}</strong>: ${a.qty}</div>`).join('')}
+                         </div>
+                    </div>` : ''}
                     ${s2.allergies === 'yes' ? `
                     <div class="info-group">
                          <label style="color:#dc2626; font-weight:bold;">⚠️ ALLERGIES</label>
@@ -911,6 +918,10 @@ function renderModalBody(req, cust, isEditing) {
                                 <label>Budget</label>
                                 <div class="info-value">${s2.budget_range || '-'}</div>
                             </div>
+                            <div class="info-group">
+                                <label>Complexity</label>
+                                <div class="info-value">${s2.complexity || '-'}</div>
+                            </div>
                         </div>
                         <div class="info-group">
                             <label>Notes</label>
@@ -931,6 +942,13 @@ function renderModalBody(req, cust, isEditing) {
         `;
     } else {
         // --- EDIT VIEW ---
+
+        // Parse Add-ons for Edit Form
+        const addons = s2.add_ons || [];
+        const cookies = addons.find(a => a.type === 'Cookies');
+        const cupcakes = addons.find(a => a.type === 'Cupcakes');
+        const cake = addons.find(a => a.type === 'Cake');
+
         return `
         <div class="modal-hero">
             <div class="hero-left">
@@ -976,6 +994,29 @@ function renderModalBody(req, cust, isEditing) {
                          <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Quantity / Size</label>
                          <input type="text" name="quantity_value" value="${s1.quantity_value || ''}" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
                       </div>
+                      
+                      <!-- Add-ons Edit -->
+                      <div class="form-group" style="padding-top:0.5rem; margin-top:0.5rem; border-top:1px dashed #eee;">
+                         <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:8px;">➕ Add-ons</label>
+                         
+                         <div style="display:grid; grid-template-columns: 24px 100px 1fr; gap: 8px; align-items:center; margin-bottom:8px;">
+                             <input type="checkbox" name="ao_cookies_check" ${cookies ? 'checked' : ''} style="width:18px; height:18px;">
+                             <label style="margin:0;">Cookies</label>
+                             <input type="text" name="ao_cookies_qty" value="${cookies ? cookies.qty : ''}" placeholder="Qty (Dozens)" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                         </div>
+
+                         <div style="display:grid; grid-template-columns: 24px 100px 1fr; gap: 8px; align-items:center; margin-bottom:8px;">
+                             <input type="checkbox" name="ao_cupcakes_check" ${cupcakes ? 'checked' : ''} style="width:18px; height:18px;">
+                             <label style="margin:0;">Cupcakes</label>
+                             <input type="text" name="ao_cupcakes_qty" value="${cupcakes ? cupcakes.qty : ''}" placeholder="Qty (Dozens)" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                         </div>
+
+                         <div style="display:grid; grid-template-columns: 24px 100px 1fr; gap: 8px; align-items:center;">
+                             <input type="checkbox" name="ao_cake_check" ${cake ? 'checked' : ''} style="width:18px; height:18px;">
+                             <label style="margin:0;">Cake</label>
+                             <input type="text" name="ao_cake_qty" value="${cake ? cake.qty : ''}" placeholder="Size/Details" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                         </div>
+                      </div>
 
                       <div class="form-group">
                          <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Fulfillment</label>
@@ -1013,11 +1054,33 @@ function renderModalBody(req, cust, isEditing) {
                            </div>
                             <div class="form-group">
                                <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Occasion</label>
-                               <input type="text" name="occasion" value="${s2.occasion || ''}" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                               <select name="occasion" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                                    <option value="">Select...</option>
+                                    <option value="birthday" ${s2.occasion === 'birthday' ? 'selected' : ''}>Birthday</option>
+                                    <option value="shower" ${s2.occasion === 'shower' ? 'selected' : ''}>Baby/Bridal Shower</option>
+                                    <option value="wedding" ${s2.occasion === 'wedding' ? 'selected' : ''}>Wedding</option>
+                                    <option value="corporate" ${s2.occasion === 'corporate' ? 'selected' : ''}>Corporate</option>
+                                    <option value="other" ${s2.occasion === 'other' ? 'selected' : ''}>Other</option>
+                               </select>
                            </div>
                             <div class="form-group">
                                <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Budget Range</label>
-                               <input type="text" name="budget_range" value="${s2.budget_range || ''}" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                               <select name="budget_range" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                                    <option value="">Unsure / Flexible</option>
+                                    <option value="under75" ${s2.budget_range === 'under75' ? 'selected' : ''}>Under $75</option>
+                                    <option value="75-150" ${s2.budget_range === '75-150' ? 'selected' : ''}>$75 - $150</option>
+                                    <option value="150-300" ${s2.budget_range === '150-300' ? 'selected' : ''}>$150 - $300</option>
+                                    <option value="300+" ${s2.budget_range === '300+' ? 'selected' : ''}>$300+</option>
+                               </select>
+                           </div>
+                           <div class="form-group">
+                               <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Complexity</label>
+                               <select name="complexity" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                                    <option value="">No preference</option>
+                                    <option value="simple" ${s2.complexity === 'simple' ? 'selected' : ''}>Simple</option>
+                                    <option value="standard" ${s2.complexity === 'standard' ? 'selected' : ''}>Standard</option>
+                                    <option value="detailed" ${s2.complexity === 'detailed' ? 'selected' : ''}>Detailed</option>
+                               </select>
                            </div>
 
                       </div>
@@ -1025,7 +1088,14 @@ function renderModalBody(req, cust, isEditing) {
                       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom:1rem;">
                             <div class="form-group">
                                <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Source</label>
-                               <input type="text" name="hear_about_us" value="${s2.hear_about_us || ''}" placeholder="e.g. Google" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                               <select name="hear_about_us" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                                    <option value="">Select...</option>
+                                    <option value="Google Search" ${s2.hear_about_us?.includes('Google') ? 'selected' : ''}>Google Search</option>
+                                    <option value="Social Media (Instagram/Facebook)" ${s2.hear_about_us?.includes('Social') ? 'selected' : ''}>Social Media</option>
+                                    <option value="Friend/Family Referral" ${s2.hear_about_us?.includes('Referral') ? 'selected' : ''}>Friend/Family Referral</option>
+                                    <option value="Returning Customer" ${s2.hear_about_us?.includes('Returning') ? 'selected' : ''}>Returning Customer</option>
+                                    <option value="Other" ${s2.hear_about_us?.includes('Other') ? 'selected' : ''}>Other</option>
+                               </select>
                            </div>
                            <div class="form-group">
                                <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px; color:#dc2626;">Allergies (Details)</label>
@@ -1038,9 +1108,24 @@ function renderModalBody(req, cust, isEditing) {
                            <textarea name="notes" rows="3" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">${s2.notes || ''}</textarea>
                       </div>
                       
-                      <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid #eee;">
-                         <label class="text-sm font-medium">Inspiration Images (Read-Only)</label>
-                         ${imagesHtml}
+                      <div class="form-group" style="margin-top:1rem; padding-top:1rem; border-top:1px solid #eee;">
+                         <label class="text-sm font-medium">📷 Add New Inspiration Images</label>
+                         <input type="file" id="edit-req-upload" multiple accept="image/*" style="margin-top:4px;">
+                         <p class="text-xs text-muted" style="margin-top:4px;">These will be added to the existing images.</p>
+                      </div>
+                      
+                      <div style="margin-top:1rem;">
+                         <label class="text-sm font-medium">Existing Images</label>
+                         <div class="gallery-grid" style="margin-top:0.5rem;">
+                            ${(s2.inspiration_images || []).map((url, idx) => `
+                                <div style="position:relative; display:inline-block;">
+                                    <img src="${url}" class="gallery-img" style="max-height:100px; width:auto; border-radius:4px; border:1px solid #ddd;">
+                                    <button type="button" class="btn-delete-img" data-idx="${idx}" style="position:absolute; top:-8px; right:-8px; background:red; color:white; border:none; border-radius:50%; width:20px; height:20px; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
+                                </div>
+                            `).join('')}
+                            ${(!s2.inspiration_images || s2.inspiration_images.length === 0) ? '<p class="text-muted text-sm">No images.</p>' : ''}
+                         </div>
+                         <input type="hidden" name="deleted_images_indices" id="deleted-images-indices" value="">
                       </div>
                  </div>
             </div>
@@ -1049,7 +1134,25 @@ function renderModalBody(req, cust, isEditing) {
     }
 }
 
-function updateModalFooter(req) {
+// Helper to handle image deletion in UI
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('btn-delete-img')) {
+        if (!confirm("Are you sure you want to delete this image? This cannot be undone once saved.")) {
+            return;
+        }
+        const idx = e.target.getAttribute('data-idx');
+        const hiddenInput = document.getElementById('deleted-images-indices');
+        if (hiddenInput) {
+            const currentDeleted = hiddenInput.value ? hiddenInput.value.split(',') : [];
+            currentDeleted.push(idx);
+            hiddenInput.value = currentDeleted.join(',');
+            // Visually hide
+            e.target.parentElement.style.display = 'none';
+        }
+    }
+});
+
+function updateModalFooter(req) { // No changes needed
     const footer = els.modal.querySelector('.modal-footer');
     if (!footer) return;
 
@@ -1084,11 +1187,31 @@ function updateModalFooter(req) {
             if (e) e.preventDefault();
             if (confirm('Are you sure you want to PERMANENTLY delete this request? This cannot be undone.')) {
                 try {
+                    // 1. Delete associated images from Storage
+                    const images = req.step2_data?.inspiration_images || [];
+                    if (images.length > 0) {
+                        console.log(`Deleting ${images.length} images for request ${req.id}...`);
+                        const deletePromises = images.map(url => {
+                            try {
+                                const fileRef = ref(storage, url);
+                                return deleteObject(fileRef).catch(err => {
+                                    console.warn(`Failed to delete image ${url}:`, err);
+                                });
+                            } catch (err) {
+                                console.warn(`Invalid URL for deletion ${url}:`, err);
+                                return Promise.resolve();
+                            }
+                        });
+                        await Promise.all(deletePromises);
+                    }
+
+                    // 2. Delete Firestore Document
                     await deleteDoc(doc(db, "requests", req.id));
                     els.modal.classList.add('hidden');
+                    alert("Request and associated images deleted successfully.");
                 } catch (err) {
                     console.error("Error deleting:", err);
-                    alert("Failed to delete request.");
+                    alert("Failed to delete request. See console for details.");
                 }
             }
         };
@@ -1111,7 +1234,6 @@ function updateModalFooter(req) {
 
     } else {
         // VIEW MODE Buttons
-
         // 1. Edit Details Button
         const btnEdit = document.createElement('button');
         btnEdit.className = 'btn-secondary';
@@ -1148,62 +1270,112 @@ async function saveRequestDetails() {
     const form = document.getElementById('edit-request-form');
     if (!form) return;
 
-    // Gather data
-    const formData = new FormData(form);
-    const updates = {
-        'step1_data.category': formData.get('category'),
-        'step1_data.event_date': formData.get('event_date'),
-        'step1_data.quantity_value': formData.get('quantity_value'),
-        'step1_data.fulfillment': formData.get('fulfillment'),
-        'step1_data.delivery_zip': formData.get('delivery_zip'),
-        'step1_data.rush_flag': formData.get('rush_flag') === 'on',
-
-        'step2_data.theme_keywords': formData.get('theme_keywords'),
-        'step2_data.colors': formData.get('colors'),
-        'step2_data.occasion': formData.get('occasion'),
-        'step2_data.budget_range': formData.get('budget_range'),
-
-        'step2_data.hear_about_us': formData.get('hear_about_us'),
-        'step2_data.allergy_details': formData.get('allergy_details'),
-        'step2_data.allergies': formData.get('allergy_details') ? 'yes' : 'no', // Derive yes/no
-        'step2_data.notes': formData.get('notes'),
-
-        updated_at: new Date()
-    };
-
     const btn = els.modal.querySelector('.btn-primary'); // Save button
     const oldText = btn.textContent;
     btn.textContent = 'Saving...';
     btn.disabled = true;
 
     try {
+        // Gather data
+        const formData = new FormData(form);
+
+        // Image Upload Logic
+        const fileInput = document.getElementById('edit-req-upload');
+        let newImageUrls = [];
+
+        if (fileInput && fileInput.files.length > 0) {
+            btn.textContent = 'Uploading...';
+            // Need requestId for path
+            for (let i = 0; i < fileInput.files.length; i++) {
+                const file = fileInput.files[i];
+                const filePath = `requests/${currentModalRequestId}/${Date.now()}_${file.name}`;
+                const storageRef = ref(storage, filePath);
+                const snapshot = await uploadBytes(storageRef, file);
+                const downloadURL = await getDownloadURL(snapshot.ref);
+                newImageUrls.push(downloadURL);
+            }
+        }
+
+        // Get existing images from local request state
+        const currentReq = requests.find(r => r.id === currentModalRequestId);
+        let existingImages = currentReq?.step2_data?.inspiration_images || [];
+
+        // Filter out deleted images
+        const deletedIndicesInput = document.getElementById('deleted-images-indices');
+        if (deletedIndicesInput && deletedIndicesInput.value) {
+            const indicesToDelete = deletedIndicesInput.value.split(',').map(Number);
+
+            // PERMANENT STORAGE DELETION
+            const imagesToDelete = existingImages.filter((_, index) => indicesToDelete.includes(index));
+            for (const imageUrl of imagesToDelete) {
+                try {
+                    // Create a reference from the HTTPS URL
+                    // Note: ref(storage, url) works with HTTPS URLs in simpler SDK versions,
+                    // but sometimes requires parsing. Let's try direct ref from URL.
+                    const fileRef = ref(storage, imageUrl);
+                    await deleteObject(fileRef);
+                    console.log("Deleted from storage:", imageUrl);
+                } catch (err) {
+                    console.warn("Could not delete image from storage (might stay orphaned):", imageUrl, err);
+                }
+            }
+
+            existingImages = existingImages.filter((_, index) => !indicesToDelete.includes(index));
+        }
+
+        const finalImages = [...existingImages, ...newImageUrls];
+
+        // Add-ons Logic
+        const addOns = [];
+        if (formData.get('ao_cookies_check')) {
+            addOns.push({ type: 'Cookies', qty: formData.get('ao_cookies_qty') || '2 dozen' });
+        }
+        if (formData.get('ao_cupcakes_check')) {
+            addOns.push({ type: 'Cupcakes', qty: formData.get('ao_cupcakes_qty') || '2 dozen' });
+        }
+        if (formData.get('ao_cake_check')) {
+            addOns.push({ type: 'Cake', qty: formData.get('ao_cake_qty') || 'See notes' });
+        }
+
+        const updates = {
+            'step1_data.category': formData.get('category'),
+            'step1_data.event_date': formData.get('event_date'),
+            'step1_data.quantity_value': formData.get('quantity_value'),
+            'step1_data.fulfillment': formData.get('fulfillment'),
+            'step1_data.delivery_zip': formData.get('delivery_zip'),
+            'step1_data.rush_flag': formData.get('rush_flag') === 'on',
+
+            'step2_data.theme_keywords': formData.get('theme_keywords'),
+            'step2_data.colors': formData.get('colors'),
+            'step2_data.occasion': formData.get('occasion'),
+            'step2_data.budget_range': formData.get('budget_range'),
+            'step2_data.complexity': formData.get('complexity'),
+
+            'step2_data.hear_about_us': formData.get('hear_about_us'),
+            'step2_data.allergy_details': formData.get('allergy_details'),
+            'step2_data.allergies': formData.get('allergy_details') ? 'yes' : 'no', // Derive yes/no
+            'step2_data.notes': formData.get('notes'),
+
+            'step2_data.add_ons': addOns,
+            'step2_data.inspiration_images': finalImages,
+
+            updated_at: new Date()
+        };
+
+        btn.textContent = 'Saving Doc...';
         await updateDoc(doc(db, "requests", currentModalRequestId), updates);
 
         // Success
         isEditMode = false;
-        // The onSnapshot listener in fetchRequests may trigger re-render of board/table,
-        // but it WON'T automatically re-render the open modal unless we tell it to.
-        // However, since we update the 'requests' array in onSnapshot, we can just re-render:
 
-        // Wait minor delay for snapshot to propagate if we rely on that, OR update local 'requests' state?
-        // Admin.js architecture: 'requests' is updated by onSnapshot.
-        // If we renderModal() immediately, 'requests' array might still have old data until snapshot returns.
-        // Optimistic: Update the local 'requests' array manually?
-
-        // Better: Wait a moment or just optimistic render.
-        // Let's rely on snapshot for consistency, but for UX we just switch view mode.
-        // If snapshot comes in, renderModal might be called? No, fetchRequests calls renderTable/renderBoard.
-        // It DOES NOT call renderModal. So we need to call renderModal() ourselves.
-        // BUT we need updated data.
-
-        // Let's manually update the local 'requests' object for immediate feedback
+        // Manually update local 'requests' object for immediate feedback
         const reqIndex = requests.findIndex(r => r.id === currentModalRequestId);
         if (reqIndex !== -1) {
-            // Deep merge is hard, simple merge:
             const req = requests[reqIndex];
             if (!req.step1_data) req.step1_data = {};
             if (!req.step2_data) req.step2_data = {};
 
+            // Apply updates to local object (flattens dot notation)
             req.step1_data.category = updates['step1_data.category'];
             req.step1_data.event_date = updates['step1_data.event_date'];
             req.step1_data.quantity_value = updates['step1_data.quantity_value'];
@@ -1215,7 +1387,15 @@ async function saveRequestDetails() {
             req.step2_data.colors = updates['step2_data.colors'];
             req.step2_data.occasion = updates['step2_data.occasion'];
             req.step2_data.budget_range = updates['step2_data.budget_range'];
+            req.step2_data.complexity = updates['step2_data.complexity']; // Added
             req.step2_data.notes = updates['step2_data.notes'];
+            req.step2_data.add_ons = updates['step2_data.add_ons']; // Added
+            req.step2_data.inspiration_images = updates['step2_data.inspiration_images']; // Added
+            req.step2_data.hear_about_us = updates['step2_data.hear_about_us']; // Added missing
+
+            // Allergies
+            req.step2_data.allergy_details = updates['step2_data.allergy_details'];
+            req.step2_data.allergies = updates['step2_data.allergies'];
         }
 
         renderModal(); // Re-render with (optimistically) updated data

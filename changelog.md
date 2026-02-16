@@ -48,11 +48,14 @@
 - **Export**: CSV Export functionality for Orders.
 - **Automation**: `scheduledWeeklyReport` Cloud Function sends revenue/schedule summary every Monday.
 
-### 🟡 Milestone 10: Admin Refinement
-- **Editable Details**:
-    - **Logic**: Refactored `admin/admin.js` `openModal` to support "Edit Mode".
-    - **UI**: Added "Edit Details" button to modal footer.
-    - **Functions**: Admins can now modify Event Specs (Date, Category, Qty, Fulfillment) and Design Details (Theme, Budget, Notes) directly; changes persist to Firestore.
+### � Milestone 10: Admin Refinement (COMPLETE) - Feb 16, 2026
+- **Order Management**:
+    - **Edit Mode**: Admins can now modify all order details, including "Add-ons" (Cookies, Cupcakes, Cake) via checkboxes.
+    - **Dropdowns**: Standardized Occasion, Budget, Source, and Complexity inputs to match customer-facing dropdowns.
+- **Gallery Management**:
+    - **Image Upload**: Added "Add New Inspiration Images" file input to append images to existing requests.
+    - **Image Deletion**: Added ability to delete specific inspiration images with a **confirmation dialog** to prevent accidents.
+    - **Security**: Implemented **Storage Cleanup** to permanently delete image files from Firebase Storage when they are removed from a request or when a request is deleted.
 
 ### 🟢 Milestone 4.5: Premium Invoice Design (COMPLETE)
 **Goal**: Visual overhaul of the PDF Invoice to match "Premium" Mockup.

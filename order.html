@@ -161,6 +161,45 @@
                 </div>
             </div>
 
+            <!-- Add-ons Section -->
+            <div class="form-section">
+                <h3>Would you like to add anything else?</h3>
+
+                <div class="form-group">
+                    <!-- Cookies Add-on -->
+                    <div class="checkbox-group" style="margin-bottom: var(--space-2);">
+                        <input type="checkbox" id="addonCookies" name="addon_cookies_check">
+                        <label for="addonCookies">Cookies</label>
+                    </div>
+                    <div id="addonCookiesDetails"
+                        style="display:none; margin-left: 24px; margin-bottom: var(--space-4);">
+                        <label>Quantity (Dozens)</label>
+                        <input type="number" name="addon_cookies_qty" min="2" placeholder="Min. 2 dozen">
+                    </div>
+
+                    <!-- Cupcakes Add-on -->
+                    <div class="checkbox-group" style="margin-bottom: var(--space-2);">
+                        <input type="checkbox" id="addonCupcakes" name="addon_cupcakes_check">
+                        <label for="addonCupcakes">Cupcakes</label>
+                    </div>
+                    <div id="addonCupcakesDetails"
+                        style="display:none; margin-left: 24px; margin-bottom: var(--space-4);">
+                        <label>Quantity (Dozens)</label>
+                        <input type="number" name="addon_cupcakes_qty" min="2" placeholder="Min. 2 dozen">
+                    </div>
+
+                    <!-- Cake Add-on -->
+                    <div class="checkbox-group" style="margin-bottom: var(--space-2);">
+                        <input type="checkbox" id="addonCake" name="addon_cake_check">
+                        <label for="addonCake">Cake</label>
+                    </div>
+                    <div id="addonCakeDetails" style="display:none; margin-left: 24px; margin-bottom: var(--space-4);">
+                        <label>Size / Shape</label>
+                        <input type="text" name="addon_cake_details" placeholder="e.g. 8-inch round">
+                    </div>
+                </div>
+            </div>
+
             <!-- Dietary Restrictions -->
             <div class="form-section">
                 <h3>Dietary Restrictions</h3>

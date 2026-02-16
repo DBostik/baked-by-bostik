@@ -14,19 +14,65 @@
 **Tech Stack**: Firebase (Auth, Firestore, Storage, Functions), Vanilla JS, Tailwind-like CSS.
 
 > [!NOTE]
-> **Completed History**: For a detailed list of completed milestones (1 through 4.5), please refer to [changelog.md](./changelog.md).
+> **Completed History**: For a detailed list of completed milestones (1 through 11), please refer to [changelog.md](./changelog.md).
 
 ---
 
-##  ROADMAP (Future Milestones)
+## 🚀 CURRENT SPRINT (Active Work)
 
-### 🟡 Milestone 11.5: Post-Launch Refinements (CURRENT)
-**Goal**: Address immediate user feedback and content updates.
-- [ ] **FAQ Update**: Update "Payment Methods" on About page (Remove Zelle, add Checks/Cash).
-- [ ] **Order Form Data**: Add "How did you hear about us?" to Step 2.
-- [ ] **Admin Dashboard**:
-    - [ ] Show "Allergies" prominently in Request Modal.
-    - [ ] Show "How did you hear about us" in Customer card.
+### 🟢 Milestone 10: Admin Refinement (COMPLETE)
+- [x] **Editable Request Details**: Full edit capability for Event Specs and Design Details.
+- [x] **Add-ons**: Edit/Add secondary items (Cookies, Cupcakes).
+- [x] **Image Management**: Upload and Delete inspiration images with storage cleanup.
+
+### 🟡 Milestone 12: Admin-Managed Reviews
+**Goal**: Allow Kristen to add, edit, and hide "Sweet Words" reviews from the Admin Dashboard without code changes.
+
+**Phase 1: Data & Public Site**
+- [ ] Create `reviews` Firestore collection (Fields: `quote`, `cite`, `display_order`, `visible`).
+- [ ] Migrate existing 4 hardcoded reviews to Firestore.
+- [ ] Update `js/app.js`: `initTestimonials` to fetch active reviews from Firestore.
+
+**Phase 2: Admin Interface**
+- [ ] Add "Reviews" tab to Admin Sidebar.
+- [ ] Create simple CRUD Interface:
+  - [ ] List View (Quote preview, Author, Visibility Toggle).
+  - [ ] Add/Edit Modal (simpler than Gallery modal).
+  - [ ] Delete button.
+
+### 🟡 Milestone 13: Resources & Guides
+**Goal**: Educational content for customers to improve experience and reduce support questions.
+- [ ] **Data Structure**: Create `resources` Firestore collection or hardcode content pages.
+- [ ] **New Tab**: Add "Resources" main navigation item.
+- [ ] **Content Pages**:
+  - [ ] Care & Freezing Guidelines (Cookies, Cupcakes, Cakes).
+  - [ ] Cake Cutting Guide (Visual diagram/instructions).
+  - [ ] Affiliate Links (Tools, Recommended Products).
+  - [ ] Policies & Procedures.
+
+### 🟡 Milestone 14: Multi-Item Orders (Step 2 Add-ons) [/]
+**Goal**: Allow customers to add secondary items (e.g. cookies with a cake) without cluttering the initial "Quick Quote" form.
+**Strategy**: "Primary + Add-on" flow. Step 1 remains single-item. Step 2 offers an "Add to Order" section.
+- [ ] **Frontend (order.html)**: Add "Would you like to add anything else?" section below "Design Details".
+  - [ ] Checkboxes for standard types: Cookies, Cupcakes, Cake/Other.
+  - [ ] Conditional logic: Show Quantity/Size input when checked.
+- [ ] **Backend (order-flow.js)**: Capture `add_ons` array from form data and save to `step2_data` in Firestore.
+  - Structure: `add_ons: [{ type: 'cookies', qty: '2 dozen' }]`
+- [ ] **Admin Dashboard**: Update `admin.js` request modal to display "Primary Item" and list any "Add-ons" clearly below it.
+
+---
+
+## 🔮 FUTURE ROADMAP (Backlog)
+
+### 🟡 Milestone 13: Resources & Guides
+**Goal**: Educational content for customers to improve experience and reduce support questions.
+- [ ] **Data Structure**: Create `resources` Firestore collection or hardcode content pages.
+- [ ] **New Tab**: Add "Resources" main navigation item.
+- [ ] **Content Pages**:
+  - [ ] Care & Freezing Guidelines (Cookies, Cupcakes, Cakes).
+  - [ ] Cake Cutting Guide (Visual diagram/instructions).
+  - [ ] Affiliate Links (Tools, Recommended Products).
+  - [ ] Policies & Procedures.
 
 ### 🟡 Milestone 6: Customer Portal
 **Goal**: Self-service experience for clients.
@@ -54,47 +100,25 @@
 ### 🟡 Milestone 10: Admin Refinement
 - [ ] **Editable Request Details**: Allow admins to edit event specs (Date, Qty, Fulfillment) and design details directly in the modal.
 
-### Phase 5: Deployment & Cleanup (COMPLETED)
-#### [MODIFY] [implementation_plan.md](file:///Users/davebostik/Desktop/BBB%20Website/implementation_plan.md)
-Marks Milestone 11 as complete.
+### Optimization Queue (Milestone 14 - Thumbnail Generation)
+**Thumbnail Generation Cloud Function**
+- **Plan**: Create `onGalleryUpload` Cloud Function to resize images to 400px using `sharp` and update Firestore `thumb_url`.
 
 ---
 
-## Milestone 12: Future Enhancements (Backlog)
+## ✅ COMPLETED RECENTLY (Moved from Backlog)
 
-### 1. Thumbnail Generation Cloud Function
-**Why**: Optimization for performance. Currently, the gallery loads full-size images (~100KB-500KB each). On slow connections, this effectively slows down the grid loading.
-- **Plan**:
-  - Create Cloud Function `onGalleryUpload`
-  - Use `sharp` to resize images to 400px width
-  - Upload to `gallery/thumbs/`
-  - Update Firestore `thumb_url`
+### Milestone 11.5: Post-Launch Refinements
+- [x] **FAQ Update**: Update "Payment Methods" on About page (Remove Zelle, add Checks/Cash).
+- [x] **Order Form Data**: Add "How did you hear about us?" to Step 2.
+- [x] **Admin Dashboard**:
+    - [x] Show "Allergies" prominently in Request Modal.
+    - [x] Show "How did you hear about us" in Customer card.
 
-### 2. Drag-and-Drop Reordering (COMPLETED)
-**Why**: Easier management than manually editing `sort_order` numbers.
-- [x] Install `sortablejs` library
-- [x] Enable drag-and-drop on admin gallery grid
-- [x] On drop, calculate new sort orders
-- [x] Batch update Firestore documents
-
-### 3. Clean URLs (COMPLETED)
-**Why**: `gallery.html` looks cleaner as just `gallery`.
-- [x] Update `firebase.json` with `"cleanUrls": true`
-
----
-
-## Verification Plan (Completed)
-
-### Manual Verification Results
-- **Migration**: 316 unique images successfully migrated to Firestore/Storage.
-- **Admin UI**: Fully functional (Upload, Edit, Delete, Category Management working).
-- **Public Gallery**:
-  - Loads 316 images dynamically.
-  - Filtering by category works correctly.
-  - Pagination works and "Load More" button is centered.
-  - Lightbox opens with correct details.
-  - URL params (`?theme=cookies`) work.
-- **Deployment**: Live on `bakedbybostik.com` via Firebase Hosting.
+### Milestone 11: Gallery Enhancements
+- [x] **Drag-and-Drop Reordering**: Admin gallery grid sorting via `sortablejs` with Firestore batch updates.
+- [x] **Clean URLs**: `gallery.html` -> `/gallery` via `firebase.json` configuration.
+- [x] **Migrated**: All hardcoded images to Firestore/Storage.
 
 ## User Questions (Resolved)
 1. **Service Account Key**: Handled during migration.

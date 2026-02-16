@@ -105,6 +105,33 @@ function initFormSubmit() {
         });
     }
 
+    // Add-ons Toggle Logic
+    const addons = [
+        { check: 'addonCookies', details: 'addonCookiesDetails' },
+        { check: 'addonCupcakes', details: 'addonCupcakesDetails' },
+        { check: 'addonCake', details: 'addonCakeDetails' }
+    ];
+
+    addons.forEach(addon => {
+        const checkbox = document.getElementById(addon.check);
+        const details = document.getElementById(addon.details);
+        if (checkbox && details) {
+            checkbox.addEventListener('change', (e) => {
+                const input = details.querySelector('input');
+                if (e.target.checked) {
+                    details.style.display = 'block';
+                    if (input) input.required = true;
+                } else {
+                    details.style.display = 'none';
+                    if (input) {
+                        input.required = false;
+                        input.value = '';
+                    }
+                }
+            });
+        }
+    });
+
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -153,6 +180,18 @@ function initFormSubmit() {
                 source += `: ${data.referral_name}`;
             }
 
+            // --- ADD-ONS LOGIC ---
+            const addOns = [];
+            if (data.addon_cookies_check) {
+                addOns.push({ type: 'Cookies', qty: data.addon_cookies_qty + ' dozen' });
+            }
+            if (data.addon_cupcakes_check) {
+                addOns.push({ type: 'Cupcakes', qty: data.addon_cupcakes_qty + ' dozen' });
+            }
+            if (data.addon_cake_check) {
+                addOns.push({ type: 'Cake', qty: data.addon_cake_details });
+            }
+
             // Prepare update payload
             const updatePayload = {
                 status: 'AWAITING_DETAILS',
@@ -163,6 +202,7 @@ function initFormSubmit() {
                     colors: data.colors,
                     complexity: data.complexity,
                     budget_range: data.budget,
+                    add_ons: addOns,
                     allergies: data.allergies,
                     allergy_details: (data.allergies === 'yes') ? data.allergy_details : "None",
                     hear_about_us: source,
