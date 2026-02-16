@@ -227,9 +227,9 @@ function initOrderModal() {
             form.qty.placeholder = "e.g. 20 guests";
             form.qty.type = "text";
         } else {
-            qtyLabel.innerText = "Quantity (Dozens) *";
-            form.qty.placeholder = "Min 2 dozen";
-            form.qty.type = "number";
+            qtyLabel.innerText = "How many? *";
+            form.qty.placeholder = "e.g. 24";
+            form.qty.type = "text";
         }
     });
 
