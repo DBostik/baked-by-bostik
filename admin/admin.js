@@ -956,7 +956,7 @@ function renderModalBody(req, cust, isEditing) {
         return `
         <div class="modal-hero">
             <div class="hero-left">
-                <span class="hero-id">#${req.id.substr(0, 6)}</span>
+                <span class="hero-id">#${req.id}</span>
                 <span class="hero-status status-${req.status}">${req.status}</span>
             </div>
             <div class="hero-right">
@@ -1601,16 +1601,16 @@ async function generatePDF() {
             quote_total: quoteTotalValue,
             quote_generated_at: new Date()
         };
-        if (pdfStoragePath) { // Only save storagePath if it was provided
-            updateData.quote_pdf_url = pdfStoragePath;
-        } else if (pdfDownloadUrl) { // Otherwise, save the direct URL if available
+        if (pdfDownloadUrl) {
             updateData.quote_pdf_url = pdfDownloadUrl;
+            // We historically saved storagePath, but it breaks links. 
+            // Always prefer full download URL.
         }
         await updateDoc(reqRef, updateData);
 
         // Update local object immediately for UI responsiveness
         currentQuoteRequest.quote_total = quoteTotalValue;
-        currentQuoteRequest.quote_pdf_url = pdfStoragePath || pdfDownloadUrl; // Update with what was saved
+        currentQuoteRequest.quote_pdf_url = pdfDownloadUrl; // Update with what was saved
 
         els.quoteResult.classList.remove('hidden');
         els.btnSendEmail.disabled = false;
