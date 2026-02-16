@@ -812,7 +812,7 @@ function renderModalBody(req, cust, isEditing) {
         return `
         <div class="modal-hero">
             <div class="hero-left">
-                <span class="hero-id">#${req.id.substr(0, 6)}</span>
+                <span class="hero-id">#${req.id}</span>
                 <span class="hero-status status-${req.status}">${req.status}</span>
             </div>
             <div class="hero-right">
