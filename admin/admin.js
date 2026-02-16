@@ -147,7 +147,11 @@ async function initDashboard(user) {
     els.userEmail.textContent = user.email;
 
     // Initial Load
+    // Initial Load
     await fetchRequests();
+
+    // Force Board View Default
+    switchView('board');
 
     // Init Drag and Drop
     initDragAndDrop();
