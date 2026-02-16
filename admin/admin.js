@@ -885,11 +885,14 @@ function renderModalBody(req, cust, isEditing) {
                     <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #eee;">
                         <label>Quote Status</label>
                         <div style="display:flex; flex-direction:column; gap:0.25rem;">
-                            <a href="${req.quote_pdf_url}" target="_blank" class="text-blue-600 hover:underline" style="display:flex; align-items:center gap:0.25rem;">
-                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:4px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <a href="${req.quote_pdf_url}" target="_blank" class="text-blue-600 hover:underline" style="display:flex; align-items:center; gap:0.25rem;">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                 View PDF
                             </a>
-                            ${req.quote_last_sent ? `<div class="text-xs text-gray-500">Sent: ${new Date(req.quote_last_sent.seconds * 1000).toLocaleDateString()}</div>` : '<div class="text-xs text-orange-500">Not sent yet</div>'}
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                ${req.quote_last_sent ? `<div class="text-xs text-gray-500">Sent: ${new Date(req.quote_last_sent.seconds * 1000).toLocaleDateString()}</div>` : '<div class="text-xs text-orange-500">Not sent yet</div>'}
+                                <button onclick="els.modal.classList.add('hidden'); openQuoteModal('${req.id}')" class="text-xs text-blue-600 hover:underline border border-blue-200 rounded px-2 py-0.5 bg-blue-50">Resend</button>
+                            </div>
                             ${req.quote_total ? `<div class="text-xs font-semibold">Total: $${parseFloat(req.quote_total).toFixed(2)}</div>` : ''}
                         </div>
                     </div>` : ''}
@@ -1458,6 +1461,19 @@ function openQuoteModal(requestId) {
     els.quoteResult.classList.add('hidden');
     els.btnSendEmail.disabled = true;
     els.btnSendEmail.style.opacity = '0.5';
+
+    // Check if Quote already exists
+    if (req.quote_pdf_url) {
+        els.quotePdfLink.href = req.quote_pdf_url;
+        els.btnSendEmail.dataset.pdfUrl = req.quote_pdf_url;
+        els.quoteResult.classList.remove('hidden');
+        els.btnSendEmail.disabled = false;
+        els.btnSendEmail.style.opacity = '1';
+        els.btnGeneratePdf.textContent = 'Regenerate PDF';
+    } else {
+        els.btnGeneratePdf.textContent = 'Generate Quote PDF';
+    }
+
     if (document.getElementById('quote-email-message')) {
         const custName = customers[req.customer_id]?.name || 'Valued Customer';
         const dueDate = req.step1_data?.event_date ? new Date(req.step1_data.event_date).toLocaleDateString() : 'TBD';
