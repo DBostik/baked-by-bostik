@@ -891,7 +891,7 @@ function renderModalBody(req, cust, isEditing) {
                             </a>
                             <div style="display:flex; justify-content:space-between; align-items:center;">
                                 ${req.quote_last_sent ? `<div class="text-xs text-gray-500">Sent: ${new Date(req.quote_last_sent.seconds * 1000).toLocaleDateString()}</div>` : '<div class="text-xs text-orange-500">Not sent yet</div>'}
-                                <button onclick="els.modal.classList.add('hidden'); openQuoteModal('${req.id}')" class="text-xs text-blue-600 hover:underline border border-blue-200 rounded px-2 py-0.5 bg-blue-50">Resend</button>
+                                <button onclick="window.resendQuote('${req.id}')" class="text-xs text-blue-600 hover:underline border border-blue-200 rounded px-2 py-0.5 bg-blue-50">Resend</button>
                             </div>
                             ${req.quote_total ? `<div class="text-xs font-semibold">Total: $${parseFloat(req.quote_total).toFixed(2)}</div>` : ''}
                         </div>
@@ -1444,6 +1444,12 @@ function initQuoteLogic() {
     if (els.btnGeneratePdf) els.btnGeneratePdf.addEventListener('click', generatePDF);
     if (els.btnSendEmail) els.btnSendEmail.addEventListener('click', sendEmail);
 }
+
+// Global Helper for inline onclick (since this is a module)
+window.resendQuote = (requestId) => {
+    els.modal.classList.add('hidden'); // Close detail modal
+    openQuoteModal(requestId);
+};
 
 function openQuoteModal(requestId) {
     const req = requests.find(r => r.id === requestId);
