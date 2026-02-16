@@ -1466,7 +1466,9 @@ function openQuoteModal(requestId) {
 
 Thank you for your patience as I put together an estimate for you. Attached is a PDF of your order request, which is valid for 14 days. After this period, prices may be subject to change based on ingredient costs and availability.
 
-Look over the estimate and let me know if there’s anything you’d like to change. If you’re content with everything, at least 50% is due up front to confirm your order and officially secure a spot on my calendar. The remaining will be due upon pick up on ${dueDate}. Thank you for considering me and my small business! I appreciate it more than you’ll ever know.
+Look over the estimate and let me know if there’s anything you’d like to change. If you’re content with everything, at least 50% is due up front to confirm your order and officially secure a spot on my calendar. The remaining will be due upon pick up on ${dueDate}. 
+
+Thank you for considering me and my small business! I appreciate it more than you’ll ever know.
 
 Kristen
 Baked By Bostik`;
