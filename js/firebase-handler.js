@@ -28,9 +28,17 @@ window.handleOrderSubmit = async (e, form) => {
 
         // If it's a new doc, create_at might be missing, but 'last_updated' is enough for now.
 
-        // 2. Create Request
-        const requestsRef = collection(db, "requests");
-        const newRequest = await addDoc(requestsRef, {
+        // 2. Create Request (Custom ID: MMDDYYYY-XXXX)
+        const now = new Date();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const yyyy = now.getFullYear();
+        const randomSuffix = Math.floor(1000 + Math.random() * 9000); // 4-digit number
+        const customRequestId = `${mm}${dd}${yyyy}-${randomSuffix}`;
+
+        const requestRef = doc(db, "requests", customRequestId);
+
+        await setDoc(requestRef, {
             customer_id: customerId,
             status: 'NEW', // Initial status
             step1_data: {
@@ -44,6 +52,8 @@ window.handleOrderSubmit = async (e, form) => {
             created_at: serverTimestamp(),
             updated_at: serverTimestamp()
         });
+
+        const newRequest = { id: customRequestId }; // Mock the return obj of addDoc
 
         // 3. Save Context
         sessionStorage.setItem('requestId', newRequest.id);
