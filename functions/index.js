@@ -196,7 +196,7 @@ exports.createQuotePDF = onRequest({ cors: true, invoker: 'public' }, async (req
         // Disclaimer / Validity in Fine Print
         doc.fontSize(7).fillColor('#888888');
         const disclaimerText = "ESTIMATE VALIDITY: All pricing estimates are valid for 14 days from the date they are provided. After this period, prices may be subject to change based on ingredient costs and availability. DISCLAIMER: Made in a cottage food bakery not subject to government food inspection. Dyes used may include, but are not limited to Red 40, Red 3, Yellow 5, Yellow 6, Blue 1 & Blue 2. All products are made in a home-based kitchen and may come in contact with known allergens including nuts, peanuts, and soy. You agree to notify your guests of this risk for any allergic reactions. We are not responsible for any allergic reactions to guests consuming the product.";
-        doc.text(disclaimerText, 50, sigY + 68, { align: 'center', width: 510 });
+        doc.text(disclaimerText, 50, sigY + 125, { align: 'center', width: 510 });
 
         doc.end();
 
