@@ -6,7 +6,7 @@ import {
     signOut,
     sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, where, getDocs, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, setDoc, where, getDocs, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getStorage, ref, getDownloadURL, uploadBytes, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 import { firebaseConfig } from '../js/firebase-config.js';
 
@@ -793,6 +793,7 @@ function renderModal() {
 function renderModalBody(req, cust, isEditing) {
     const s1 = req.step1_data || {};
     const s2 = req.step2_data || {};
+    const phone = cust.phone || s1.phone || '';
 
     // Images Helper
     let imagesHtml = '';
@@ -838,7 +839,7 @@ function renderModalBody(req, cust, isEditing) {
                     </div>
                     <div class="info-group">
                         <label>Phone</label>
-                        <div class="info-value">${cust.phone || '-'}</div>
+                        <div class="info-value">${phone ? `📞 <a href="tel:${phone}">${phone}</a>` : '-'}</div>
                     </div>
                     ${s2.hear_about_us ? `
                     <div class="info-group" style="margin-top:0.5rem; border-top:1px dashed #eee; padding-top:0.5rem;">
@@ -973,7 +974,11 @@ function renderModalBody(req, cust, isEditing) {
                  <div class="modal-card-header">CUSTOMER</div>
                  <div class="modal-card-body">
                       <p><strong>${cust.name || 'Unknown'}</strong></p>
-                      <p class="text-sm text-gray-500">Edit customer details via Customers tab.</p>
+                      <div class="form-group" style="margin-top:0.5rem;">
+                         <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Phone</label>
+                         <input type="tel" name="edit_phone" value="${phone}" placeholder="(555) 123-4567" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                      </div>
+                      <p class="text-sm text-gray-500" style="margin-top:0.25rem;">Edit other customer details via Customers tab.</p>
                  </div>
             </div>
 
@@ -1348,6 +1353,7 @@ async function saveRequestDetails() {
             'step1_data.category': formData.get('category'),
             'step1_data.event_date': formData.get('event_date'),
             'step1_data.quantity_value': formData.get('quantity_value'),
+            'step1_data.phone': formData.get('edit_phone') || '',
             'step1_data.fulfillment': formData.get('fulfillment'),
             'step1_data.delivery_zip': formData.get('delivery_zip'),
             'step1_data.rush_flag': formData.get('rush_flag') === 'on',
@@ -1372,6 +1378,18 @@ async function saveRequestDetails() {
         btn.textContent = 'Saving Doc...';
         await updateDoc(doc(db, "requests", currentModalRequestId), updates);
 
+        // Also update customer phone if changed
+        const editedPhone = formData.get('edit_phone') || '';
+        const currentReqForCust = requests.find(r => r.id === currentModalRequestId);
+        if (editedPhone && currentReqForCust?.customer_id) {
+            await setDoc(doc(db, "customers", currentReqForCust.customer_id), {
+                phone: editedPhone
+            }, { merge: true });
+            if (customers[currentReqForCust.customer_id]) {
+                customers[currentReqForCust.customer_id].phone = editedPhone;
+            }
+        }
+
         // Success
         isEditMode = false;
 
@@ -1386,6 +1404,7 @@ async function saveRequestDetails() {
             req.step1_data.category = updates['step1_data.category'];
             req.step1_data.event_date = updates['step1_data.event_date'];
             req.step1_data.quantity_value = updates['step1_data.quantity_value'];
+            req.step1_data.phone = updates['step1_data.phone'];
             req.step1_data.fulfillment = updates['step1_data.fulfillment'];
             req.step1_data.delivery_zip = updates['step1_data.delivery_zip'];
             req.step1_data.rush_flag = updates['step1_data.rush_flag'];

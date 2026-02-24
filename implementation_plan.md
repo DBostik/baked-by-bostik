@@ -59,6 +59,12 @@
 
 ---
 
+### 🟢 Milestone 15: Continuous Deployment (Active)
+- [x] **Setup GitHub Actions**: Create `.github/workflows/firebase-deploy.yml` to auto-deploy to Firebase on push to `main`.
+- [x] **Configure Secrets**: Instruct user on adding `FIREBASE_SERVICE_ACCOUNT` secret to GitHub repository.
+- [x] **Verification**: Push a small change to `main` and verify auto-deploy.
+
+
 ## 🔮 FUTURE ROADMAP (Backlog)
 
 ### 🟡 Milestone 13: Resources & Guides

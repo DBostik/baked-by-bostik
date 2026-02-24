@@ -7,45 +7,77 @@ This document explains how the **Baked By Bostik** website is built, hosted, and
 | Component | Service | Role | Key URL |
 | :--- | :--- | :--- | :--- |
 | **Code Repository** | **GitHub** | **Source of Truth.** All code lives here. | `https://github.com/DBostik/baked-by-bostik` |
-| **Frontend (Live)** | **Vercel** | **Production Hosting.** Deploys automatically when code is pushed to the `main` branch. | `https://bakedbybostik.com` |
-| **Frontend (Staging)** | **Firebase Hosting** | **Testing/Staging.** Useful for verifying backend features before going live. | `https://bakedbybostik-5eb55.web.app` |
-| **Backend** | **Firebase** | **Database, Auth, Storage.** Handles all dynamic data (Gallery Items, Orders, Admin Login). | Firebase Console |
+| **Hosting (Live)** | **Firebase Hosting** | **Production.** Automatically deployed via GitHub Actions. | `https://bakedbybostik.com` |
+| **Backend** | **Firebase** | **Database, Auth, Storage, Functions.** Handles all dynamic data (request forms, admin dashboard, emails). | Firebase Console |
+| **CI/CD** | **GitHub Actions** | **Automation.** Watcher that deploys code to Firebase whenever changes are pushed to `main`. | `.github/workflows/firebase-deploy.yml` |
+
+> [!NOTE]
+> **Vercel is NO LONGER used.** 
+> The site is hosted 100% on Firebase to simplify architecture and avoid domain conflict issues.
 
 ---
 
-## 2. Default Workflow for Agents
+## 2. The "Gold Standard" Workflow
 
-**"I need to make a change to the website."**
+Follow this process to ensure stability and avoid breaking the live site.
 
-1.  **Code Locally:**
-    -   Switch to a new feature branch (e.g., `git checkout -b feature/new-page`).
-    -   Make edits to HTML/CSS/JS files.
-    -   Use absolute paths for assets (e.g., `/css/styles.css`, not `css/styles.css`).
+### Step 1: Develop Locally (Safe Zone)
+1.  **Pull Latest Code:** `git pull origin main`
+2.  **Make Changes:** Edit HTML/CSS/JS files on your local machine.
+3.  **Test:** Run a local server to verify changes.
+    ```bash
+    python3 -m http.server 8080
+    # OR
+    npx serve
+    ```
+4.  **Verify:** Open `http://localhost:8080` in your browser.
 
-2.  **Test Locally:**
-    -   Run a local server: `python3 -m http.server 8080` (or `npx serve`).
-    -   Verify changes at `http://localhost:8080`.
+### Step 2: Push to GitHub (The Trigger)
+Once you are happy with your changes locally:
 
-3.  **Verify on Staging (Optional but Recommended):**
-    -   Deploy to Firebase Hosting: `npx firebase deploy --only hosting`.
-    -   Check `https://bakedbybostik-5eb55.web.app`.
-    -   *Note: This does NOT affect the live `bakedbybostik.com` site.*
+1.  **Stage & Commit:**
+    ```bash
+    git add .
+    git commit -m "Description of what you fixed or added"
+    ```
+2.  **Push to Main:**
+    ```bash
+    git push origin main
+    ```
 
-4.  **Deploy to Production (Live):**
-    -   Commit changes: `git add . && git commit -m "Description of change"`.
-    -   Merge to Main: `git checkout main && git merge feature/branch-name`.
-    -   **Push to GitHub:** `git push origin main`.
-    -   **Result:** Vercel automatically detects the push and updates `bakedbybostik.com` within minutes.
+### Step 3: Automatic Deployment (Hands-Off)
+You are done! 
+*   **GitHub Actions** will detect the push.
+*   It will automatically log in to Firebase and run `firebase deploy`.
+*   Your changes will be live on `bakedbybostik.com` within 2-3 minutes.
 
 ---
 
-## 3. Troubleshooting & FAQs
+## 3. Manual Deployment (Fallback Only)
 
-### Why two hosting providers (Vercel & Firebase)?
-*   **Vercel** creates the fastest, most optimized global delivery for your public website (`bakedbybostik.com`). It is very good at "static" sites like yours.
-*   **Firebase Hosting** is included with your backend. We use it as a "Staging" environment to test complex features (like the Admin Dashboard or Gallery logic) before breaking the live site.
+If GitHub Actions is failing or you need to deploy a specific backend function immediately without waiting:
 
-### "My changes aren't showing up!"
-*   **Did you push to `main`?** Pushing to a `feature` branch only updates GitHub, not the live site.
-*   **Permissions Error?** If the backend (Gallery/Orders) fails, check `firestore.rules` in the codebase.
-*   **404 Not Found?** Ensure you are using **absolute paths** (starting with `/`) for all links, scripts, and images.
+**Deploy Everything (Site + Functions + Rules):**
+```bash
+npx firebase deploy --project bakedbybostik-5eb55
+```
+
+**Deploy Only Website (Hosting):**
+```bash
+npx firebase deploy --only hosting --project bakedbybostik-5eb55
+```
+
+**Deploy Only Functions:**
+```bash
+npx firebase deploy --only functions --project bakedbybostik-5eb55
+```
+
+---
+
+## 4. Troubleshooting
+
+*   **"My changes aren't showing up!"**
+    *   Did you push to `main`? (Pushing to other branches does not trigger a deploy).
+    *   Check the [GitHub Actions tab](https://github.com/DBostik/baked-by-bostik/actions) to see if the build failed.
+*   **"Deployment Failed on GitHub"**
+    *   It might be a permissions issue. Check that `FIREBASE_SERVICE_ACCOUNT_BAKEDBYBOSTIK_5EB55` is still valid in GitHub Secrets.

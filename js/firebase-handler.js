@@ -21,6 +21,7 @@ window.handleOrderSubmit = async (e, form) => {
         await setDoc(customerRef, {
             name: data.name,
             email: data.email,
+            phone: data.phone,
             last_updated: serverTimestamp()
             // We use merge:true usually, but setDoc without options overwrites. 
             // setDoc(ref, data, { merge: true }) preserves other fields (like notes).
@@ -45,6 +46,7 @@ window.handleOrderSubmit = async (e, form) => {
                 category: data.type,
                 event_date: data.date,
                 quantity_value: data.qty,
+                phone: data.phone,
                 fulfillment: data.delivery, // pickup or delivery
                 delivery_zip: data.zip || null,
                 rush_flag: (document.getElementById('rush-warning').style.display === 'block')

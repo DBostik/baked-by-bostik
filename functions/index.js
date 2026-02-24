@@ -6,6 +6,7 @@
 
 const { onRequest } = require("firebase-functions/v2/https");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
+const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { setGlobalOptions } = require("firebase-functions/v2");
 const admin = require("firebase-admin");
 const PDFDocument = require("pdfkit");
@@ -399,5 +400,59 @@ exports.scheduledWeeklyReport = onSchedule("every monday 09:00", async (event) =
 
     } catch (error) {
         console.error("Weekly Report Error:", error);
+    }
+});
+
+/**
+ * 4. New Order Notification
+ * Triggers when a new document is created in "requests" collection.
+ * Sends an email to the admin with order details.
+ */
+exports.onNewOrderRequest = onDocumentCreated("requests/{requestId}", async (event) => {
+    try {
+        const data = event.data.data();
+        const requestId = event.params.requestId;
+
+        const SMTP_EMAIL = process.env.SMTP_EMAIL;
+        const SMTP_PASSWORD = process.env.SMTP_PASSWORD;
+
+        if (!SMTP_EMAIL || !SMTP_PASSWORD) {
+            console.log("SMTP not configured, skipping new order notification.");
+            return;
+        }
+
+        const transporter = nodemailer.createTransport({
+            host: "smtp.hostinger.com",
+            port: 465,
+            secure: true,
+            auth: { user: SMTP_EMAIL, pass: SMTP_PASSWORD }
+        });
+
+        const name = data.customer_id || "Unknown";
+        const category = data.step1_data?.category || "N/A";
+        const eventDate = data.step1_data?.event_date || "N/A";
+        const qty = data.step1_data?.quantity_value || "N/A";
+        const phone = data.step1_data?.phone || "Not provided";
+
+        await transporter.sendMail({
+            from: '"BBB Order System" <orders@bakedbybostik.com>',
+            to: "hello@bakedbybostik.com",
+            subject: `🎂 New Order Request: ${name} — ${category}`,
+            html: `
+                <h2>New Order Request Received</h2>
+                <p><strong>Request ID:</strong> ${requestId}</p>
+                <p><strong>Customer:</strong> ${name}</p>
+                <p><strong>Phone:</strong> ${phone}</p>
+                <p><strong>Category:</strong> ${category}</p>
+                <p><strong>Event Date:</strong> ${eventDate}</p>
+                <p><strong>Quantity:</strong> ${qty}</p>
+                <hr>
+                <p><a href="https://bakedbybostik.com/admin/">View in Dashboard</a></p>
+            `
+        });
+
+        console.log(`New order notification sent for request ${requestId}`);
+    } catch (error) {
+        console.error("New Order Notification Error:", error);
     }
 });

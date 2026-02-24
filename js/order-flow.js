@@ -18,7 +18,8 @@ function loadStep1Data() {
     const data = JSON.parse(dataString);
 
     // Populate Review Box
-    document.getElementById('reviewName').innerText = data.name;
+    const phoneDisplay = data.phone ? ` · 📞 ${data.phone}` : '';
+    document.getElementById('reviewName').innerText = data.name + phoneDisplay;
     document.getElementById('reviewDate').innerText = data.date;
     document.getElementById('reviewType').innerText = data.type;
 
@@ -28,6 +29,7 @@ function loadStep1Data() {
     document.getElementById('hiddenDate').value = data.date;
     document.getElementById('hiddenType').value = data.type;
     document.getElementById('hiddenQty').value = data.qty;
+    document.getElementById('hiddenPhone').value = data.phone || '';
 
     // Check for Gallery Reference
     const galleryRef = sessionStorage.getItem('galleryReference');

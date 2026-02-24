@@ -133,6 +133,11 @@ function initOrderModal() {
                     </div>
                 </div>
 
+                <div class="form-group">
+                    <label>Phone *</label>
+                    <input type="tel" name="phone" required placeholder="(555) 123-4567">
+                </div>
+
                 <div class="form-row">
                     <div class="form-group half">
                         <label>Order Type *</label>
