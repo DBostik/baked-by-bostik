@@ -22,11 +22,13 @@
     - Flowed phone data to Step 2 Review Box and Admin Dashboard tables/modals.
 - **Backend Notifications**:
     - Implemented `onNewOrderRequest` v2 Cloud Function to email the admin via SMTP upon new requests.
+    - Configured Google Cloud Secret Manager to securely handle `SMTP_EMAIL` and `SMTP_PASSWORD` for 2nd Gen backend capabilities.
 - **Content Pages**:
     - Built and styled `policies.html` with an accordion format linked in the footer.
     - Built and styled `menu.html` outlining pricing and services linked in the main nav.
     - Built and styled `resources.html` providing downloadable PDFs linked in the footer.
     - Updated navigation headers and footers across all site pages to include the new links.
+    - Migrated UI styles from ad-hoc inline blocks to dedicated selectors in `styles.css`.
 
 ### 🟢 Milestone 11.5: Post-Launch Refinements (COMPLETE) - Feb 15, 2026
 - **Order Form**:
