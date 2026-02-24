@@ -408,7 +408,10 @@ exports.scheduledWeeklyReport = onSchedule("every monday 09:00", async (event) =
  * Triggers when a new document is created in "requests" collection.
  * Sends an email to the admin with order details.
  */
-exports.onNewOrderRequest = onDocumentCreated("requests/{requestId}", async (event) => {
+exports.onNewOrderRequest = onDocumentCreated({
+    document: "requests/{requestId}",
+    secrets: ["SMTP_EMAIL", "SMTP_PASSWORD"]
+}, async (event) => {
     try {
         const data = event.data.data();
         const requestId = event.params.requestId;
