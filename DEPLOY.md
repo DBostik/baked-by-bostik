@@ -79,5 +79,17 @@ npx firebase deploy --only functions --project bakedbybostik-5eb55
 *   **"My changes aren't showing up!"**
     *   Did you push to `main`? (Pushing to other branches does not trigger a deploy).
     *   Check the [GitHub Actions tab](https://github.com/DBostik/baked-by-bostik/actions) to see if the build failed.
-*   **"Deployment Failed on GitHub"**
-    *   It might be a permissions issue. Check that `FIREBASE_SERVICE_ACCOUNT_BAKEDBYBOSTIK_5EB55` is still valid in GitHub Secrets.
+*   **"Deployment Failed on GitHub with an IAM or Permission Error"**
+    *   It might be a basic permissions issue. Check that `FIREBASE_SERVICE_ACCOUNT_BAKEDBYBOSTIK_5EB55` is still valid in GitHub Secrets.
+    *   **Cloud Billing API Error:** If migrating to 2nd Gen Firebase Functions, ensure the [Cloud Billing API](https://console.developers.google.com/apis/api/cloudbilling.googleapis.com) is enabled for the Firebase Project in the Google Cloud Console.
+    *   **Eventarc Permission Denied:** 2nd Gen functions require Eventarc. If you see a permission denied error for the Eventarc Service Agent, you must run this command in Google Cloud Shell:
+        ```bash
+        gcloud projects add-iam-policy-binding bakedbybostik-5eb55 \
+          --member="serviceAccount:service-824666210371@gcp-sa-eventarc.iam.gserviceaccount.com" \
+          --role="roles/eventarc.serviceAgent"
+        ```
+*   **"Deployment Failed with Secret Manager 403 / 404 Errors"**
+    *   2nd Gen Functions cannot use `process.env` directly; they require variables to be stored in **Google Cloud Secret Manager**.
+    *   If you see a `404` error, the secret hasn't been created yet. Go to Google Cloud Secret Manager and manually create the secret.
+    *   If you see a `403` error when deploying via GitHub Actions, the robotic Service Account (`824666210371-compute@developer.gserviceaccount.com`) lacks permission to explicitly *read* the newly created secret.
+    *   **The Fix:** You must go into the Google Cloud Secret Manager UI, click on the specific secret, click the "Permissions" tab, and manually assign the `Secret Manager Secret Accessor` role to the aforementioned Default Compute Service Account. Run this for every secret the function needs.
