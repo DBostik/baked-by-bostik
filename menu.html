@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu & Pricing | Baked By Bostik</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/buttons.css">
+    <link rel="stylesheet" href="/css/styles.css?v=6">
+    <link rel="icon" type="image/jpg" href="/logo.JPG">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="/index.html" class="logo-link">
+                <img src="/assets/logo.JPG" alt="Baked By Bostik" class="header-logo">
+            </a>
+
+            <ul class="nav-list">
+                <li><a href="/index.html" class="nav-link">Home</a></li>
+                <li><a href="/gallery.html" class="nav-link">Gallery</a></li>
+                <li><a href="/menu.html" class="nav-link active">Menu</a></li>
+                <li><a href="/about.html" class="nav-link">About</a></li>
+            </ul>
+
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="openOrderModal()">Request an Order</button>
+            </div>
+            <button class="mobile-menu-toggle" aria-label="Open menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Mini Hero -->
+        <section class="page-hero">
+            <div class="container fade-in-up">
+                <h1 class="page-title section-title">Our Menu & Pricing</h1>
+                <p class="page-subtitle">Serving Glen Ellyn,
+                    Wheaton, and the surrounding Western Suburbs. Every order is baked from scratch with high-quality
+                    ingredients and a whole lot of love!</p>
+            </div>
+        </section>
+
+        <!-- Pricing Cards Section -->
+        <section class="menu-section bg-cream">
+            <div class="container">
+                <div class="menu-grid">
+
+                    <!-- 1. Custom Sugar Cookies -->
+                    <div class="menu-card fade-in-up ">
+                        <h3><span class="menu-icon">🍪</span> Custom Sugar Cookies</h3>
+                        <p class="text-muted" style="font-weight: 500; margin-bottom: var(--space-4);">Minimum Order: 2
+                            Dozen</p>
+
+                        <div class="card-features" style="flex-grow: 1;">
+                            <ul>
+                                <li>
+                                    <span class="bullet">•</span>
+                                    <span><strong>The Simply Sweet: $48/doz</strong><br> <span class="text-muted"
+                                            style="font-size: 0.9em;">1-2 icing colors, simple shapes, classic designs
+                                            with minimal piping.</span></span>
+                                </li>
+                                <li>
+                                    <span class="bullet">•</span>
+                                    <span><strong>The Celebration: $60/doz</strong><br> <span class="text-muted"
+                                            style="font-size: 0.9em;">3-5 icing colors, basic patterns, light detailing,
+                                            simple themes.</span></span>
+                                </li>
+                                <li>
+                                    <span class="bullet">•</span>
+                                    <span><strong>The Masterpiece: $72/doz</strong><br> <span class="text-muted"
+                                            style="font-size: 0.9em;">5-6+ colors, intricate designs, custom lettering,
+                                            shading, complex piping.</span></span>
+                                </li>
+                                <li>
+                                    <span class="bullet">•</span>
+                                    <span><strong>Character Add-On:</strong> $10/each (min 12). Add your child's
+                                        favorite character.</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <button class="btn btn-primary full-width" style="width: 100%;"
+                            onclick="openOrderModal()">Request a Quote</button>
+                    </div>
+
+                    <!-- 2. Custom Cupcakes -->
+                    <div class="menu-card fade-in-up delay-1">
+                        <h3><span class="menu-icon">🧁</span> Custom Cupcakes</h3>
+                        <p class="text-muted" style="font-weight: 500; margin-bottom: var(--space-4);">Minimum Order: 2
+                            Dozen</p>
+
+                        <div class="card-features" style="flex-grow: 1;">
+                            <ul>
+                                <li>
+                                    <span class="bullet">•</span>
+                                    <span><strong>Classic Design: $3.75/ea ($45/doz)</strong><br> <span
+                                            class="text-muted" style="font-size: 0.9em;">Swirled buttercream in a single
+                                            color with light sprinkles.</span></span>
+                                </li>
+                                <li>
+                                    <span class="bullet">•</span>
+                                    <span><strong>Themed / Custom: $4.50–$5.50/ea</strong><br> <span class="text-muted"
+                                            style="font-size: 0.9em;">Multiple colors, themed toppers, or simple fondant
+                                            accents/images.</span></span>
+                                </li>
+                                <li>
+                                    <span class="bullet">•</span>
+                                    <span><strong>Detailed / Specialty: $6.00+/ea</strong><br> <span class="text-muted"
+                                            style="font-size: 0.9em;">Hand-modeled details, character themes, custom
+                                            fondant toppers.</span></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <button class="btn btn-primary full-width" style="width: 100%;"
+                            onclick="openOrderModal()">Request a Quote</button>
+                    </div>
+
+                    <!-- 3. Custom Celebration Cakes -->
+                    <div class="menu-card fade-in-up delay-2">
+                        <h3><span class="menu-icon">🎂</span> Custom Celebration Cakes</h3>
+                        <p class="text-muted" style="font-weight: 500; margin-bottom: var(--space-4);">3 layers of cake,
+                            2 layers of filling</p>
+
+                        <div class="card-features" style="flex-grow: 1;">
+                            <ul>
+                                <li class="price-row">
+                                    <span>6" Round (12–15 servings)</span>
+                                    <strong>$95+</strong>
+                                </li>
+                                <li class="price-row">
+                                    <span>8" Round (20–25 servings)</span>
+                                    <strong>$125+</strong>
+                                </li>
+                                <li class="price-row">
+                                    <span>10" Round (30–35 servings)</span>
+                                    <strong>$165+</strong>
+                                </li>
+                                <li class="price-row">
+                                    <span>12" Round (40–50 servings)</span>
+                                    <strong>$225+</strong>
+                                </li>
+                                <li class="price-row">
+                                    <span>Two-Tier Cake (30–40 servings)</span>
+                                    <strong>$225+</strong>
+                                </li>
+                            </ul>
+                            <p class="text-muted text-sm">* Price
+                                increases based on chosen Design Tier and Add-ons (see below).</p>
+                        </div>
+                        <button class="btn btn-primary full-width" style="width: 100%;"
+                            onclick="openOrderModal()">Request a Quote</button>
+                    </div>
+
+                    <!-- 4. The Daily Drop -->
+                    <div class="menu-card fade-in-up delay-3">
+                        <h3><span class="menu-icon">🍪</span> The Daily Drop</h3>
+                        <p class="text-muted" style="font-weight: 500; margin-bottom: var(--space-4);">Classic, buttery,
+                            homemade cookies</p>
+
+                        <div class="card-features" style="flex-grow: 1;">
+                            <p>Perfect for school snacks,
+                                meetings, or just a Tuesday treat! Signature flavors include The OG Chocolate Chip and
+                                strictly rotating specials.</p>
+                            <h4>Mini Drop
+                                (Bite-Sized)</h4>
+                            <ul>
+                                <li><span>The
+                                        Taster (1 doz)</span> <strong>$12.00</strong></li>
+                                <li><span>The
+                                        Party Pack (2 doz)</span> <strong>$22.00</strong></li>
+                                <li><span>The
+                                        Crowd-Pleaser (4 doz)</span> <strong>$40.00</strong></li>
+                            </ul>
+                            <h4>Signature Drop
+                                (Bakery-Sized)</h4>
+                            <ul>
+                                <li>
+                                    <span>Half Dozen (6)</span> <strong>$12.00</strong>
+                                </li>
+                                <li>
+                                    <span>Full Dozen (12)</span> <strong>$24.00</strong>
+                                </li>
+                            </ul>
+                        </div>
+                        <button class="btn btn-primary full-width" style="width: 100%;"
+                            onclick="openOrderModal()">Request a Quote</button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Design Tiers Explanation -->
+        <section class="design-tiers-section" style="padding: var(--space-8) 0;">
+            <div class="container">
+                <h2 class="section-title text-center">Cake Design Tiers</h2>
+                <div class="tiers-grid"
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-6); margin-top: var(--space-6);">
+                    <div class="tier-card">
+                        <h3>Tier 1: The Classic Beauty</h3>
+                        <p class="text-muted">Includes 1-2 cake colors, smooth or semi-naked finish, simple writing
+                            (name + age), and minimal décor like sprinkles.</p>
+                    </div>
+                    <div class="tier-card">
+                        <h3>Tier 2: Signature Decor</h3>
+                        <p class="text-muted">Custom color palette, textured buttercream borders (rosettes, waves), and
+                            light fondant accents (stars, clouds, shapes).</p>
+                    </div>
+                    <div class="tier-card">
+                        <h3>Tier 3: The Showstopper</h3>
+                        <p class="text-muted">3-4 layers, multiple hand-sculpted fondant figures (characters, animals,
+                            unicorns), and significant design time.</p>
+                    </div>
+                </div>
+                <div class="addons-box">
+                    <h3>Cake Add-Ons:</h3>
+                    <ul>
+                        <li>Extra Cake Layer: +$15–$20</li>
+                        <li>Fondant Figures/Animals: +$20–$50+ (based on complexity)</li>
+                        <li>Rush Orders (less than 7 days): +$25 or more</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Fillings Section -->
+        <section class="fillings-section bg-cream" style="padding: var(--space-8) 0;">
+            <div class="container text-center" style="max-width: 800px;">
+                <h2 class="section-title">Delectable Fillings</h2>
+                <p class="subtitle">We believe what's on the inside counts just
+                    as much as the beautiful decorations on the outside. Customize your cake or cupcake layers!</p>
+                <div class="fillings-box">
+                    <ul>
+                        <li><strong>Included:</strong> Our Signature Homemade
+                            Vanilla American Buttercream — smooth, creamy, and professional.</li>
+                        <li><strong>Premium (+$15):</strong> Homemade Chocolate
+                            Ganache (rich and velvety) or Homemade Strawberry Coulis (bright, fresh, real-fruit).</li>
+                        <li><strong>Custom Requests:</strong> We love a challenge! We are open to discussing Peanut
+                            Butter, Cookies & Cream, or other favorite fillings during your consultation.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Notes Section -->
+        <section class="notes-section" style="padding: var(--space-8) 0;">
+            <div class="container" style="max-width: 800px;">
+                <h2 class="section-title text-center">Important Notes</h2>
+                <ul class="notes-callout">
+                    <li><strong>Deposit:</strong> A 50% non-refundable deposit is
+                        required to reserve your date.</li>
+                    <li><strong>Notice:</strong> Order changes or rescheduling
+                        require at least 7 days (cookies) or 48 hours (cakes) notice.</li>
+                    <li><strong>Allergen Warning:</strong> Made in a home kitchen
+                        that handles dairy, eggs, wheat, and nuts.</li>
+                    <li><strong>Mixed Tiers:</strong> If you want a variety of
+                        detail in one order (like half simple cookies, half extravagant), we price at the average tier
+                        rate.</li>
+                    <li><strong>Fondant Work:</strong> Minimal fondant is
+                        included in Tier 2; heavy fondant work or 3D elements may push an order into Tier 3.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Final CTA Section (from index.html) -->
+        <section class="final-cta-section text-center">
+            <div class="container">
+                <h2>Ready to start your custom order?</h2>
+                <p class="response-time">Replies within 24 to 48 hours.</p>
+                <button class="btn btn-primary btn-large" onclick="openOrderModal()">Request an Order</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <div class="footer-col">
+                <h3>Baked By Bostik</h3>
+                <a href="mailto:hello@bakedbybostik.com">hello@bakedbybostik.com</a>
+                <div class="social-links">
+                    <a href="https://instagram.com/bakedbybostik" target="_blank">Instagram</a>
+                    <a href="https://www.facebook.com/profile.php?id=61554467784437" target="_blank">Facebook</a>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <img src="/assets/logo.JPG" alt="Baked By Bostik" class="footer-logo">
+            </div>
+
+            <div class="footer-col">
+                <nav class="footer-nav">
+                    <a href="/policies.html">Policies</a>
+                    <a href="/resources.html">Resources</a>
+                    <a href="/privacy.html">Privacy Policy</a>
+                    <a href="/terms.html">Terms</a>
+                </nav>
+            </div>
+        </div>
+        <div class="local-delivery-banner">
+            Local delivery available for an added fee, based on location.
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/js/app.js"></script>
+    <script type="module" src="/js/firebase-handler.js?v=2"></script>
+</body>
+
+</html>

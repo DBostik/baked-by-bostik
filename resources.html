@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resources | Baked By Bostik</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/buttons.css">
+    <link rel="stylesheet" href="/css/styles.css?v=6">
+    <link rel="icon" type="image/jpg" href="/logo.JPG">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="/index.html" class="logo-link">
+                <img src="/assets/logo.JPG" alt="Baked By Bostik" class="header-logo">
+            </a>
+
+            <ul class="nav-list">
+                <li><a href="/index.html" class="nav-link">Home</a></li>
+                <li><a href="/gallery.html" class="nav-link">Gallery</a></li>
+                <li><a href="/menu.html" class="nav-link">Menu</a></li>
+                <li><a href="/about.html" class="nav-link">About</a></li>
+            </ul>
+
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="openOrderModal()">Request an Order</button>
+            </div>
+            <button class="mobile-menu-toggle" aria-label="Open menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Mini Hero -->
+        <section class="page-hero">
+            <div class="container fade-in-up">
+                <h1 class="page-title section-title">Care & Handling Guides</h1>
+                <p class="page-subtitle">Downloadable resources to keep your custom treats perfect for the
+                    party.</p>
+            </div>
+        </section>
+
+        <!-- Resources Section -->
+        <section class="resources-section bg-cream">
+            <div class="container">
+                <div class="resources-grid">
+
+                    <!-- Guide 1 -->
+                    <div class="resource-card fade-in-up"
+                        >
+                        <div class="resource-icon" >🍪</div>
+                        <h3 >Cookie & Cake Care</h3>
+                        <p class="text-muted" >Essential tips for storing and
+                            displaying your custom treats at room temperature.</p>
+                        <a href="/assets/resources/BBB cookie & cake care.pdf" target="_blank"
+                            class="btn btn-secondary">Download PDF</a>
+                    </div>
+
+                    <!-- Guide 2 -->
+                    <div class="resource-card fade-in-up delay-1"
+                        >
+                        <div class="resource-icon" >❄️</div>
+                        <h3 >Freezing & Thawing</h3>
+                        <p class="text-muted" >Need to save treats for later?
+                            Learn our exact method for safely freezing and thawing.</p>
+                        <a href="/assets/resources/BBB Freezing and Thawing Guide.pdf" target="_blank"
+                            class="btn btn-secondary">Download PDF</a>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <div class="footer-col">
+                <h3>Baked By Bostik</h3>
+                <a href="mailto:hello@bakedbybostik.com">hello@bakedbybostik.com</a>
+                <div class="social-links">
+                    <a href="https://instagram.com/bakedbybostik" target="_blank">Instagram</a>
+                    <a href="https://www.facebook.com/profile.php?id=61554467784437" target="_blank">Facebook</a>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <img src="/assets/logo.JPG" alt="Baked By Bostik" class="footer-logo">
+            </div>
+
+            <div class="footer-col">
+                <nav class="footer-nav">
+                    <a href="/policies.html">Policies</a>
+                    <a href="/resources.html">Resources</a>
+                    <a href="/privacy.html">Privacy Policy</a>
+                    <a href="/terms.html">Terms</a>
+                </nav>
+            </div>
+        </div>
+        <div class="local-delivery-banner">
+            Local delivery available for an added fee, based on location.
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/js/app.js"></script>
+    <script type="module" src="/js/firebase-handler.js?v=2"></script>
+</body>
+
+</html>

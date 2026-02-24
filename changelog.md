@@ -15,6 +15,19 @@
 
 ## 📅 February 2026
 
+### 🟢 Milestone 16: Content & UX Expansion (COMPLETE) - Feb 24, 2026
+- **Phone Number Integration**:
+    - Added required phone input to Step 1 Order form.
+    - Persisted phone number to Firestore `customers` and `requests` collections.
+    - Flowed phone data to Step 2 Review Box and Admin Dashboard tables/modals.
+- **Backend Notifications**:
+    - Implemented `onNewOrderRequest` v2 Cloud Function to email the admin via SMTP upon new requests.
+- **Content Pages**:
+    - Built and styled `policies.html` with an accordion format linked in the footer.
+    - Built and styled `menu.html` outlining pricing and services linked in the main nav.
+    - Built and styled `resources.html` providing downloadable PDFs linked in the footer.
+    - Updated navigation headers and footers across all site pages to include the new links.
+
 ### 🟢 Milestone 11.5: Post-Launch Refinements (COMPLETE) - Feb 15, 2026
 - **Order Form**:
     - Added "How did you hear about us?" to Step 2.

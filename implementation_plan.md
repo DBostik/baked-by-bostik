@@ -64,6 +64,26 @@
 - [x] **Configure Secrets**: Instruct user on adding `FIREBASE_SERVICE_ACCOUNT` secret to GitHub repository.
 - [x] **Verification**: Push a small change to `main` and verify auto-deploy.
 
+### 🟢 Milestone 16: Content & UX Expansion (COMPLETE)
+**Goal**: Add phone collection, notifications, and 3 new content pages.
+
+**Phase 1: Quick Wins (Engineer)**
+- [x] Add phone field to Step 1 modal + save to Firestore
+- [x] Carry phone through to Step 2, display in review box
+- [x] Display/edit phone in Admin Request Modal and Customers table
+- [x] Create `onNewOrderRequest` Cloud Function for email notifications
+- [x] Deploy Cloud Function
+
+**Phase 2: Content Pages (Engineer + Designer)**
+- [x] Create `policies.html` with accordion layout
+- [x] Add "Policies" to footer nav on all pages
+- [x] Create `menu.html` with pricing cards
+- [x] Add "Menu" to main nav on all pages
+- [x] Create `resources.html` with care guide cards
+- [x] Add "Resources" to footer nav on all pages
+- [x] Identify 2 PDF care guides in `assets/resources/`
+- [x] Update `firebase.json` if needed for new routes
+
 
 ## 🔮 FUTURE ROADMAP (Backlog)
 
