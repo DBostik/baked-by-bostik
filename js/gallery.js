@@ -55,6 +55,19 @@ async function initGallery() {
                 currentFilter = themeParam;
                 renderFilters();
                 await loadItems(true);
+            } else {
+                // Feature: Tag-based filtering via URL for homepage themes
+                currentFilter = 'all'; // Load all categories
+                window.activeTagFilter = themeParam.toLowerCase(); // Set global tag filter
+                
+                // Add a visual indicator
+                const header = document.querySelector('.page-header h1');
+                if (header) {
+                    header.textContent = `Gallery: ${themeParam.charAt(0).toUpperCase() + themeParam.slice(1)}`;
+                }
+                
+                renderFilters();
+                await loadItems(true);
             }
         }
 
@@ -75,8 +88,19 @@ function renderFilters() {
         btn.textContent = cat.label;
         btn.dataset.filter = cat.slug;
         btn.addEventListener('click', async () => {
-            if (currentFilter === cat.slug) return; // Already active
+            if (currentFilter === cat.slug && !window.activeTagFilter) return; // Already active
             currentFilter = cat.slug;
+            
+            // Clear URL and active tag filter
+            if (window.activeTagFilter) {
+                window.activeTagFilter = null;
+                const url = new URL(window.location);
+                url.searchParams.delete('theme');
+                window.history.pushState({}, '', url);
+                const header = document.querySelector('.page-header h1');
+                if (header) header.textContent = 'Gallery';
+            }
+            
             renderFilters();
             gridContainer.innerHTML = ''; // Clear grid
             lastDoc = null; // Reset pagination
@@ -96,12 +120,14 @@ async function loadItems(resetGrid = false) {
 
         // Build query
         let q;
+        const fetchLimit = window.activeTagFilter ? 999 : ITEMS_PER_PAGE;
+        
         if (currentFilter === 'all') {
             q = query(
                 collection(db, 'gallery_items'),
                 where('visible', '==', true),
                 orderBy('sort_order'),
-                limit(ITEMS_PER_PAGE)
+                limit(fetchLimit)
             );
         } else {
             q = query(
@@ -109,12 +135,12 @@ async function loadItems(resetGrid = false) {
                 where('visible', '==', true),
                 where('categories', 'array-contains', currentFilter),
                 orderBy('sort_order'),
-                limit(ITEMS_PER_PAGE)
+                limit(fetchLimit)
             );
         }
 
         // Add pagination cursor if not first load
-        if (lastDoc) {
+        if (lastDoc && !window.activeTagFilter) {
             q = query(q, startAfter(lastDoc));
         }
 
@@ -129,14 +155,31 @@ async function loadItems(resetGrid = false) {
         }
 
         // Render items
+        let renderedCount = 0;
         snapshot.docs.forEach(doc => {
             const item = { id: doc.id, ...doc.data() };
+            // Tag filtering
+            if (window.activeTagFilter) {
+                const searchString = `${item.display_name || ''} ${item.tags || ''}`.toLowerCase();
+                if (!searchString.includes(window.activeTagFilter)) {
+                    return; // Skip rendering
+                }
+            }
             renderGalleryItem(item);
+            renderedCount++;
         });
+
+        if (renderedCount === 0 && window.activeTagFilter && resetGrid) {
+            gridContainer.innerHTML = '<p style="text-align:center; color:var(--color-text-muted); padding:3rem 0;">No images found for this theme.</p>';
+        }
 
         // Update pagination
         lastDoc = snapshot.docs[snapshot.docs.length - 1];
-        loadMoreBtn.style.display = snapshot.docs.length === ITEMS_PER_PAGE ? 'block' : 'none';
+        if (window.activeTagFilter) {
+            loadMoreBtn.style.display = 'none'; // Everything loaded at once for tag filters
+        } else {
+            loadMoreBtn.style.display = snapshot.docs.length === ITEMS_PER_PAGE ? 'block' : 'none';
+        }
 
     } catch (error) {
         console.error('Error loading items:', error);
