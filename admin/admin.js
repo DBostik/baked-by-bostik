@@ -53,7 +53,8 @@ const els = {
         AWAITING_DETAILS: document.getElementById('col-AWAITING_DETAILS'), // ADDED
         QUOTING: document.getElementById('col-QUOTING'),
         BOOKED: document.getElementById('col-BOOKED'),
-        COMPLETED: document.getElementById('col-COMPLETED')
+        COMPLETED: document.getElementById('col-COMPLETED'),
+        DEAD: document.getElementById('col-DEAD')
     },
     // Stats
     countNew: document.getElementById('count-new'),
@@ -407,15 +408,38 @@ function renderCalendar() {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
         // Filter requests for this date
-        const events = requests.filter(r => {
-            return r.step1_data && r.step1_data.event_date === dateStr;
+        const events = [];
+        requests.forEach(r => {
+            if (r.step1_data && r.step1_data.event_date) {
+                if (r.step1_data.event_date === dateStr && r.status !== 'DEAD') {
+                    events.push({ req: r, type: 'normal' });
+                }
+                if (r.status === 'COMPLETED') {
+                    const [y, m, d] = r.step1_data.event_date.split('-');
+                    const targetDate = new Date(y, m - 1, d);
+                    targetDate.setDate(targetDate.getDate() + 14);
+                    const targetDateStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
+                    if (targetDateStr === dateStr) {
+                        events.push({ req: r, type: 'reminder' });
+                    }
+                }
+            }
         });
 
-        events.forEach(req => {
+        events.forEach(item => {
+            const req = item.req;
             const eventEl = document.createElement('div');
-            eventEl.className = `cal-event status-${req.status}`;
-            eventEl.textContent = `${customers[req.customer_id]?.name || 'Unknown'} - ${req.step1_data.category}`;
-            eventEl.title = `${req.status}`;
+            if (item.type === 'reminder') {
+                eventEl.className = `cal-event`;
+                eventEl.style.backgroundColor = '#8b5cf6';
+                eventEl.style.color = '#fff';
+                eventEl.textContent = `💌 Send Card: ${customers[req.customer_id]?.name || 'Unknown'}`;
+                eventEl.title = `Reminder to send thank you card`;
+            } else {
+                eventEl.className = `cal-event status-${req.status}`;
+                eventEl.textContent = `${customers[req.customer_id]?.name || 'Unknown'} - ${req.step1_data.category}`;
+                eventEl.title = `${req.status}`;
+            }
             eventEl.onclick = () => openModal(req.id);
             cell.appendChild(eventEl);
         });
@@ -490,9 +514,16 @@ function updateStats() {
     const pendingCount = requests.filter(r => ['AWAITING_DETAILS', 'QUOTING'].includes(r.status)).length;
     const totalCount = requests.length;
 
+    const bookedCount = requests.filter(r => r.status === 'BOOKED' || r.status === 'COMPLETED').length;
+    const deadCount = requests.filter(r => r.status === 'DEAD').length;
+    const conversionRate = (bookedCount + deadCount) > 0 ? Math.round((bookedCount / (bookedCount + deadCount)) * 100) : 0;
+
     if (els.countNew) els.countNew.textContent = newCount;
     if (els.countPending) els.countPending.textContent = pendingCount;
     if (els.countTotal) els.countTotal.textContent = totalCount;
+    
+    const countConversion = document.getElementById('count-conversion');
+    if (countConversion) countConversion.textContent = `${conversionRate}%`;
 
     // Revenue Stat (Milestone 4 - Refined: Cash Collected)
     if (els.countRevenue) {
@@ -600,6 +631,7 @@ function renderBoard() {
         els.boardColumns.QUOTING = document.getElementById('col-QUOTING');
         els.boardColumns.BOOKED = document.getElementById('col-BOOKED');
         els.boardColumns.COMPLETED = document.getElementById('col-COMPLETED');
+        els.boardColumns.DEAD = document.getElementById('col-DEAD');
     }
 
     // Verify critical elements exists

@@ -15,6 +15,18 @@
 
 ## 📅 March 2026
 
+### 🟢 Milestone 19: Admin & Automation Features (COMPLETE) - Mar 18, 2026
+- **Dead Leads Pipeline Status**:
+    - Added a `DEAD` board column to the Kanban board in `admin/index.html`.
+    - Styled with new `.status-DEAD` class using `#F87171` background and `#450A0A` text.
+    - Updated `admin.js` to initialize the `DEAD` column and allow drag-and-drop to/from it.
+    - Excluded `DEAD` status requests from the Calendar View.
+    - Added "Conversion Rate" stat card to the dashboard calculated as `(BOOKED + COMPLETED) / (BOOKED + COMPLETED + DEAD) * 100`.
+- **Thank You Card Reminders (Calendar)**:
+    - Automatically adds a reminder event to the Calendar 14 days after the `event_date` for any `COMPLETED` order.
+    - Rendered in purple (`#8b5cf6`) with the title `💌 Send Card: [Customer Name]`.
+    - Clicking the reminder opens the standard Request Modal.
+
 ### 🟢 Milestone 18: Quote Modal Improvements (COMPLETE) - Mar 18, 2026
 - **Intake Summary Panel**:
     - Added a collapsible panel at the top of the Quote Modal to display customer request details (Category, Event Date, Fulfillment, Theme, Allergies, Notes, Inspiration Photos).

@@ -637,30 +637,22 @@ The old "Mixed Tiers" note says pricing is averaged. Update to match the new "li
 - Admin dashboard: add a "Review Moderation" section in the Reviews tab
 - Update `firestore.rules` for public write to `pending_reviews`
 
-### 19.4 — Thank You Email on Pipeline Completion
+### 19.4 — Thank You Card Reminders (Admin Calendar)
 
-**Problem**: Kristen wants an automated thank-you email/reminder when an order moves to COMPLETED.
+**Problem**: Kristen wants a reminder to send a physical thank-you card to customers a week or two after their event. Automated emails feel too impersonal.
 
-**Solution**: Create a Cloud Function `onRequestStatusChange` that triggers on document update. When `status` changes to `COMPLETED`, send a thank-you email to the customer.
+**Solution**: Since the Admin Dashboard already has a Calendar View, we can render an automatic "Follow-up Reminder" event on the calendar exactly 14 days after a completed request's event date. This requires zero backend changes or CRON jobs.
 
 **Files to modify**:
-- [functions/index.js](file:///Users/davebostik/Desktop/BBB%20Website/functions/index.js) — Add `onDocumentUpdated` trigger for `requests/{requestId}`
-- [functions/package.json](file:///Users/davebostik/Desktop/BBB%20Website/functions/package.json) — May need `onDocumentUpdated` import
+- [admin/admin.js](file:///Users/davebostik/Desktop/BBB%20Website/admin/admin.js) — Update the function that populates the Calendar (e.g., `renderCalendar` or FullCalendar event logic).
 
 **Spec**:
-```js
-exports.onRequestStatusComplete = onDocumentUpdated({
-    document: "requests/{requestId}",
-    secrets: ["SMTP_EMAIL", "SMTP_PASSWORD"]
-}, async (event) => {
-    const before = event.data.before.data();
-    const after = event.data.after.data();
-    if (before.status !== 'COMPLETED' && after.status === 'COMPLETED') {
-        // Look up customer email from customers collection
-        // Send thank-you email
-    }
-});
-```
+When mapping Firestore `requests` to calendar events:
+1. Render the normal event date.
+2. If `status === 'COMPLETED'`, calculate a second date: `event_date + 14 days`.
+3. Add a second calendar event on that future date titled: `💌 Send Card: [Customer Name]`.
+4. Give this reminder event a distinct color (e.g., a soft purple `#a855f7` or secondary theme color) so it doesn't look like a cake order.
+5. (Optional) Clicking it opens the standard Request Modal so she can easily grab their address.
 
 ---
 
@@ -772,8 +764,8 @@ exports.onRequestStatusComplete = onDocumentUpdated({
 > **1. Dead Leads Pipeline Status**
 > Add a `DEAD` board column to the Kanban board in `admin/index.html` after the COMPLETED column (around line 296). Use a muted red/gray color theme (e.g., `color:#991B1B`). In `admin/admin.js`: add `DEAD: document.getElementById('col-DEAD')` to `boardColumns` initialization (and the re-bind section), ensure card rendering includes DEAD, in the calendar view either filter out DEAD requests or render them in red/strikethrough, add a "Conversion Rate" stat: `(BOOKED count) / (BOOKED + DEAD count) * 100`%, and make sure the list view table displays DEAD requests (perhaps with a muted row style).
 >
-> **2. Thank You Email on Completion**
-> In `functions/index.js`, add a new Cloud Function `onRequestStatusComplete` using `onDocumentUpdated` (from `firebase-functions/v2/firestore`). Watch `requests/{requestId}`. When `status` changes from anything to `COMPLETED`: look up customer email from `customers` collection using the request's `customer_id`, send a thank-you email via the existing Hostinger SMTP transport (reuse the Nodemailer setup from `dispatchQuoteEmail`), include Kristen's Venmo handle (`@Kristen-Bostik`) and a friendly closing. Add `secrets: ["SMTP_EMAIL", "SMTP_PASSWORD"]` to the function config. Redeploy with `firebase deploy --only functions`.
+> **2. Thank You Card Reminders (Calendar)**
+> Kristen wants a reminder to send physical thank-you cards to clients. We will do this via the Admin calendar rather than complex scheduled Cloud Functions. In `admin/admin.js`, find the logic that populates events for FullCalendar (or whichever calendar library is used). When iterating over `requests`, if a request has `status === 'COMPLETED'`, read its `event_date`, add exactly 14 days to it, and push a *second* event object to the calendar source. Title it `💌 Send Card: [Customer Name]`. Map it to a distinct color (e.g., `backgroundColor: '#8b5cf6'` - purple) so it stands out from baking events. Clicking it should still open the standard Request Modal (so she can see their newly added address).
 
 ### Prompt 5: Cookie Menu Page Overhaul (Item 17.4)
 
