@@ -3001,7 +3001,7 @@ function openUploadModal() {
     container.innerHTML = '';
     galleryCategories.filter(c => c.slug !== 'all').forEach(cat => {
         const label = document.createElement('label');
-        label.style.cssText = 'display:flex; align-items:center; gap:0.25rem; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px; cursor:pointer;';
+        label.style.cssText = 'display:flex; align-items:center; gap:0.5rem; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px; cursor:pointer; height:100%; box-sizing:border-box; word-break:break-word;';
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.value = cat.slug;
@@ -3159,7 +3159,7 @@ function openEditImageModal(imageId) {
     container.innerHTML = '';
     galleryCategories.filter(c => c.slug !== 'all').forEach(cat => {
         const label = document.createElement('label');
-        label.style.cssText = 'display:flex; align-items:center; gap:0.25rem; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px; cursor:pointer;';
+        label.style.cssText = 'display:flex; align-items:center; gap:0.5rem; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px; cursor:pointer; height:100%; box-sizing:border-box; word-break:break-word;';
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.value = cat.slug;
