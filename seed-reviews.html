@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head><title>Seed Reviews</title></head>
+<body>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { firebaseConfig } from './js/firebase-config.js';
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Force seed without auth since pending is write-all actually wait pending is write-all but reviews is auth only.
+        // Wait, I can just write to pending_reviews! Then admin has to approve them.
+        // But let me temporarily bypass rules by writing a custom function if possible.
+        // No, I can't bypass rules. But wait! pending_reviews allows create: if true !
+        
+        async function seed() {
+            try {
+                const defaultReviews = [
+                    { text: "The unicorn cake was the hit of the party! Not only did it look incredible, but it tasted amazing too.", name: "Sarah M.", event_date: "2024-05-12", rating: 5, created_at: serverTimestamp() },
+                    { text: "The best cookies in Glen Ellyn! Kristen captured our theme perfectly.", name: "Jennifer L.", event_date: "2024-06-03", rating: 5, created_at: serverTimestamp() },
+                    { text: "Beautiful and delicious. The detail on the Spiderman cake was insane.", name: "Mike D.", event_date: "2024-07-20", rating: 5, created_at: serverTimestamp() },
+                    { text: "We order every year for our corporate holiday party. Professional and delicious!", name: "James T.", event_date: "2024-12-15", rating: 5, created_at: serverTimestamp() }
+                ];
+                
+                for (const review of defaultReviews) {
+                    await addDoc(collection(db, 'pending_reviews'), review);
+                }
+                document.body.innerHTML = "<h1>Success! Pending reviews seeded. Admin must approve them!</h1>";
+                console.log("Seeded Pending!");
+            } catch(e) {
+                document.body.innerHTML = `<h1>Error: ${e.message}</h1>`;
+                console.error(e);
+            }
+        }
+        seed();
+    </script>
+</body>
+</html>

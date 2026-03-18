@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave a Review | Baked By Bostik</title>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/buttons.css">
+    <link rel="stylesheet" href="/css/styles.css?v=6">
+    <link rel="icon" type="image/jpg" href="/logo.JPG">
+    <style>
+        .review-content {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: var(--space-8) 0;
+        }
+
+        .review-content h1 {
+            font-size: var(--text-3xl);
+            margin-bottom: var(--space-4);
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: var(--space-4);
+        }
+
+        label {
+            display: block;
+            margin-bottom: var(--space-2);
+            font-weight: 500;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            font-family: inherit;
+        }
+
+        .stars {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 2rem;
+            color: #fbbf24;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .star {
+            transition: color 0.2s;
+        }
+
+        .star:hover,
+        .star.active {
+            color: #f59e0b;
+        }
+
+        .star.inactive {
+            color: #e5e7eb;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="/index.html" class="logo-link">
+                <img src="/assets/logo.JPG" alt="Baked By Bostik" class="header-logo">
+            </a>
+
+            <ul class="nav-list">
+                <li><a href="/index.html" class="nav-link">Home</a></li>
+                <li><a href="/gallery.html" class="nav-link">Gallery</a></li>
+                <li><a href="/menu.html" class="nav-link">Menu</a></li>
+                <li><a href="/about.html" class="nav-link">About</a></li>
+            </ul>
+
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="openOrderModal()">Request an Order</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="container review-content">
+            <h1>Leave a Review</h1>
+            <p style="text-align: center; color: var(--color-text-muted); margin-bottom: 2rem;">We'd love to hear about
+                your experience with Baked By Bostik!</p>
+
+            <div id="success-message"
+                style="display: none; text-align: center; padding: 2rem; background: #ecfdf5; border: 1px solid #10b981; border-radius: var(--radius-md); color: #047857;">
+                <h3 style="margin-top: 0;">Thank you!</h3>
+                <p>Your review has been submitted and is pending approval.</p>
+                <a href="/index.html" class="btn btn-secondary" style="margin-top: 1rem; display: inline-block;">Return Home</a>
+            </div>
+
+            <form id="review-form">
+                <div class="form-group">
+                    <label for="name">Your Name</label>
+                    <input type="text" id="name" name="name" required placeholder="e.g. Sarah M.">
+                </div>
+                <div class="form-group">
+                    <label for="event_date">Event Date</label>
+                    <input type="date" id="event_date" name="event_date" required>
+                </div>
+                <div class="form-group">
+                    <label>Rating</label>
+                    <div class="stars" id="star-rating">
+                        <span class="star active" data-val="1">★</span>
+                        <span class="star active" data-val="2">★</span>
+                        <span class="star active" data-val="3">★</span>
+                        <span class="star active" data-val="4">★</span>
+                        <span class="star active" data-val="5">★</span>
+                    </div>
+                    <input type="hidden" name="rating" id="rating-val" value="5">
+                </div>
+                <div class="form-group">
+                    <label for="review_text">Review</label>
+                    <textarea id="review_text" name="review_text" rows="5" required
+                        placeholder="I ordered a cake for my daughter's birthday..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Review</button>
+            </form>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <div class="footer-col">
+                <h3>Baked By Bostik</h3>
+                <a href="mailto:hello@bakedbybostik.com">hello@bakedbybostik.com</a>
+                <div class="social-links">
+                    <a href="https://instagram.com/bakedbybostik" target="_blank">Instagram</a>
+                    <a href="https://www.facebook.com/profile.php?id=61554467784437" target="_blank">Facebook</a>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <img src="/assets/logo.JPG" alt="Baked By Bostik" class="footer-logo">
+            </div>
+
+            <div class="footer-col">
+                <nav class="footer-nav">
+                    <a href="/policies.html">Policies</a>
+                    <a href="/resources.html">Resources</a>
+                    <a href="/privacy.html">Privacy Policy</a>
+                    <a href="/terms.html">Terms</a>
+                    <a href="/leave-review.html">Leave a Review</a>
+                </nav>
+            </div>
+        </div>
+        <div class="local-delivery-banner">
+            Local delivery available for an added fee, based on location.
+        </div>
+    </footer>
+
+    <script src="/js/app.js"></script>
+    <script type="module" src="/js/leave-review.js"></script>
+</body>
+
+</html>

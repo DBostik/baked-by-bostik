@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initScrollAnimations();
     initHeroParallax();
     initOrderModal();
-    initTestimonials();
 });
 
 /* Sticky Header Effect */
@@ -66,16 +65,15 @@ function initHeroParallax() {
 }
 
 /* Testimonials Logic */
-function initTestimonials() {
+window.renderTestimonials = function(reviews) {
+    console.log("renderTestimonials called with:", reviews);
     const container = document.querySelector('.testimonial-carousel');
-    if (!container) return;
-
-    const reviews = [
-        { quote: "The unicorn cake was the hit of the party! Not only did it look incredible, but it tasted amazing too.", cite: "Sarah M." },
-        { quote: "The best cookies in Glen Ellyn! Kristen captured our theme perfectly.", cite: "Jennifer L." },
-        { quote: "Beautiful and delicious. The detail on the Spiderman cake was insane.", cite: "Mike D." },
-        { quote: "We order every year for our corporate holiday party. Professional and delicious!", cite: "James T." }
-    ];
+    if (!container || !reviews || reviews.length === 0) {
+        console.log("Rendering empty state because container missing or reviews are empty");
+        if (container) container.innerHTML = '<p class="text-muted">More sweet words coming soon!</p>';
+        return;
+    }
+    console.log("Rendering Testimonials:", reviews.length);
 
     // 1. Setup Structure: Wrapper > Track > Items
     container.innerHTML = `<div class="testimonial-track"></div>`;
@@ -85,9 +83,15 @@ function initTestimonials() {
     reviews.forEach(review => {
         const item = document.createElement('div');
         item.className = 'testimonial-item';
+        
+        let stars = '';
+        const rating = review.rating || 5;
+        for(let i=0; i<5; i++) { stars += (i < rating) ? '★' : '☆'; }
+
         item.innerHTML = `
-            <p class="quote">"${review.quote}"</p>
-            <cite>- ${review.cite}</cite>
+            <div style="color: #fbbf24; font-size: 1.25rem; margin-bottom: 0.5rem;">${stars}</div>
+            <p class="quote">"${review.text}"</p>
+            <cite>- ${review.name}</cite>
         `;
         track.appendChild(item);
     });
@@ -96,6 +100,8 @@ function initTestimonials() {
     let currentIndex = 0;
     const totalSlides = reviews.length;
 
+    if (window.testimonialInterval) clearInterval(window.testimonialInterval);
+
     function slideNext() {
         currentIndex = (currentIndex + 1) % totalSlides;
         const offset = -currentIndex * 100; // -0%, -100%, -200%
@@ -103,7 +109,9 @@ function initTestimonials() {
     }
 
     // Auto-advance
-    setInterval(slideNext, 5000);
+    if (totalSlides > 1) {
+        window.testimonialInterval = setInterval(slideNext, 5000);
+    }
 }
 
 // Note: We need to ensure .testimonial-item has transition: opacity

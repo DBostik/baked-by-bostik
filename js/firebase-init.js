@@ -8,9 +8,12 @@ import {
     where,
     getDocs,
     doc,
+    getDoc,
     updateDoc,
     setDoc,
-    serverTimestamp
+    serverTimestamp,
+    orderBy,
+    limit
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
@@ -30,9 +33,12 @@ export {
     where,
     getDocs,
     doc,
+    getDoc,
     updateDoc,
     setDoc,
     serverTimestamp,
+    orderBy,
+    limit,
     storage,
     ref,
     uploadBytes,

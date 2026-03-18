@@ -9,11 +9,32 @@
 
 **Project**: Baked By Bostik CRM
 **Tech Stack**: Firebase, Vanilla JS
-**Status**: Milestone 18 Completed (Mar 18, 2026)
+**Status**: Ready for Architect
 
 ---
 
 ## 📅 March 2026
+
+### 🟢 Milestone 21: The Reviews Pipeline (COMPLETE) - Mar 18, 2026
+- **Public Submission**: Created `leave-review.html` for customers to submit reviews to a `pending_reviews` Firestore collection.
+- **Admin Moderation**: Added a "Reviews" moderation tab to the admin dashboard for viewing, approving, and rejecting pending reviews. Approving a review moves it to the `reviews` collection.
+- **Homepage Display**: Updated `index.html` and `js/app.js` to dynamically fetch and display the latest approved reviews on the homepage instead of using hardcoded HTML.
+- **Security**: Updated `firestore.rules` to correctly permit public writes to `pending_reviews` and public reads from `reviews`.
+
+### 🟢 Milestone 20: Homepage Image CMS & Global Background (COMPLETE) - Mar 18, 2026
+- **Admin Interface**: 
+    - Added a new "Site Content" tab to the Admin dashboard UI.
+    - Added "Global Background Image" upload section.
+    - Created an interface to manage 4 Hero Carousel images and 8 Theme Cards (image upload + title update).
+    - Implemented Firebase Storage uploads and Firestore saving to the `site_content/homepage` document.
+- **Public UI**: 
+    - Updated `js/firebase-handler.js` to fetch the `site_content/homepage` collection on window load for `index.html`.
+    - Dynamically injects the fetched image URLs into the `.hero-img` implementing a continuous cross-fade transition and overwrites the `.theme-card` images and titles dynamically.
+    - Dynamically overrides the `body::before` global background image if a custom background is uploaded.
+
+### 🟢 Milestone 22: Menu Cookie FAQ & Extras (COMPLETE) - Mar 18, 2026
+- **Little Extras**: Replaced the basic "Cookie Add-Ons" box in `menu.html` with a premium styled `.little-extras-box` matching tier cards, offering Character Add-On and Individual Packaging.
+- **FAQ Accordion**: Added semantic `<details>` and `<summary>` for a "What moves a cookie from one tier to a different tier?" FAQ, detailing premium techniques, utilizing the existing global `.faq-item` CSS for a cohesive look.
 
 ### 🟢 Milestone 17.4: Cookie Menu Page Overhaul (COMPLETE) - Mar 18, 2026
 - **Cookie Summary Card**: Updated `menu.html` pricing card to use a `.price-row` layout with updated tiers ($60/$72/$84+) and added an anchor link to details.

@@ -317,6 +317,10 @@ function showPage(pageName) {
     if (analyticsPage) analyticsPage.classList.add('hidden');
     const galleryPage = document.getElementById('page-gallery');
     if (galleryPage) galleryPage.classList.add('hidden');
+    const siteContentPage = document.getElementById('page-sitecontent');
+    if (siteContentPage) siteContentPage.classList.add('hidden');
+    const reviewsPage = document.getElementById('page-reviews');
+    if (reviewsPage) reviewsPage.classList.add('hidden');
 
     // Show target
     const target = document.getElementById(`page-${pageName}`);
@@ -325,6 +329,10 @@ function showPage(pageName) {
     // Initialize page-specific data
     if (pageName === 'gallery') {
         initGallery();
+    } else if (pageName === 'sitecontent') {
+        initSiteContent();
+    } else if (pageName === 'reviews') {
+        initReviews();
     }
 }
 
@@ -3315,3 +3323,400 @@ window.deleteCategory = async function (catId, slug) {
         alert('Error deleting category: ' + err.message);
     }
 };
+
+// --- SITE CONTENT LOGIC (MILESTONE 20) ---
+let siteContentFetched = false;
+let currentSiteContent = {};
+
+const THEME_CARD_COUNT = 8;
+const HERO_COUNT = 4;
+
+const THEME_CARD_DEFAULTS = [
+    "Unicorns & Rainbows",
+    "Baby Shower",
+    "Seasonal",
+    "Princess & Fairytale",
+    "Sports & Teams",
+    "Teachers & School",
+    "Graduation",
+    "Corporate & Events"
+];
+
+async function initSiteContent() {
+    if (siteContentFetched) return;
+    
+    try {
+        const docRef = doc(db, 'site_content', 'homepage');
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+            currentSiteContent = docSnap.data();
+        } else {
+            currentSiteContent = { hero: [], themes: [] };
+        }
+        
+        renderSiteContentForm();
+        siteContentFetched = true;
+        
+        // Bind save button
+        document.getElementById('btn-save-sitecontent').onclick = saveSiteContent;
+        
+    } catch (err) {
+        console.error("Error fetching site content:", err);
+        alert("Could not load site content.");
+    }
+}
+
+function renderSiteContentForm() {
+    // 0. Global Background Preview
+    const bgPreview = document.getElementById('bg-preview');
+    const bgInput = document.getElementById('bg-file');
+    if (bgPreview && currentSiteContent.global_background && currentSiteContent.global_background.url) {
+        bgPreview.src = currentSiteContent.global_background.url;
+    }
+    if (bgInput && bgPreview) {
+        bgInput.onchange = (e) => {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (ev) => { bgPreview.src = ev.target.result; };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        };
+    }
+
+    // 1. Hero Carousel Previews
+    const heroData = currentSiteContent.hero || [];
+    for (let i = 0; i < HERO_COUNT; i++) {
+        const preview = document.getElementById(`hero-preview-${i}`);
+        const input = document.getElementById(`hero-file-${i}`);
+        
+        if (heroData[i] && heroData[i].url) {
+            preview.src = heroData[i].url;
+        }
+        
+        // Preview local file on select
+        if (input) {
+            input.onchange = (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => { preview.src = ev.target.result; };
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            };
+        }
+    }
+    
+    // 2. Generate 8 Theme Cards
+    const themesData = currentSiteContent.themes || [];
+    const themesContainer = document.getElementById('theme-cards-container');
+    if (themesContainer) {
+        themesContainer.innerHTML = '';
+        
+        for (let i = 0; i < THEME_CARD_COUNT; i++) {
+            const tData = themesData[i] || { title: THEME_CARD_DEFAULTS[i], url: '' };
+            const cardHtml = `
+                <div class="content-item-card" style="border: 1px solid #e5e7eb; padding: 1rem; border-radius: 6px; text-align: center;">
+                    <input type="text" id="theme-title-${i}" value="${tData.title || ''}" placeholder="Theme Title" style="width: 100%; border:1px solid #ccc; border-radius:4px; padding:0.4rem; margin-bottom:0.5rem; font-weight:bold; text-align:center;">
+                    <img id="theme-preview-${i}" src="${tData.url || 'https://via.placeholder.com/300x300?text=Empty'}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 4px; margin-bottom: 0.5rem;" />
+                    <input type="file" id="theme-file-${i}" accept="image/*" style="width: 100%; font-size: 0.8rem;">
+                </div>
+            `;
+            themesContainer.insertAdjacentHTML('beforeend', cardHtml);
+        }
+        
+        // Bind change events for theme inputs
+        for (let i = 0; i < THEME_CARD_COUNT; i++) {
+            const input = document.getElementById(`theme-file-${i}`);
+            const preview = document.getElementById(`theme-preview-${i}`);
+            if (input) {
+                input.onchange = (e) => {
+                    if (e.target.files && e.target.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => { preview.src = ev.target.result; };
+                        reader.readAsDataURL(e.target.files[0]);
+                    }
+                };
+            }
+        }
+    }
+}
+
+async function saveSiteContent() {
+    const btn = document.getElementById('btn-save-sitecontent');
+    const ogText = btn.textContent;
+    btn.textContent = 'Saving...';
+    btn.disabled = true;
+    
+    try {
+        const updateData = {
+            global_background: currentSiteContent.global_background || null,
+            hero: currentSiteContent.hero || [],
+            themes: currentSiteContent.themes || [],
+            updated_at: serverTimestamp()
+        };
+        
+        // 0. Process Global Background
+        const bgInput = document.getElementById('bg-file');
+        if (bgInput && bgInput.files && bgInput.files.length > 0) {
+            btn.textContent = `Uploading Background...`;
+            const file = bgInput.files[0];
+            const storagePath = `site_content/homepage/bg_${Date.now()}_${file.name}`;
+            const storageRef = ref(storage, storagePath);
+            await uploadBytes(storageRef, file);
+            const url = await getDownloadURL(storageRef);
+            
+            updateData.global_background = { url: url };
+        }
+        
+        // 1. Process Hero Images
+        for (let i = 0; i < HERO_COUNT; i++) {
+            const input = document.getElementById(`hero-file-${i}`);
+            if (input && input.files && input.files.length > 0) {
+                btn.textContent = `Uploading Hero ${i+1}...`;
+                const file = input.files[0];
+                const storagePath = `site_content/homepage/hero_${Date.now()}_${file.name}`;
+                const storageRef = ref(storage, storagePath);
+                await uploadBytes(storageRef, file);
+                const url = await getDownloadURL(storageRef);
+                
+                updateData.hero[i] = { url: url };
+            }
+            // Retain existing if no new file is selected.
+        }
+        
+        // 2. Process Theme Cards
+        for (let i = 0; i < THEME_CARD_COUNT; i++) {
+            const input = document.getElementById(`theme-file-${i}`);
+            const titleInput = document.getElementById(`theme-title-${i}`);
+            
+            if (!updateData.themes[i]) updateData.themes[i] = {};
+            if (titleInput) updateData.themes[i].title = titleInput.value;
+            
+            if (input && input.files && input.files.length > 0) {
+                btn.textContent = `Uploading Theme ${i+1}...`;
+                const file = input.files[0];
+                const storagePath = `site_content/homepage/theme_${Date.now()}_${file.name}`;
+                const storageRef = ref(storage, storagePath);
+                await uploadBytes(storageRef, file);
+                const url = await getDownloadURL(storageRef);
+                
+                updateData.themes[i].url = url;
+            }
+        }
+        
+        btn.textContent = 'Saving Document...';
+        const docRef = doc(db, 'site_content', 'homepage');
+        await setDoc(docRef, updateData, { merge: true });
+        
+        currentSiteContent = updateData;
+        alert('Site Content updated successfully! Changes will appear on the homepage.');
+        
+    } catch (err) {
+        console.error("Save site content error:", err);
+        alert('Error saving site content: ' + err.message);
+    } finally {
+        btn.textContent = ogText;
+        btn.disabled = false;
+    }
+}
+
+// --- REVIEWS MODERATION ---
+let unsubscribePendingReviews = null;
+let unsubscribeApprovedReviews = null;
+
+async function initReviews() {
+    if (unsubscribePendingReviews) unsubscribePendingReviews();
+    if (unsubscribeApprovedReviews) unsubscribeApprovedReviews();
+
+    const pendingList = document.getElementById('pending-reviews-list');
+    const pendingEmpty = document.getElementById('pending-reviews-empty');
+    if (pendingList && pendingEmpty) {
+        const qPending = query(collection(db, "pending_reviews"), orderBy("created_at", "asc"));
+        unsubscribePendingReviews = onSnapshot(qPending, (snapshot) => {
+            pendingList.innerHTML = '';
+            pendingList.appendChild(pendingEmpty);
+            
+            if (snapshot.empty) {
+                pendingEmpty.classList.remove('hidden');
+            } else {
+                pendingEmpty.classList.add('hidden');
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    data.id = docSnap.id;
+                    const el = createReviewCard(data, true);
+                    pendingList.appendChild(el);
+                });
+            }
+        });
+    }
+
+    const approvedList = document.getElementById('approved-reviews-list');
+    const approvedEmpty = document.getElementById('approved-reviews-empty');
+    if (approvedList && approvedEmpty) {
+        let hasSeeded = false;
+        const qApproved = query(collection(db, "reviews"), orderBy("created_at", "desc"));
+        unsubscribeApprovedReviews = onSnapshot(qApproved, async (snapshot) => {
+            approvedList.innerHTML = '';
+            approvedList.appendChild(approvedEmpty);
+            
+            if (snapshot.empty) {
+                approvedEmpty.classList.remove('hidden');
+                
+                // Auto seed on empty if we haven't already tried
+                if (!hasSeeded) {
+                    hasSeeded = true;
+                    console.log("No approved reviews found. Migrating default reviews to Firestore...");
+                    const defaultReviews = [
+                        { text: "The unicorn cake was the hit of the party! Not only did it look incredible, but it tasted amazing too.", name: "Sarah M.", rating: 5, created_at: serverTimestamp() },
+                        { text: "The best cookies in Glen Ellyn! Kristen captured our theme perfectly.", name: "Jennifer L.", rating: 5, created_at: serverTimestamp() },
+                        { text: "Beautiful and delicious. The detail on the Spiderman cake was insane.", name: "Mike D.", rating: 5, created_at: serverTimestamp() },
+                        { text: "We order every year for our corporate holiday party. Professional and delicious!", name: "James T.", rating: 5, created_at: serverTimestamp() }
+                    ];
+                    try {
+                        for (const review of defaultReviews) {
+                            await addDoc(collection(db, 'reviews'), review);
+                        }
+                    } catch (err) {
+                        console.error("Migration failed (permission or other):", err);
+                    }
+                }
+            } else {
+                approvedEmpty.classList.add('hidden');
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    data.id = docSnap.id;
+                    const el = createReviewCard(data, false);
+                    approvedList.appendChild(el);
+                });
+            }
+        });
+    }
+}
+
+function createReviewCard(review, isPending) {
+    const card = document.createElement('div');
+    card.style.border = '1px solid #e5e7eb';
+    card.style.borderRadius = '6px';
+    card.style.padding = '1rem';
+    card.style.background = '#f9fafb';
+    card.style.display = 'flex';
+    card.style.justifyContent = 'space-between';
+    card.style.alignItems = 'flex-start';
+    
+    let dateStr = 'Unknown Date';
+    if (review.created_at) {
+        const seconds = review.created_at.seconds || (new Date(review.created_at).getTime() / 1000);
+        if (seconds) dateStr = new Date(seconds * 1000).toLocaleDateString();
+    }
+    
+    let stars = '';
+    const rating = review.rating || 5;
+    for(let i=0; i<5; i++) {
+        stars += (i < rating) ? '★' : '☆';
+    }
+
+    const contentDiv = document.createElement('div');
+    contentDiv.innerHTML = `
+        <div style="font-weight: 600; margin-bottom: 0.25rem;">${review.name || 'Anonymous'} <span style="color: #fbbf24; margin-left: 0.5rem;">${stars}</span></div>
+        <div style="font-size: 0.85rem; color: #6b7280; margin-bottom: 0.5rem;">Event: ${review.event_date || 'N/A'} | Submitted: ${dateStr}</div>
+        <div style="color: #374151; font-style: italic;">"${review.text || ''}"</div>
+    `;
+    
+    const actionDiv = document.createElement('div');
+    actionDiv.style.display = 'flex';
+    actionDiv.style.gap = '0.5rem';
+    actionDiv.style.marginLeft = '1rem';
+    
+    if (isPending) {
+        const btnApprove = document.createElement('button');
+        btnApprove.className = 'btn-primary btn-sm';
+        btnApprove.textContent = 'Approve';
+        btnApprove.onclick = () => approveReview(review);
+        
+        const btnReject = document.createElement('button');
+        btnReject.className = 'btn-sm';
+        btnReject.style.background = '#fee2e2';
+        btnReject.style.color = '#991b1b';
+        btnReject.style.border = 'none';
+        btnReject.textContent = 'Reject';
+        btnReject.onclick = () => rejectReview(review.id);
+        
+        actionDiv.appendChild(btnApprove);
+        actionDiv.appendChild(btnReject);
+    } else {
+        const btnEdit = document.createElement('button');
+        btnEdit.className = 'btn-sm';
+        btnEdit.style.background = '#e5e7eb';
+        btnEdit.style.color = '#374151';
+        btnEdit.style.border = 'none';
+        btnEdit.textContent = 'Edit';
+        btnEdit.onclick = () => editApprovedReview(review);
+
+        const btnDelete = document.createElement('button');
+        btnDelete.className = 'btn-sm';
+        btnDelete.style.background = '#fee2e2';
+        btnDelete.style.color = '#991b1b';
+        btnDelete.style.border = 'none';
+        btnDelete.textContent = 'Delete';
+        btnDelete.onclick = () => deleteApprovedReview(review.id);
+        
+        actionDiv.appendChild(btnEdit);
+        actionDiv.appendChild(btnDelete);
+    }
+    
+    card.appendChild(contentDiv);
+    card.appendChild(actionDiv);
+    return card;
+}
+
+async function approveReview(review) {
+    if (!confirm('Approve this review for the homepage?')) return;
+    try {
+        const { id, ...dataToMove } = review;
+        await setDoc(doc(db, "reviews", id), dataToMove);
+        await deleteDoc(doc(db, "pending_reviews", id));
+    } catch (err) {
+        console.error('Error approving review:', err);
+        alert('Failed to approve review.');
+    }
+}
+
+async function rejectReview(id) {
+    if (!confirm('Permanently delete this pending review?')) return;
+    try {
+        await deleteDoc(doc(db, "pending_reviews", id));
+    } catch (err) {
+        console.error('Error rejecting review:', err);
+        alert('Failed to reject review.');
+    }
+}
+
+async function editApprovedReview(review) {
+    const newName = prompt('Edit customer name:', review.name || '');
+    if (newName === null) return; // cancelled
+    
+    const newText = prompt('Edit review text:', review.text || '');
+    if (newText === null) return; // cancelled
+    
+    if (newName.trim() !== review.name || newText.trim() !== review.text) {
+        try {
+            await updateDoc(doc(db, "reviews", review.id), { 
+                name: newName.trim() || 'Anonymous',
+                text: newText.trim()
+            });
+        } catch (err) {
+            console.error('Error updating review:', err);
+            alert('Failed to update review.');
+        }
+    }
+}
+
+async function deleteApprovedReview(id) {
+    if (!confirm('Remove this review from the homepage?')) return;
+    try {
+        await deleteDoc(doc(db, "reviews", id));
+    } catch (err) {
+        console.error('Error deleting review:', err);
+        alert('Failed to delete review.');
+    }
+}

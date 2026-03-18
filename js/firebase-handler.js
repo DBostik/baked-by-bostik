@@ -1,6 +1,98 @@
-import { db, collection, addDoc, doc, setDoc, serverTimestamp } from './firebase-init.js';
+import { db, collection, addDoc, doc, getDoc, setDoc, getDocs, query, orderBy, limit, serverTimestamp } from './firebase-init.js';
 
 console.log("Firebase Handler Module Loading...");
+
+// --- Fetch Site Content for Homepage ---
+document.addEventListener('DOMContentLoaded', async () => {
+    // Only fetch if we are on the homepage (check for hero-img)
+    const heroImg = document.querySelector('.hero-img');
+    const themesGrid = document.querySelector('.themes-grid');
+    
+    if (heroImg || themesGrid) {
+        try {
+            const docRef = doc(db, 'site_content', 'homepage');
+            const snap = await getDoc(docRef);
+            
+            if (snap.exists()) {
+                const data = snap.data();
+                
+                // 0. Setup Global Background Image
+                if (data.global_background && data.global_background.url) {
+                    const styleStyle = document.createElement('style');
+                    styleStyle.innerHTML = `body::before { background-image: url('${data.global_background.url}') !important; }`;
+                    document.head.appendChild(styleStyle);
+                }
+                
+                // 1. Setup Hero Slider if data.hero exists
+                if (data.hero && data.hero.length > 0) {
+                    const heroImageUrls = data.hero.map(h => h.url).filter(Boolean);
+                    if (heroImageUrls.length > 0 && heroImg) {
+                        heroImg.src = heroImageUrls[0]; // Set first image immediately
+                        heroImg.style.transition = 'opacity 0.3s ease-in-out';
+                        
+                        if (heroImageUrls.length > 1) {
+                            let currentIndex = 0;
+                            setInterval(() => {
+                                heroImg.style.opacity = '0.5';
+                                setTimeout(() => {
+                                    currentIndex = (currentIndex + 1) % heroImageUrls.length;
+                                    heroImg.src = heroImageUrls[currentIndex];
+                                    heroImg.style.opacity = '1';
+                                }, 300); // Wait for fade out
+                            }, 5000); // Rotate every 5 seconds
+                        }
+                    }
+                }
+                
+                // 2. Setup Theme Cards
+                if (data.themes && data.themes.length > 0 && themesGrid) {
+                    const themeCards = themesGrid.querySelectorAll('.theme-card');
+                    themeCards.forEach((card, index) => {
+                        if (data.themes[index]) {
+                            const tData = data.themes[index];
+                            const img = card.querySelector('img');
+                            const h3 = card.querySelector('h3');
+                            if (img && tData.url) {
+                                img.src = tData.url;
+                            }
+                            // Only override title if it's not a generic placeholder
+                            if (h3 && tData.title && !tData.title.startsWith('Theme ')) {
+                                h3.textContent = tData.title;
+                                // Create slug matching gallery category generation: lowercase, replace spaces with hyphens, remove special chars
+                                const tagSlug = tData.title.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                                card.href = `gallery.html?theme=${tagSlug}`;
+                            }
+                        }
+                    });
+                }
+            }
+        } catch (err) {
+            console.error("Error loading site content:", err);
+        }
+
+        // --- Fetch Reviews for Homepage ---
+        try {
+            console.log("Fetching reviews...");
+            const qReviews = query(collection(db, 'reviews'), orderBy('created_at', 'desc'), limit(10));
+            const reviewSnaps = await getDocs(qReviews);
+            console.log("reviewSnaps size:", reviewSnaps.size);
+            
+            const reviewData = [];
+            reviewSnaps.forEach(docSnap => {
+                reviewData.push({ id: docSnap.id, ...docSnap.data() });
+            });
+            console.log("reviewData array:", reviewData);
+            if (window.renderTestimonials) {
+                console.log("Calling renderTestimonials...");
+                window.renderTestimonials(reviewData);
+            } else {
+                console.error("window.renderTestimonials is NOT defined");
+            }
+        } catch(err) {
+            console.error("Error loading reviews:", err);
+        }
+    }
+});
 
 window.handleOrderSubmit = async (e, form) => {
     e.preventDefault();
