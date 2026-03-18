@@ -15,6 +15,11 @@
 
 ## 📅 March 2026
 
+### 🟢 Milestone 17.4: Cookie Menu Page Overhaul (COMPLETE) - Mar 18, 2026
+- **Cookie Summary Card**: Updated `menu.html` pricing card to use a `.price-row` layout with updated tiers ($60/$72/$84+) and added an anchor link to details.
+- **The Cookie Menu Section**: Added a new full-width `#cookie-tiers` section featuring storytelling copy and a 3-column `.tiers-grid` detailing "The Simply Sweet", "The Masterpiece", and "The Luxe Elite".
+- **Mixed Tiers Note**: Updated policies section to reflect custom line-by-line quoting.
+
 ### 🟢 Milestone 19: Admin & Automation Features (COMPLETE) - Mar 18, 2026
 - **Dead Leads Pipeline Status**:
     - Added a `DEAD` board column to the Kanban board in `admin/index.html`.

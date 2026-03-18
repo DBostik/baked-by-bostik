@@ -1012,6 +1012,85 @@ img {
     margin-top: 2px;
 }
 
+/* Premium Styling for Price Rows */
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: var(--space-3);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px dashed var(--color-border);
+}
+
+.price-row:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.price-row strong {
+    color: var(--color-accent-hover);
+    font-size: var(--text-lg);
+}
+
+/* Section Intro Text */
+.section-intro-text {
+    max-width: 750px;
+    margin: 0 auto var(--space-8);
+    text-align: center;
+}
+
+.section-intro-text .subtitle {
+    margin-bottom: var(--space-4);
+    font-size: var(--text-lg);
+    line-height: 1.8;
+}
+
+.section-intro-text h3 {
+    margin-bottom: var(--space-2);
+    font-size: var(--text-2xl);
+    color: var(--color-primary);
+}
+
+.section-intro-text p.text-muted {
+    font-size: var(--text-base);
+    line-height: 1.7;
+}
+
+/* Cookie Tier Customizations */
+.cookie-tier-card .tier-price {
+    font-size: var(--text-xl);
+    font-weight: 600;
+    color: var(--color-accent-hover);
+    margin-bottom: var(--space-4);
+}
+
+.cookie-tier-card .tier-price .text-muted {
+    font-size: var(--text-sm);
+    font-weight: 400;
+}
+
+.cookie-tier-card .tier-desc {
+    margin-bottom: var(--space-4);
+    line-height: 1.6;
+    color: var(--color-text-main);
+}
+
+.cookie-tier-card .tier-details {
+    list-style: none;
+    padding: 0;
+}
+
+.cookie-tier-card .tier-details li {
+    margin-bottom: var(--space-3);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+}
+
+.cookie-tier-card .tier-details strong {
+    color: var(--color-primary);
+}
+
 .design-tiers-section {
     padding: var(--space-12) 0;
 }
@@ -1037,9 +1116,54 @@ img {
     transition: transform var(--transition-normal);
 }
 
+.bg-cream .tier-card {
+    background: var(--color-bg-white);
+}
+
 .tier-card:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-md);
+}
+
+/* Premium Styling for Add-Ons Box */
+.addons-box {
+    background: var(--color-bg-white);
+    padding: var(--space-6) var(--space-8);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--color-accent);
+    margin-top: var(--space-8);
+    text-align: left;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.addons-box h3 {
+    color: var(--color-primary);
+    margin-bottom: var(--space-3);
+    font-size: var(--text-xl);
+}
+
+.addons-box ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.addons-box li {
+    margin-bottom: var(--space-2);
+    font-size: var(--text-base);
+    color: var(--color-text-main);
+    display: flex;
+    align-items: flex-start;
+}
+
+.addons-box li::before {
+    content: '•';
+    color: var(--color-accent);
+    font-weight: 900;
+    margin-right: var(--space-3);
+    font-size: 1.2rem;
+    line-height: 1.2;
 }
 
 .fillings-section {

@@ -832,3 +832,6 @@ When mapping Firestore `requests` to calendar events:
 **Milestone 19 (Automation)**:
 1. In Kanban board, drag a request to DEAD column → Verify it renders correctly → Check calendar view
 2. Move a request status to COMPLETED → Check email inbox for thank-you email (may take 1-2 minutes for Cloud Function trigger)
+
+---
+✅ **Update Mar 18, 2026**: Item 17.4 (Cookie Menu Page Overhaul) has been implemented by the Engineer and polished by the Designer. Ready for Sentinel validation.

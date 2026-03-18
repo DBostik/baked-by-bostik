@@ -60,38 +60,31 @@
                 <div class="menu-grid">
 
                     <!-- 1. Custom Sugar Cookies -->
-                    <div class="menu-card fade-in-up ">
+                    <div class="menu-card fade-in-up">
                         <h3><span class="menu-icon">🍪</span> Custom Sugar Cookies</h3>
-                        <p class="text-muted" style="font-weight: 500; margin-bottom: var(--space-4);">Minimum Order: 2
-                            Dozen</p>
+                        <p class="text-muted" style="font-weight: 500; margin-bottom: var(--space-4);">Minimum Order: 2 Dozen</p>
 
                         <div class="card-features" style="flex-grow: 1;">
+                            <p>Every set is custom-quoted so we can mix and match tiers to fit your vision and your budget.</p>
                             <ul>
-                                <li>
-                                    <span class="bullet">•</span>
-                                    <span><strong>The Simply Sweet: $48/doz</strong><br> <span class="text-muted"
-                                            style="font-size: 0.9em;">1-2 icing colors, simple shapes, classic designs
-                                            with minimal piping.</span></span>
+                                <li class="price-row">
+                                    <span>The Simply Sweet</span>
+                                    <strong>$60/doz</strong>
                                 </li>
-                                <li>
-                                    <span class="bullet">•</span>
-                                    <span><strong>The Celebration: $60/doz</strong><br> <span class="text-muted"
-                                            style="font-size: 0.9em;">3-5 icing colors, basic patterns, light detailing,
-                                            simple themes.</span></span>
+                                <li class="price-row">
+                                    <span>The Masterpiece</span>
+                                    <strong>$72/doz</strong>
                                 </li>
-                                <li>
-                                    <span class="bullet">•</span>
-                                    <span><strong>The Masterpiece: $72/doz</strong><br> <span class="text-muted"
-                                            style="font-size: 0.9em;">5-6+ colors, intricate designs, custom lettering,
-                                            shading, complex piping.</span></span>
-                                </li>
-                                <li>
-                                    <span class="bullet">•</span>
-                                    <span><strong>Character Add-On:</strong> $10/each (min 12). Add your child's
-                                        favorite character.</span>
+                                <li class="price-row">
+                                    <span>The Luxe Elite</span>
+                                    <strong>$84+/doz</strong>
                                 </li>
                             </ul>
+                            <p class="text-muted text-sm" style="margin-top: var(--space-4);">* Character Add-On: $10/each (min 12)</p>
                         </div>
+                        <a href="#cookie-tiers" class="btn btn-secondary full-width" style="width: 100%; margin-bottom: var(--space-2);">
+                            See Cookie Tier Details ↓
+                        </a>
                         <button class="btn btn-primary full-width" style="width: 100%;"
                             onclick="openOrderModal()">Request a Quote</button>
                     </div>
@@ -203,6 +196,81 @@
             </div>
         </section>
 
+        <!-- Cookie Tiers Detail Section -->
+        <section id="cookie-tiers" class="design-tiers-section bg-cream" style="padding: var(--space-8) 0;">
+            <div class="container">
+                <h2 class="section-title text-center">The Cookie Menu</h2>
+                <div class="section-intro-text">
+                    <p class="subtitle">
+                        I keep things pretty simple around here: I use the best ingredients, bake every batch from scratch, and obsess over the details so you don't have to. Because custom icing is a true labor of love, I have a two-dozen minimum on all custom orders.
+                    </p>
+                    <h3>
+                        Building Your Custom Set
+                    </h3>
+                    <p class="text-muted">
+                        Every celebration is unique, so I don't believe in "one size fits all" pricing. When you receive a quote from me, you'll see a line-by-line breakdown of the cost for each individual cookie style in your set. This allows us to mix and match tiers to fit your vision and your budget perfectly!
+                    </p>
+                </div>
+
+                <div class="tiers-grid">
+                    <!-- Tier 1: The Simply Sweet -->
+                    <div class="tier-card cookie-tier-card">
+                        <h3>The Simply Sweet</h3>
+                        <p class="tier-price">
+                            Starting at $60/doz <span class="text-muted">($5.00/cookie)</span>
+                        </p>
+                        <p class="tier-desc">
+                            Think of these as your "everyday" celebration cookies. Clean, classic, and perfect for when you want a high-end treat without all the bells and whistles.
+                        </p>
+                        <ul class="tier-details">
+                            <li><strong>Details:</strong> 1–2 icing colors, simple shapes (hearts, stars, plaques)</li>
+                            <li><strong>The Look:</strong> Smooth flood icing with minimal, clean piping</li>
+                            <li><strong>Perfect for:</strong> School treats, "just because" gifts, simple celebration accents</li>
+                        </ul>
+                    </div>
+
+                    <!-- Tier 2: The Masterpiece -->
+                    <div class="tier-card cookie-tier-card">
+                        <h3>The Masterpiece</h3>
+                        <p class="tier-price">
+                            Starting at $72/doz <span class="text-muted">($6.00/cookie)</span>
+                        </p>
+                        <p class="tier-desc">
+                            This is where your theme really starts to come to life! Most of my clients land here because it allows for that extra "wow" factor that makes a party feel cohesive and special.
+                        </p>
+                        <ul class="tier-details">
+                            <li><strong>Details:</strong> 3–5 icing colors and moderate detailing</li>
+                            <li><strong>The Look:</strong> Layered icing, textures, themed shapes</li>
+                            <li><strong>Ideal for:</strong> Baby showers, themed birthday parties, bridal brunches</li>
+                        </ul>
+                    </div>
+
+                    <!-- Tier 3: The Luxe Elite -->
+                    <div class="tier-card cookie-tier-card">
+                        <h3>The Luxe Elite</h3>
+                        <p class="tier-price">
+                            Starting at $84+/doz <span class="text-muted">($7.00+/cookie)</span>
+                        </p>
+                        <p class="tier-desc">
+                            If you are looking for a showstopper, this is it. These aren't just cookies; they're tiny edible canvases.
+                        </p>
+                        <ul class="tier-details">
+                            <li><strong>Details:</strong> 6+ icing colors, hand-painted details, 3D elements</li>
+                            <li><strong>The Look:</strong> Museum-quality artistry, multi-technique designs</li>
+                            <li><strong>Perfect for:</strong> Milestone celebrations, luxury events, unforgettable gifts</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="addons-box">
+                    <h3>Cookie Add-Ons:</h3>
+                    <ul>
+                        <li>Character Add-On: $10/each (min 12). Add your child's favorite character.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
         <!-- Design Tiers Explanation -->
         <section class="design-tiers-section" style="padding: var(--space-8) 0;">
             <div class="container">
@@ -266,9 +334,7 @@
                         require at least 7 days (cookies) or 48 hours (cakes) notice.</li>
                     <li><strong>Allergen Warning:</strong> Made in a home kitchen
                         that handles dairy, eggs, wheat, and nuts.</li>
-                    <li><strong>Mixed Tiers:</strong> If you want a variety of
-                        detail in one order (like half simple cookies, half extravagant), we price at the average tier
-                        rate.</li>
+                    <li><strong>Mixed Tiers:</strong> Love variety? We quote each cookie style individually so you can mix and match tiers to fit your budget and vision perfectly.</li>
                     <li><strong>Fondant Work:</strong> Minimal fondant is
                         included in Tier 2; heavy fondant work or 3D elements may push an order into Tier 3.</li>
                 </ul>
