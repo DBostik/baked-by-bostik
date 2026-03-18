@@ -460,36 +460,3 @@ exports.onNewOrderRequest = onDocumentCreated({
         console.error("New Order Notification Error:", error);
     }
 });
-
-exports.fixPrincess = onRequest(async (req, res) => {
-    const db = admin.firestore();
-    try {
-        await db.collection('gallery_categories').doc('princess').set({
-            label: 'Princess & Fairytale',
-            slug: 'princess',
-            sort_order: 8,
-            created_at: admin.firestore.FieldValue.serverTimestamp()
-        });
-        
-        const snapshot = await db.collection('gallery_items').get();
-        let updatedCount = 0;
-        const batch = db.batch();
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            const tags = data.tags || '';
-            const name = data.display_name || '';
-            if (tags.toLowerCase().includes('princess') || name.toLowerCase().includes('princess')) {
-                let cats = data.categories || [];
-                if (!cats.includes('princess')) {
-                    cats.push('princess');
-                    batch.update(doc.ref, { categories: cats });
-                    updatedCount++;
-                }
-            }
-        });
-        await batch.commit();
-        res.json({ success: true, updated: updatedCount });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
