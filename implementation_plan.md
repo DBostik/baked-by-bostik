@@ -21,7 +21,31 @@
 
 ## 🚀 CURRENT SPRINT (Active Work)
 
-*(Sprint empty. Waiting for Architect to plan next milestones).*
+## 🟡 Milestone 23: Finance Ledger & Order Auditing
+**Priority**: 🟡 Medium — Critical for accurate business analytics.
+
+**Goal**: Upgrade the CRM's financial tracking to handle cancelled orders (Voiding) and fix analytics inaccuracies caused by orphaned test data (Cascading Deletes and Auditing).
+
+**Phase 1: Order Voiding (Engineer)**
+- [x] In `admin.js`, update the Request Detail Modal (where the "Record Deposit" button lives).
+- [x] Add a new "Void Order / Refund" button if an `orders` document currently exists for that request.
+- [x] Clicking it confirms with the user, then updates the linked `orders/{id}` document to have `status: 'VOIDED'`.
+
+**Phase 2: Finance Ledger Tab (Engineer)**
+- [x] In `admin/index.html`, add a "Ledger" tab to the admin sidebar navigation and a new `#page-ledger` wrapper.
+- [x] Build a table that lists EVERY document from the `orders` collection, sorted by date in `admin.js`.
+- [x] Display columns: Date, Request ID, Total Amount, Amount Paid, and Status (Active vs Voided).
+- [x] Add a "Delete Test Data" button to each row. Clicking it permanently deletes the `orders/{id}` document AND any documents inside its `orders/{id}/payments` subcollection.
+
+**Phase 3: Analytics Accuracy & Cascading Deletes (Engineer)**
+- [x] Update the Analytics page logic (`initAnalytics`). Filter the revenue calculations to **ignore** any data from `orders` where `status === 'VOIDED'` or where the parent Request no longer exists/is marked `DEAD`.
+- [x] Update the existing "Delete Request" and "Delete Customer" functions in `admin.js`. When a Request or Customer is fully deleted from the dashboard, perform a cascading delete down to the `orders` and `orders/{id}/payments` database collections.
+
+**Phase 4: Payment Tracking (Engineer)**
+- [x] In `admin/index.html`, add a new `#payment-modal` similar to `#deposit-modal` but specifically for recording subsequent payments on an existing order.
+- [x] In `admin.js`, update the Request Detail Modal footer. If an `order` already exists and is not `VOIDED`, display a "Record Payment" button alongside "Void Order".
+- [x] Implement `openPaymentModal()` and `initRecordPaymentLogic()` which adds a new document to `orders/{orderId}/payments` and recalculates `amount_paid` and `balance_due` on the parent `order` document.
+- [x] Update the Ledger Table logic to reflect the new `amount_paid` dynamically.
 
 ## 🔮 FUTURE ROADMAP (Backlog)
 
@@ -91,3 +115,24 @@
 - [x] Fix Princess Gallery Filter in Firestore.
 - [x] Add Address Field to Customer Profile Modal in Admin.
 - [x] Add Venmo handle to Invoice Email template.
+
+### Prompt 4: Finance Ledger & Voiding
+> 🤖 **Model: Claude Sonnet 4.6 Thinking**
+>
+> **For the Engineer agent:**
+>
+> @engineer This is a **Firebase + Vanilla JS** project. We need to upgrade the CRM financial tracking.
+>
+> **⚠️ IMPORTANT:** First, read `implementation_plan.md` under Milestone 23 for the full context. Do NOT overwrite or replace `implementation_plan.md` or `changelog.md` — only append or mark items as `[x]` when completed.
+>
+> **1. Voiding (`admin.js`)**
+> In the Request Detail Modal (near "Record Deposit"), add a "Void Order" button if an `orders/{id}` document exists. Clicking it sets `status: "VOIDED"` on the order document.
+>
+> **2. Ledger Tab (`admin/index.html` & `admin.js`)**
+> Add a "Ledger" tab to the admin sidebar. Build a table listing EVERY document from `orders`, sorted by date.
+> Columns: Date, Request ID, Total Amount, Amount Paid, and Status.
+> Add a "Delete Test Data" button to each row. Clicking it permanently deletes `orders/{id}` AND its `orders/{id}/payments` subcollection.
+>
+> **3. Analytics & Cascading Deletes (`admin.js`)**
+> Update `initAnalytics()`. Ignore `orders` data where `status === "VOIDED"` or where the parent Request is deleted.
+> Update the existing Delete Request and Delete Customer functions to perform a cascading delete on any associated `orders` and `payments` documents.

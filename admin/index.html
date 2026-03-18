@@ -134,6 +134,15 @@
                             Reviews
                         </a>
                     </li>
+                    <li>
+                        <a href="#" data-page="ledger">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                style="margin-right:0.75rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Ledger
+                        </a>
+                    </li>
                     <!-- Future: Settings -->
 
                 </ul>
@@ -598,6 +607,33 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- LEDGER PAGE -->
+                <div id="page-ledger" class="page-section hidden">
+                    <header class="page-header">
+                        <h1>Finance Ledger</h1>
+                    </header>
+                    <div class="table-card">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Request ID</th>
+                                    <th>Total Amount</th>
+                                    <th>Amount Paid</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ledger-table-body">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                        <div id="ledger-empty-state" class="empty-state hidden">
+                            <p>No orders found.</p>
+                        </div>
+                    </div>
+                </div>
             </main>
 
         </div>
@@ -614,6 +650,7 @@
                     <!-- Dynamic Content -->
                 </div>
                 <div class="modal-footer">
+                    <button id="btn-void-order" class="btn-secondary hidden" style="margin-right: 0.5rem; background:#fee2e2; color:#b91c1c; border-color:#fca5a5;">Void Order / Refund</button>
                     <button id="btn-record-deposit" class="btn-secondary hidden" style="margin-right: 0.5rem;">Record
                         Deposit</button>
                     <button id="btn-create-quote" class="btn-primary">Create Quote</button>
@@ -860,6 +897,54 @@
 
                     <button type="submit" class="btn-primary"
                         style="width:100%; background-color: #10b981; border-color: #10b981;">Confirm & Book</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+    <!-- RECORD PAYMENT MODAL -->
+    <div id="payment-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>Record Payment</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 1rem; color: #666;">Add a payment to this existing order.</p>
+                <form id="payment-form">
+                    <input type="hidden" id="payment-order-id">
+                    
+                    <div class="form-group" style="margin-bottom:1rem;">
+                        <label for="payment-amount"
+                            style="display:block; margin-bottom:0.5rem; font-weight:500;">Payment Amount ($)</label>
+                        <input type="number" id="payment-amount" required min="0.01" step="0.01"
+                            style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px;">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:1rem;">
+                        <label for="payment-note"
+                            style="display:block; margin-bottom:0.5rem; font-weight:500;">Note</label>
+                        <input type="text" id="payment-note" value="Subsequent Payment"
+                            style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px;">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:1rem;">
+                        <label for="payment-method"
+                            style="display:block; margin-bottom:0.5rem; font-weight:500;">Method</label>
+                        <select id="payment-method" required
+                            style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px;">
+                            <option value="Cash">Cash</option>
+                            <option value="Check">Check</option>
+                            <option value="Card/Online">Card / Online</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-primary"
+                        style="width:100%; background-color: #3b82f6; border-color: #3b82f6;">Record Payment</button>
                 </form>
             </div>
         </div>

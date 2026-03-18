@@ -43,6 +43,8 @@ const els = {
     requestsListView: document.getElementById('requests-list-view'),
     requestsBoardView: document.getElementById('requests-board-view'),
     requestsCalendarView: document.getElementById('requests-calendar-view'), // ADDED
+    ledgerTableBody: document.getElementById('ledger-table-body'),
+    ledgerEmptyState: document.getElementById('ledger-empty-state'),
     calTitle: document.getElementById('cal-title'),
     calPrev: document.getElementById('cal-prev'),
     calNext: document.getElementById('cal-next'),
@@ -130,6 +132,13 @@ const els = {
     depositTotal: document.getElementById('deposit-total'),
     depositAmount: document.getElementById('deposit-amount'),
     depositNote: document.getElementById('deposit-note'),
+    // Record Payment
+    paymentModal: document.getElementById('payment-modal'),
+    paymentForm: document.getElementById('payment-form'),
+    paymentOrderId: document.getElementById('payment-order-id'),
+    paymentAmount: document.getElementById('payment-amount'),
+    paymentNote: document.getElementById('payment-note'),
+    paymentMethod: document.getElementById('payment-method'),
     // Mobile Nav
     mobileMenuBtn: document.getElementById('mobile-menu-btn'),
     sidebarOverlay: document.getElementById('sidebar-overlay'),
@@ -183,6 +192,9 @@ async function initDashboard(user) {
 
     // Init Record Deposit (Milestone 4)
     initRecordDepositLogic();
+    
+    // Init Record Payment (Milestone 23 Phase 4)
+    initRecordPaymentLogic();
 
     // Init Analytics (Milestone 5)
     initAnalyticsLogic();
@@ -193,6 +205,16 @@ async function initDashboard(user) {
         depositCloseBtn.addEventListener('click', () => {
             els.depositModal.classList.add('hidden');
         });
+    }
+
+    // Init Payment Modal Close Button
+    if (els.paymentModal) {
+        const paymentCloseBtn = els.paymentModal.querySelector('.close-modal');
+        if (paymentCloseBtn) {
+            paymentCloseBtn.addEventListener('click', () => {
+                els.paymentModal.classList.add('hidden');
+            });
+        }
     }
 
     await fetchOrders(); // Fetch orders for revenue stats
@@ -321,6 +343,8 @@ function showPage(pageName) {
     if (siteContentPage) siteContentPage.classList.add('hidden');
     const reviewsPage = document.getElementById('page-reviews');
     if (reviewsPage) reviewsPage.classList.add('hidden');
+    const ledgerPage = document.getElementById('page-ledger');
+    if (ledgerPage) ledgerPage.classList.add('hidden');
 
     // Show target
     const target = document.getElementById(`page-${pageName}`);
@@ -333,6 +357,8 @@ function showPage(pageName) {
         initSiteContent();
     } else if (pageName === 'reviews') {
         initReviews();
+    } else if (pageName === 'ledger') {
+        renderLedgerTable();
     }
 }
 
@@ -558,11 +584,74 @@ async function fetchOrders() {
             orders.push({ id: doc.id, ...doc.data() });
         });
         updateStats();
+        renderLedgerTable();
     }, (error) => {
         console.error("Error fetching orders:", error);
     });
 }
 
+async function deleteOrderAndPayments(orderId) {
+    try {
+        const paymentsRef = collection(db, "orders", orderId, "payments");
+        const pmtsSnap = await getDocs(paymentsRef);
+        const batch = writeBatch(db);
+        pmtsSnap.forEach(docSnap => batch.delete(docSnap.ref));
+        await batch.commit();
+
+        await deleteDoc(doc(db, "orders", orderId));
+    } catch(err) {
+        console.error("Error deleting order", err);
+        throw err;
+    }
+}
+
+function renderLedgerTable() {
+    if (!els.ledgerTableBody) return;
+    els.ledgerTableBody.innerHTML = '';
+
+    if (orders.length === 0) {
+        els.ledgerEmptyState.classList.remove('hidden');
+        return;
+    }
+    els.ledgerEmptyState.classList.add('hidden');
+
+    const sortedOrders = [...orders].sort((a, b) => {
+        const da = a.created_at?.seconds || new Date(a.date || 0).getTime()/1000;
+        const db = b.created_at?.seconds || new Date(b.date || 0).getTime()/1000;
+        return db - da;
+    });
+
+    sortedOrders.forEach(o => {
+        const dateStr = o.created_at ? new Date(o.created_at.seconds * 1000).toLocaleDateString() : (o.date || 'N/A');
+        const amountTotal = parseFloat(o.total_price) || 0;
+        const amountPaid = parseFloat(o.amount_paid) || 0;
+        const status = o.status || 'ACTIVE';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${dateStr}</td>
+            <td><strong>#${o.id || o.request_id}</strong></td>
+            <td>$${amountTotal.toFixed(2)}</td>
+            <td>$${amountPaid.toFixed(2)}</td>
+            <td><span class="status-badge status-${status}">${status}</span></td>
+            <td>
+                <button class="btn-sm btn-delete-order" data-id="${o.id}" style="color:#dc2626; background:none; border:none; text-decoration:underline; font-size:0.8rem; cursor:pointer;" title="Permanently delete order and payments">Delete Test Data</button>
+            </td>
+        `;
+
+        tr.querySelector('.btn-delete-order').addEventListener('click', async () => {
+            if (confirm('Are you sure you want to PERMANENTLY delete this order and its payments? This cannot be undone.')) {
+                try {
+                    await deleteOrderAndPayments(o.id);
+                    alert("Order deleted successfully.");
+                } catch(e) {
+                    alert("Failed to delete order.");
+                }
+            }
+        });
+        els.ledgerTableBody.appendChild(tr);
+    });
+}
 
 async function fetchCustomer(id) {
     if (customers[id]) return;
@@ -1286,6 +1375,17 @@ function updateModalFooter(req) { // No changes needed
 
                     // 2. Delete Firestore Document
                     await deleteDoc(doc(db, "requests", req.id));
+
+                    // 3. Delete associated orders and payments (Milestone 23)
+                    const relatedOrders = orders.filter(o => o.request_id === req.id || o.id === req.id);
+                    for (const o of relatedOrders) {
+                        try {
+                            await deleteOrderAndPayments(o.id);
+                        } catch (e) {
+                            console.warn("Could not delete associated order:", o.id, e);
+                        }
+                    }
+
                     els.modal.classList.add('hidden');
                     alert("Request and associated images deleted successfully.");
                 } catch (err) {
@@ -1323,11 +1423,43 @@ function updateModalFooter(req) { // No changes needed
         };
         rightDiv.appendChild(btnEdit);
 
-        // 2. Record Deposit (Conditional)
-        if (['AWAITING_DETAILS', 'QUOTING'].includes(req.status)) {
+        // 1.5 Void Order & Record Payment (Milestone 23)
+        const linkedOrder = orders.find(o => o.request_id === req.id || o.id === req.id);
+        if (linkedOrder) {
+            if (linkedOrder.status !== 'VOIDED') {
+                const btnPayment = document.createElement('button');
+                btnPayment.className = 'btn-primary';
+                btnPayment.style.cssText = 'margin-right: 0.5rem; background:#3b82f6; border-color:#3b82f6;';
+                btnPayment.innerText = 'Record Payment';
+                btnPayment.onclick = () => {
+                    openPaymentModal(linkedOrder.id);
+                };
+                rightDiv.appendChild(btnPayment);
+
+                const btnVoid = document.createElement('button');
+                btnVoid.className = 'btn-secondary';
+                btnVoid.style.cssText = 'margin-right: 0.5rem; background:#fee2e2; color:#b91c1c; border-color:#fca5a5;';
+                btnVoid.innerText = 'Void Order / Refund';
+                btnVoid.onclick = async () => {
+                    if (confirm('Are you sure you want to VOID this order?')) {
+                        try {
+                            const orderRef = doc(db, 'orders', linkedOrder.id);
+                            await updateDoc(orderRef, { status: 'VOIDED' });
+                            alert("Order has been voided.");
+                            renderModal(); // re-render
+                        } catch(e) {
+                            alert("Error voiding: " + e.message);
+                        }
+                    }
+                };
+                rightDiv.appendChild(btnVoid);
+            }
+        } else {
+            // 2. Record Deposit / Init Order (Fallback if no order exists)
+            // Shows up regardless of status so legacy/dragged requests can be initialized into the Ledger
             const btnDeposit = document.createElement('button');
             btnDeposit.className = 'btn-secondary';
-            btnDeposit.innerText = 'Record Deposit';
+            btnDeposit.innerText = 'Record Deposit / Init Order';
             btnDeposit.onclick = () => openDepositModal(req);
             rightDiv.appendChild(btnDeposit);
         }
@@ -2023,7 +2155,21 @@ async function deleteSelectedCustomers() {
         try {
             const promises = [];
             selectedCustomerIds.forEach(id => {
-                promises.push(deleteDoc(doc(db, "customers", id)));
+                promises.push(deleteDoc(doc(db, "customers", id)).then(async () => {
+                    // Cascade delete requests and their associated orders
+                    const userRequests = requests.filter(r => r.customer_id === id);
+                    for (const req of userRequests) {
+                        try {
+                            await deleteDoc(doc(db, "requests", req.id));
+                            const relOrders = orders.filter(o => o.request_id === req.id || o.id === req.id);
+                            for (const o of relOrders) {
+                                await deleteOrderAndPayments(o.id);
+                            }
+                        } catch (e) {
+                            console.warn("Cascade delete error for request", req.id, e);
+                        }
+                    }
+                }));
                 delete customers[id]; // Update local cache immediately
             });
 
@@ -2130,6 +2276,19 @@ function renderCustomersTable(searchTerm = '') {
             if (confirm(`Are you sure you want to delete customer "${c.name}" (${c.email})?\n\nThis cannot be undone.`)) {
                 try {
                     await deleteDoc(doc(db, "customers", c.id));
+                    // Cascade delete requests and their associated orders
+                    const userRequests = requests.filter(r => r.customer_id === c.id);
+                    for (const req of userRequests) {
+                        try {
+                            await deleteDoc(doc(db, "requests", req.id));
+                            const relOrders = orders.filter(o => o.request_id === req.id || o.id === req.id);
+                            for (const o of relOrders) {
+                                await deleteOrderAndPayments(o.id);
+                            }
+                        } catch (e) {
+                            console.warn("Cascade delete error for request", req.id, e);
+                        }
+                    }
                     // Also remove from local cache for instant feedback
                     delete customers[c.id];
                     renderCustomersTable(els.customerSearch ? els.customerSearch.value : '');
@@ -2486,6 +2645,75 @@ function initRecordDepositLogic() {
     });
 }
 
+function openPaymentModal(orderId) {
+    if (!els.paymentModal) return;
+    els.paymentOrderId.value = orderId;
+    els.paymentAmount.value = '';
+    els.paymentNote.value = 'Subsequent Payment';
+    els.paymentModal.classList.remove('hidden');
+}
+
+function initRecordPaymentLogic() {
+    if (!els.paymentForm) return;
+
+    els.paymentForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const btn = els.paymentForm.querySelector('button[type="submit"]');
+        const originalText = btn.textContent;
+        btn.textContent = 'Processing...';
+        btn.disabled = true;
+
+        try {
+            const orderId = els.paymentOrderId.value;
+            const amount = parseFloat(els.paymentAmount.value);
+            const note = els.paymentNote.value;
+            const method = els.paymentMethod.value;
+
+            if (!orderId || isNaN(amount) || amount <= 0) {
+                throw new Error("Invalid payment details.");
+            }
+
+            // Get current order
+            const orderRef = doc(db, "orders", orderId);
+            const orderSnap = await getDoc(orderRef);
+            if (!orderSnap.exists()) throw new Error("Order not found.");
+            const orderData = orderSnap.data();
+
+            // Create Payment Sub-Document
+            const paymentData = {
+                amount: amount,
+                date: new Date(),
+                note: note || 'Payment',
+                method: method
+            };
+            await addDoc(collection(db, "orders", orderId, "payments"), paymentData);
+
+            // Update parent order
+            const currentPaid = parseFloat(orderData.amount_paid) || 0;
+            const newPaid = currentPaid + amount;
+            const total = parseFloat(orderData.total_price) || 0;
+
+            await updateDoc(orderRef, {
+                amount_paid: newPaid,
+                balance_due: total - newPaid,
+                updated_at: new Date()
+            });
+
+            alert("Payment recorded successfully!");
+            els.paymentModal.classList.add('hidden');
+            // Ledger will auto-update via onSnapshot
+
+        } catch (error) {
+            console.error("Error recording payment:", error);
+            alert("Error: " + error.message);
+        } finally {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
+    });
+}
+
 
 // --- ANALYTICS LOGIC (Milestone 5) ---
 
@@ -2519,6 +2747,11 @@ function updateCharts() {
         const revenueItems = [];
 
         orders.forEach(order => {
+            // Milestone 23: Ignore VOIDED or dead/missing requests
+            if (order.status === 'VOIDED') return;
+            const linkedReq = requests.find(r => r.id === order.request_id || r.id === order.id);
+            if (!linkedReq || linkedReq.status === 'DEAD') return;
+
             let date = null;
             if (order.created_at && order.created_at.seconds) {
                 date = new Date(order.created_at.seconds * 1000);
@@ -2537,7 +2770,6 @@ function updateCharts() {
             }
 
             // Lookup Linked Request for details
-            const linkedReq = requests.find(r => r.id === order.request_id);
             const itemsStr = linkedReq ? (linkedReq.step1_data?.category || "Custom Order") : "Unknown Request";
 
             // Collect for table

@@ -15,6 +15,15 @@
 
 ## 📅 March 2026
 
+### 🟢 Milestone 23: Finance Ledger & Order Auditing (COMPLETE) - Mar 18, 2026
+- **Order Voiding**: Added a "Void Order" button to the Admin Request Detail Modal to easily cancel orders.
+- **Finance Ledger**: Created a dedicated "Ledger" tab in the admin dashboard. Displays all orders with cascading "Delete Test Data" functionality that permanently removes `orders` and their associated `payments` subcollections.
+- **Analytics Accuracy & Cascading Deletes**:
+    - Updated the Analytics logic to filter out revenue from `VOIDED` orders and orders tied to `DEAD`/missing requests.
+    - Updated "Delete Request" and "Delete Customer" functions to perform cascading deletes on associated orders and payments to prevent orphaned data.
+- **Payment Tracking**: Added a "Record Payment" button and corresponding modal for existing, non-voided orders. Payments are recorded sequentially to `orders/{id}/payments` and dynamically update `amount_paid` and `balance_due` on the parent order.
+- **Ledger Retroactivity**: Relaxed "Record Deposit" constraints to appear on *any* request missing an associated order document, allowing admins to manually initialize the ledger for legacy or un-deposited BOOKED requests so they become eligible for "Record Payment".
+
 ### 🟢 Milestone 21: The Reviews Pipeline (COMPLETE) - Mar 18, 2026
 - **Public Submission**: Created `leave-review.html` for customers to submit reviews to a `pending_reviews` Firestore collection.
 - **Admin Moderation**: Added a "Reviews" moderation tab to the admin dashboard for viewing, approving, and rejecting pending reviews. Approving a review moves it to the `reviews` collection.
