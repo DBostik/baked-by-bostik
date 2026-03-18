@@ -9,11 +9,25 @@
 
 **Project**: Baked By Bostik CRM
 **Tech Stack**: Firebase, Vanilla JS
-**Status**: Milestone 10 Started (Jan 27, 2026)
+**Status**: Milestone 18 Completed (Mar 18, 2026)
 
 ---
 
 ## 📅 March 2026
+
+### 🟢 Milestone 18: Quote Modal Improvements (COMPLETE) - Mar 18, 2026
+- **Intake Summary Panel**:
+    - Added a collapsible panel at the top of the Quote Modal to display customer request details (Category, Event Date, Fulfillment, Theme, Allergies, Notes, Inspiration Photos).
+    - Auto-populates from `step1_data` and `step2_data` and defaults to an expanded state for immediate context while building quotes.
+    - Allergies are highlighted in red for visibility.
+- **Quote Image Attachments**:
+    - Added a file upload area below Quote Notes to select multiple images.
+    - Selected images are previewed with thumbnails and can be removed before generation.
+    - Uploads attached images to Firebase Storage (`quote_attachments/{requestId}/...`) when generating the PDF.
+- **Email Cloud Function (`dispatchQuoteEmail`)**:
+    - Updated Cloud Function to accept an array of `imageUrls`.
+    - Automatically attaches the images to the email via Nodemailer alongside the PDF quote.
+    - Adds an inline layout of image thumbnails in the email body for quick viewing.
 
 ### 🟢 Order Form: Pickup/Delivery Time Window + Cake Flavor Fields (COMPLETE) - Mar 18, 2026
 - **Pickup/Delivery Time Window (Step 1)**:

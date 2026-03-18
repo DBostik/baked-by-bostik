@@ -79,6 +79,19 @@ const els = {
     quotePdfLink: document.getElementById('quote-pdf-link'),
     btnGeneratePdf: document.getElementById('btn-generate-pdf'),
     btnSendEmail: document.getElementById('btn-send-email'),
+    // Intake Summary Panel (M18)
+    quoteIntakeSummary: document.getElementById('quote-intake-container'),
+    quoteIntakeToggle: document.getElementById('quote-intake-toggle'),
+    quoteIntakeBody: document.getElementById('quote-intake-body'),
+    quoteIntakeDateCat: document.getElementById('quote-intake-date-cat'),
+    quoteIntakeFulfillment: document.getElementById('quote-intake-fulfillment'),
+    quoteIntakeTheme: document.getElementById('quote-intake-theme'),
+    quoteIntakeAllergies: document.getElementById('quote-intake-allergies'),
+    quoteIntakeNotes: document.getElementById('quote-intake-notes'),
+    quoteIntakePhotos: document.getElementById('quote-intake-photos'),
+    // Attachments Area (M18)
+    quoteAttachmentInput: document.getElementById('quote-attachment-input'),
+    quoteAttachmentPreviews: document.getElementById('quote-attachment-previews'),
     // Customers View
     customerSearch: document.getElementById('customer-search'),
     customersTableBody: document.getElementById('customers-table-body'),
@@ -1468,6 +1481,10 @@ function chunkArray(array, size) {
 
 // --- QUOTE ENGINE LOGIC ---
 
+// Globals for image attachments
+let currentQuoteAttachmentFiles = [];
+let currentQuoteAttachmentUrls = [];
+
 function initQuoteLogic() {
     if (els.btnAddItem) els.btnAddItem.addEventListener('click', addQuoteItem);
 
@@ -1476,6 +1493,24 @@ function initQuoteLogic() {
 
     if (els.btnGeneratePdf) els.btnGeneratePdf.addEventListener('click', generatePDF);
     if (els.btnSendEmail) els.btnSendEmail.addEventListener('click', sendEmail);
+    
+    // Intake Summary Panel Toggle
+    if (els.quoteIntakeToggle && els.quoteIntakeBody) {
+        els.quoteIntakeToggle.addEventListener('click', () => {
+            const isCollapsed = els.quoteIntakeBody.classList.toggle('collapsed');
+            const span = els.quoteIntakeToggle.querySelector('span');
+            if (isCollapsed) {
+                span.textContent = '► View Request Details';
+            } else {
+                span.textContent = '▼ Hide Details';
+            }
+        });
+    }
+
+    // Attachments File Input
+    if (els.quoteAttachmentInput) {
+        els.quoteAttachmentInput.addEventListener('change', handleAttachmentSelection);
+    }
 }
 
 // Global Helper for inline onclick (since this is a module)
@@ -1490,6 +1525,8 @@ function openQuoteModal(requestId) {
 
     currentQuoteRequest = req;
     currentQuoteItems = [];
+    currentQuoteAttachmentFiles = [];
+    currentQuoteAttachmentUrls = [];
 
     // Reset UI
     els.quoteCustName.textContent = customers[req.customer_id]?.name || 'Unknown';
@@ -1500,6 +1537,19 @@ function openQuoteModal(requestId) {
     els.quoteResult.classList.add('hidden');
     els.btnSendEmail.disabled = true;
     els.btnSendEmail.style.opacity = '0.5';
+    
+    // Reset Intake Panel visibility to expanded
+    if (els.quoteIntakeBody) {
+        els.quoteIntakeBody.classList.remove('collapsed');
+        els.quoteIntakeToggle.querySelector('span').textContent = '▼ Hide Details';
+    }
+    
+    // Reset Attachment Input
+    if (els.quoteAttachmentInput) els.quoteAttachmentInput.value = '';
+    if (els.quoteAttachmentPreviews) els.quoteAttachmentPreviews.innerHTML = '';
+
+    // Populate Intake Summary Panel
+    populateIntakeSummary(req);
 
     // Check if Quote already exists
     if (req.quote_pdf_url) {
@@ -1610,6 +1660,83 @@ function updateQuoteTotals() {
     return { subtotal, delivery, rush, total };
 }
 
+// Intake Summary M18
+function populateIntakeSummary(req) {
+    const s1 = req.step1_data || {};
+    const s2 = req.step2_data || {};
+
+    if (els.quoteIntakeDateCat) {
+        els.quoteIntakeDateCat.textContent = `${s1.event_date || 'TBD'} · ${s1.category || 'General'}`;
+    }
+    if (els.quoteIntakeFulfillment) {
+        let text = s1.fulfillment || '-';
+        if (s1.pickup_window && s1.pickup_window !== 'Not sure yet') {
+            text += ` (${s1.pickup_window})`;
+        }
+        els.quoteIntakeFulfillment.textContent = text;
+    }
+    if (els.quoteIntakeTheme) {
+        els.quoteIntakeTheme.textContent = `${s2.theme_keywords || '-'} · ${s2.colors || '-'}`;
+    }
+    if (els.quoteIntakeAllergies) {
+        if (s2.allergies === 'yes') {
+            els.quoteIntakeAllergies.innerHTML = `<span class="allergy-highlight">${s2.allergy_details || 'Yes'}</span>`;
+        } else {
+            els.quoteIntakeAllergies.textContent = 'None';
+        }
+    }
+    if (els.quoteIntakeNotes) {
+        els.quoteIntakeNotes.textContent = s2.notes || 'No notes provided.';
+    }
+    if (els.quoteIntakePhotos) {
+        const imgs = s2.inspiration_images || [];
+        if (imgs.length > 0) {
+            let html = '<div style="display:flex; flex-wrap:wrap; gap:0.5rem;">';
+            imgs.forEach(url => {
+                html += `<a href="${url}" target="_blank"><img src="${url}" style="height:40px; width:auto; border-radius:4px; border:1px solid #e2e8f0; object-fit:cover;"></a>`;
+            });
+            html += '</div>';
+            els.quoteIntakePhotos.innerHTML = html;
+        } else {
+            els.quoteIntakePhotos.innerHTML = '<span class="text-muted">None</span>';
+        }
+    }
+}
+
+// Attachments Handlers M18
+function handleAttachmentSelection(e) {
+    const files = Array.from(e.target.files);
+    // Add to state
+    currentQuoteAttachmentFiles = currentQuoteAttachmentFiles.concat(files);
+    renderAttachmentPreviews();
+}
+
+// Global scope removal
+window.removeQuoteAttachment = (index) => {
+    currentQuoteAttachmentFiles.splice(index, 1);
+    
+    // We must reset the input so onchange fires if they select the exact same file again
+    if (els.quoteAttachmentInput) els.quoteAttachmentInput.value = '';
+    
+    renderAttachmentPreviews();
+};
+
+function renderAttachmentPreviews() {
+    if (!els.quoteAttachmentPreviews) return;
+    els.quoteAttachmentPreviews.innerHTML = '';
+    
+    currentQuoteAttachmentFiles.forEach((file, index) => {
+        const url = URL.createObjectURL(file);
+        const container = document.createElement('div');
+        container.className = 'preview-container';
+        container.innerHTML = `
+            <img src="${url}" alt="${file.name}">
+            <button class="btn-remove-preview" onclick="window.removeQuoteAttachment(${index})">&times;</button>
+        `;
+        els.quoteAttachmentPreviews.appendChild(container);
+    });
+}
+
 async function generatePDF() {
     const btn = els.btnGeneratePdf;
     const originalText = btn.textContent;
@@ -1643,6 +1770,19 @@ async function generatePDF() {
         }
 
         const data = await res.json();
+
+        // 1. Image Upload
+        btn.textContent = 'Uploading images...';
+        currentQuoteAttachmentUrls = [];
+        if (currentQuoteAttachmentFiles.length > 0) {
+            for (const file of currentQuoteAttachmentFiles) {
+                const filePath = `quote_attachments/${currentQuoteRequest.id}/${Date.now()}_${file.name}`;
+                const fileRef = ref(storage, filePath);
+                const snapshot = await uploadBytes(fileRef, file);
+                const downloadURL = await getDownloadURL(snapshot.ref);
+                currentQuoteAttachmentUrls.push(downloadURL);
+            }
+        }
 
         let pdfDownloadUrl = '';
         let pdfStoragePath = '';
@@ -1718,7 +1858,8 @@ async function sendEmail() {
                 customerEmail: cust.email,
                 customerName: cust.name,
                 pdfUrl: pdfUrl,
-                emailMessage: emailMessage
+                emailMessage: emailMessage,
+                imageUrls: currentQuoteAttachmentUrls // M18 Support Attachments
             })
         });
 

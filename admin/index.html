@@ -511,6 +511,47 @@
                         <p><strong>Request ID:</strong> <span id="quote-req-id">-</span></p>
                     </div>
 
+                    <!-- Intake Summary Panel -->
+                    <div id="quote-intake-container" class="quote-intake-summary" style="margin-top: 1rem; margin-bottom: 1.5rem;">
+                        <button id="quote-intake-toggle" class="btn-text quote-intake-toggle" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--glass-surface-med); border: var(--glass-border); border-radius: var(--radius-md); font-weight: 600; color: var(--primary);">
+                            <span>▼ View Request Details</span>
+                        </button>
+                        <div id="quote-intake-body" class="quote-intake-body" style="padding: 1rem; border: var(--glass-border); border-top: none; background: #f8fafc; border-radius: 0 0 var(--radius-md) var(--radius-md);">
+                            <div class="detail-grid" style="gap: 1rem; font-size: 0.9rem;">
+                                <div>
+                                    <div class="info-group">
+                                        <label>Date & Category</label>
+                                        <div class="info-value" id="quote-intake-date-cat">-</div>
+                                    </div>
+                                    <div class="info-group">
+                                        <label>Pickup / Delivery</label>
+                                        <div class="info-value" id="quote-intake-fulfillment">-</div>
+                                    </div>
+                                    <div class="info-group">
+                                        <label>Theme & Colors</label>
+                                        <div class="info-value" id="quote-intake-theme">-</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="info-group">
+                                        <label>Allergies</label>
+                                        <div class="info-value" id="quote-intake-allergies">-</div>
+                                    </div>
+                                    <div class="info-group">
+                                        <label>Notes</label>
+                                        <div class="info-value" id="quote-intake-notes" style="max-height: 60px; overflow-y: auto;">-</div>
+                                    </div>
+                                    <div class="info-group">
+                                        <label>Inspiration Photos</label>
+                                        <div class="info-value" id="quote-intake-photos">
+                                            <!-- Dynamic Thumbnails -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <table class="quote-table" style="width:100%; margin-top:1rem; margin-bottom:1rem;">
                         <thead>
                             <tr style="text-align:left; background:#f9fafb;">
@@ -530,11 +571,25 @@
                         Item</button>
 
                     <div class="quote-footer-grid" style="display: flex; gap: 2rem; margin-top: 1rem;">
-                        <div class="quote-notes" style="flex: 1;">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:500;">Notes / Terms:</label>
-                            <textarea id="quote-notes" rows="4"
-                                style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px;"
-                                placeholder="e.g. 50% Deposit required to book."></textarea>
+                        <div class="quote-notes-attachments" style="flex: 1; display:flex; flex-direction:column; gap:1.5rem;">
+                            <div class="quote-notes">
+                                <label style="display:block; margin-bottom:0.5rem; font-weight:500;">Notes / Terms:</label>
+                                <textarea id="quote-notes" rows="4"
+                                    style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px;"
+                                    placeholder="e.g. 50% Deposit required to book."></textarea>
+                            </div>
+                            
+                            <!-- Quote Attachments Area -->
+                            <div class="quote-attachments">
+                                <label style="display:block; margin-bottom:0.5rem; font-weight:500;">Image Attachments (Emails with Quote):</label>
+                                <div id="quote-attachments-area" class="quote-attachment-area" style="border: 2px dashed #cbd5e1; border-radius: var(--radius-md); padding: 1rem; text-align: center; background: #f8fafc;">
+                                    <p style="margin: 0 0 0.5rem 0; color: var(--text-muted); font-size: 0.9rem;">Select images to attach to this quote</p>
+                                    <input type="file" id="quote-attachment-input" multiple accept="image/*" style="max-width: 100%; font-size: 0.85rem;">
+                                </div>
+                                <div id="quote-attachment-previews" class="quote-attachment-previews" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.75rem;">
+                                    <!-- Selected image previews go here -->
+                                </div>
+                            </div>
                         </div>
 
                         <div class="quote-totals"
@@ -562,7 +617,7 @@
 
                     <div id="quote-result" class="hidden"
                         style="margin-top:2rem; padding:1rem; background:#eff6ff; border:1px solid #bfdbfe; border-radius:4px;">
-                        <p style="margin:0 0 0.5rem 0;"><strong>PDF Generated!</strong></p>
+                        <p style="margin:0 0 0.5rem 0;"><strong>PDF Generated & Saved!</strong></p>
                         <a id="quote-pdf-link" href="#" target="_blank"
                             style="text-decoration:underline; color:#2563eb;">View PDF</a>
 

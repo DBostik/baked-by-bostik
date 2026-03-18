@@ -235,7 +235,7 @@ exports.dispatchQuoteEmail = onRequest({ cors: true, invoker: 'public' }, async 
     if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
 
     try {
-        const { customerEmail, pdfUrl, customerName, emailMessage } = req.body;
+        const { customerEmail, pdfUrl, customerName, emailMessage, imageUrls = [] } = req.body;
 
         const SMTP_EMAIL = process.env.SMTP_EMAIL;
         const SMTP_PASSWORD = process.env.SMTP_PASSWORD;
@@ -258,6 +258,32 @@ exports.dispatchQuoteEmail = onRequest({ cors: true, invoker: 'public' }, async 
         // Use custom message if provided, else default
         const messageBody = emailMessage || `Hi ${customerName},\n\nPlease find your quote attached at the link below.`;
 
+        // Build Nodemailer attachments array (PDF is always included)
+        const attachments = [
+            {
+                filename: 'Quote.pdf',
+                path: pdfUrl // Nodemailer will fetch this URL
+            }
+        ];
+
+        // Add additional image attachments if provided
+        imageUrls.forEach((url, i) => {
+            attachments.push({
+                filename: `Attachment_${i + 1}.jpg`, // Simplified naming
+                path: url
+            });
+        });
+
+        // Optionally build inline HTML for images
+        let inlineImagesHtml = '';
+        if (imageUrls.length > 0) {
+            inlineImagesHtml = '<div style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 20px;"><p><strong>Attached Inspirations:</strong></p><div style="display:flex; gap:10px;">';
+            imageUrls.forEach(url => {
+                inlineImagesHtml += `<img src="${url}" style="max-height: 150px; border-radius: 4px; border: 1px solid #eee;">`;
+            });
+            inlineImagesHtml += '</div></div>';
+        }
+
         const mailOptions = {
             from: `"Baked By Bostik" <orders@bakedbybostik.com>`, // Sending as alias
             replyTo: `orders@bakedbybostik.com`,
@@ -266,16 +292,11 @@ exports.dispatchQuoteEmail = onRequest({ cors: true, invoker: 'public' }, async 
             text: `${messageBody}\n\nQuote Link: ${pdfUrl}\n\nBest,\nBaked By Bostik`,
             html: `<p>${messageBody.replace(/\n/g, '<br>')}</p>
                    <p><a href="${pdfUrl}" style="background:#1A2A3A; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">View Quote PDF</a></p>
+                   ${inlineImagesHtml}
                    <p>Best,<br>Baked By Bostik</p>
                    <p style="margin-top:8px; font-size:0.9em; color:#666;">Venmo: @Kristen-Bostik</p>`,
 
-            // Attach the PDF directly
-            attachments: [
-                {
-                    filename: 'Quote.pdf',
-                    path: pdfUrl // Nodemailer will fetch this URL
-                }
-            ]
+            attachments: attachments
         };
 
         const info = await transporter.sendMail(mailOptions);
