@@ -266,7 +266,8 @@ exports.dispatchQuoteEmail = onRequest({ cors: true, invoker: 'public' }, async 
             text: `${messageBody}\n\nQuote Link: ${pdfUrl}\n\nBest,\nBaked By Bostik`,
             html: `<p>${messageBody.replace(/\n/g, '<br>')}</p>
                    <p><a href="${pdfUrl}" style="background:#1A2A3A; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">View Quote PDF</a></p>
-                   <p>Best,<br>Baked By Bostik</p>`,
+                   <p>Best,<br>Baked By Bostik</p>
+                   <p style="margin-top:8px; font-size:0.9em; color:#666;">Venmo: @Kristen-Bostik</p>`,
 
             // Attach the PDF directly
             attachments: [
@@ -457,5 +458,38 @@ exports.onNewOrderRequest = onDocumentCreated({
         console.log(`New order notification sent for request ${requestId}`);
     } catch (error) {
         console.error("New Order Notification Error:", error);
+    }
+});
+
+exports.fixPrincess = onRequest(async (req, res) => {
+    const db = admin.firestore();
+    try {
+        await db.collection('gallery_categories').doc('princess').set({
+            label: 'Princess & Fairytale',
+            slug: 'princess',
+            sort_order: 8,
+            created_at: admin.firestore.FieldValue.serverTimestamp()
+        });
+        
+        const snapshot = await db.collection('gallery_items').get();
+        let updatedCount = 0;
+        const batch = db.batch();
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const tags = data.tags || '';
+            const name = data.display_name || '';
+            if (tags.toLowerCase().includes('princess') || name.toLowerCase().includes('princess')) {
+                let cats = data.categories || [];
+                if (!cats.includes('princess')) {
+                    cats.push('princess');
+                    batch.update(doc.ref, { categories: cats });
+                    updatedCount++;
+                }
+            }
+        });
+        await batch.commit();
+        res.json({ success: true, updated: updatedCount });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
     }
 });

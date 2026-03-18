@@ -147,3 +147,9 @@
 1. **Service Account Key**: Handled during migration.
 2. **Unique "All" folder file**: Handled during migration.
 3. **Migration timing**: Completed successfully.
+
+## ✅ COMPLETED (Quick Fixes)
+- [x] Fix Deposit Permissions in `firestore.rules`.
+- [x] Fix Princess Gallery Filter in Firestore.
+- [x] Add Address Field to Customer Profile Modal in Admin.
+- [x] Add Venmo handle to Invoice Email template.

@@ -93,6 +93,7 @@ const els = {
     editCustName: document.getElementById('edit-cust-name'),
     editCustEmail: document.getElementById('edit-cust-email'),
     editCustPhone: document.getElementById('edit-cust-phone'),
+    editCustAddress: document.getElementById('edit-cust-address'),
     btnSaveCustomer: document.getElementById('btn-save-customer'),
     // Manual Entry
     btnNewRequest: document.getElementById('btn-new-request'),
@@ -1959,12 +1960,14 @@ function openCustomerModal(id) {
         els.editCustName.value = cust.name || '';
         els.editCustEmail.value = cust.email || '';
         els.editCustPhone.value = cust.phone || '';
+        els.editCustAddress.value = cust.address || '';
         els.customerModal.querySelector('h2').textContent = 'Edit Customer';
     } else {
         // Create Mode
         els.editCustName.value = '';
         els.editCustEmail.value = '';
         els.editCustPhone.value = '';
+        els.editCustAddress.value = '';
         els.customerModal.querySelector('h2').textContent = 'New Customer';
         if (els.custHistoryList) els.custHistoryList.innerHTML = '<p class="text-muted">New customer (no history).</p>';
     }
@@ -2008,6 +2011,7 @@ async function saveCustomer(e) {
     const name = els.editCustName.value.trim();
     const email = els.editCustEmail.value.trim();
     const phone = els.editCustPhone.value.trim();
+    const address = els.editCustAddress.value.trim();
 
     if (!name || !email) {
         alert("Name and Email are required.");
@@ -2028,6 +2032,7 @@ async function saveCustomer(e) {
                 name: name,
                 email: email,
                 phone: phone,
+                address: address,
                 updated_at: new Date()
             };
             await updateDoc(custRef, updates);
@@ -2041,6 +2046,7 @@ async function saveCustomer(e) {
                 name: name,
                 email: email,
                 phone: phone,
+                address: address,
                 created_at: new Date(),
                 updated_at: new Date()
             };
