@@ -13,6 +13,22 @@
 
 ---
 
+## 📅 March 2026
+
+### 🟢 Order Form: Pickup/Delivery Time Window + Cake Flavor Fields (COMPLETE) - Mar 18, 2026
+- **Pickup/Delivery Time Window (Step 1)**:
+    - Added `<select>` dropdown (Not sure yet / 9am–11am / 11am–1pm / 1pm–3pm / 3pm–5pm) to the Step 1 modal in `js/app.js`.
+    - `pickup_window` saved to Firestore `requests` under `step1_data` via `js/firebase-handler.js`.
+    - Hidden input `id="hiddenPickupWindow"` added to `order.html` and populated in `js/order-flow.js` `loadStep1Data()`.
+    - Displayed in Admin Request Detail Modal → EVENT SPECS card (only when a specific window is chosen).
+- **Cake Flavor & Filling Dropdowns (Step 2)**:
+    - Two `<select>` dropdowns added to the Design Details section of `order.html` (Cake Flavor: 7 options + default; Filling: 6 options + default).
+    - `cake_flavor` and `filling_flavor` saved to Firestore `requests` under `step2_data` via `js/order-flow.js`.
+    - Displayed in Admin Request Detail Modal → DESIGN & INSPO card alongside Theme, Colors, Occasion, Budget, and Complexity.
+- **All new fields are optional with "Not sure yet" defaults** — no impact on existing form submission flow.
+
+---
+
 ## 📅 February 2026
 
 ### 🟢 Milestone 16: Content & UX Expansion (COMPLETE) - Feb 24, 2026

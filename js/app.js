@@ -158,6 +158,17 @@ function initOrderModal() {
                 </div>
 
                 <div class="form-group">
+                    <label>Preferred Pickup/Delivery Time</label>
+                    <select name="pickup_window" id="pickupWindowSelect">
+                        <option value="Not sure yet" selected>Not sure yet</option>
+                        <option value="9am–11am">9am–11am</option>
+                        <option value="11am–1pm">11am–1pm</option>
+                        <option value="1pm–3pm">1pm–3pm</option>
+                        <option value="3pm–5pm">3pm–5pm</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label id="qtyLabel">How many? *</label>
                     <input type="text" name="qty" required placeholder="e.g. 24">
                 </div>

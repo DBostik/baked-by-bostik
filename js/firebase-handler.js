@@ -49,7 +49,8 @@ window.handleOrderSubmit = async (e, form) => {
                 phone: data.phone,
                 fulfillment: data.delivery, // pickup or delivery
                 delivery_zip: data.zip || null,
-                rush_flag: (document.getElementById('rush-warning').style.display === 'block')
+                rush_flag: (document.getElementById('rush-warning').style.display === 'block'),
+                pickup_window: data.pickup_window || 'Not sure yet'
             },
             created_at: serverTimestamp(),
             updated_at: serverTimestamp()

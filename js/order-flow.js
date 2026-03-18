@@ -30,6 +30,7 @@ function loadStep1Data() {
     document.getElementById('hiddenType').value = data.type;
     document.getElementById('hiddenQty').value = data.qty;
     document.getElementById('hiddenPhone').value = data.phone || '';
+    document.getElementById('hiddenPickupWindow').value = data.pickup_window || 'Not sure yet';
 
     // Check for Gallery Reference
     const galleryRef = sessionStorage.getItem('galleryReference');
@@ -210,7 +211,9 @@ function initFormSubmit() {
                     hear_about_us: source,
                     notes: data.notes,
                     inspiration_images: imageUrls,
-                    email_opt_in: !!data.emailOptIn
+                    email_opt_in: !!data.emailOptIn,
+                    cake_flavor: data.cake_flavor || 'Not sure yet',
+                    filling_flavor: data.filling_flavor || 'Not sure yet'
                 },
                 updated_at: serverTimestamp()
             };

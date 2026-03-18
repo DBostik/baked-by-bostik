@@ -881,6 +881,11 @@ function renderModalBody(req, cust, isEditing) {
                         <label>Fulfillment</label>
                         <div class="info-value">${s1.fulfillment || '-'} ${s1.delivery_zip ? '(' + s1.delivery_zip + ')' : ''}</div>
                     </div>
+                    ${s1.pickup_window && s1.pickup_window !== 'Not sure yet' ? `
+                    <div class="info-group">
+                        <label>⏰ Pickup/Delivery Window</label>
+                        <div class="info-value">${s1.pickup_window}</div>
+                    </div>` : ''}
                     ${s1.rush_flag ? '<div class="rush-badge">⚠️ RUSH ORDER</div>' : ''}
                     
                     ${req.quote_pdf_url ? `
@@ -930,6 +935,14 @@ function renderModalBody(req, cust, isEditing) {
                             <div class="info-group">
                                 <label>Complexity</label>
                                 <div class="info-value">${s2.complexity || '-'}</div>
+                            </div>
+                            <div class="info-group">
+                                <label>🎂 Cake Flavor</label>
+                                <div class="info-value">${s2.cake_flavor || '-'}</div>
+                            </div>
+                            <div class="info-group">
+                                <label>🍰 Filling</label>
+                                <div class="info-value">${s2.filling_flavor || '-'}</div>
                             </div>
                         </div>
                         <div class="info-group">
