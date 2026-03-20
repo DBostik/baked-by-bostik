@@ -533,40 +533,40 @@
                     </header>
 
                     <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem;">
-                        <h2 style="margin-top:0; margin-bottom: 1rem; color:#374151; font-size:1.25rem;">Global Background Image</h2>
-                        <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 1.5rem;">Upload the primary background image that appears across the entire site (behind the hero text and everywhere else).</p>
+                        <h2 style="margin-top:0; margin-bottom: 1rem; color:#374151; font-size:1.25rem;">Hero Image (Single Image)</h2>
+                        <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 1.5rem;">Upload the primary image that appears next to the text in the hero section.</p>
                         
                         <div class="content-item-card" style="border: 1px solid #e5e7eb; padding: 1rem; border-radius: 6px; text-align: center; max-width: 400px;">
-                            <img id="bg-preview" src="https://via.placeholder.com/400x300?text=Empty" style="width: 100%; height: 200px; object-fit: cover; border-radius: 4px; margin-bottom: 0.5rem;" />
-                            <input type="file" id="bg-file" accept="image/*" style="width: 100%; font-size: 0.8rem;">
+                            <img id="hero-single-preview" src="https://via.placeholder.com/400x300?text=Empty" style="width: 100%; height: 200px; object-fit: cover; border-radius: 4px; margin-bottom: 0.5rem;" />
+                            <input type="file" id="hero-single-file" accept="image/*" style="width: 100%; font-size: 0.8rem;">
                         </div>
                     </div>
 
                     <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem;">
-                        <h2 style="margin-top:0; margin-bottom: 1rem; color:#374151; font-size:1.25rem;">Hero Carousel (4 Images)</h2>
-                        <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 1.5rem;">Upload the 4 images that slide in the hero section on the homepage.</p>
+                        <h2 style="margin-top:0; margin-bottom: 1rem; color:#374151; font-size:1.25rem;">Featured Work Strip (4 Images)</h2>
+                        <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 1.5rem;">Upload the 4 images that appear right below the hero section.</p>
                         
                         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem;">
                             <!-- Generate 4 inputs dynamically or statically -->
                             <div class="content-item-card" style="border: 1px solid #e5e7eb; padding: 1rem; border-radius: 6px; text-align: center;">
                                 <h4 style="margin: 0 0 0.5rem 0;">Image 1</h4>
-                                <img id="hero-preview-0" src="https://via.placeholder.com/300x400?text=Empty" style="width: 100%; height: 200px; object-fit: cover; border-radius: 4px; margin-bottom: 0.5rem;" />
-                                <input type="file" id="hero-file-0" accept="image/*" style="width: 100%; font-size: 0.8rem;">
+                                <img id="featured-preview-0" src="https://via.placeholder.com/300x400?text=Empty" style="width: 100%; height: 200px; object-fit: cover; border-radius: 4px; margin-bottom: 0.5rem;" />
+                                <input type="file" id="featured-file-0" accept="image/*" style="width: 100%; font-size: 0.8rem;">
                             </div>
                             <div class="content-item-card" style="border: 1px solid #e5e7eb; padding: 1rem; border-radius: 6px; text-align: center;">
                                 <h4 style="margin: 0 0 0.5rem 0;">Image 2</h4>
-                                <img id="hero-preview-1" src="https://via.placeholder.com/300x400?text=Empty" style="width: 100%; height: 200px; object-fit: cover; border-radius: 4px; margin-bottom: 0.5rem;" />
-                                <input type="file" id="hero-file-1" accept="image/*" style="width: 100%; font-size: 0.8rem;">
+                                <img id="featured-preview-1" src="https://via.placeholder.com/300x400?text=Empty" style="width: 100%; height: 200px; object-fit: cover; border-radius: 4px; margin-bottom: 0.5rem;" />
+                                <input type="file" id="featured-file-1" accept="image/*" style="width: 100%; font-size: 0.8rem;">
                             </div>
                             <div class="content-item-card" style="border: 1px solid #e5e7eb; padding: 1rem; border-radius: 6px; text-align: center;">
                                 <h4 style="margin: 0 0 0.5rem 0;">Image 3</h4>
-                                <img id="hero-preview-2" src="https://via.placeholder.com/300x400?text=Empty" style="width: 100%; height: 200px; object-fit: cover; border-radius: 4px; margin-bottom: 0.5rem;" />
-                                <input type="file" id="hero-file-2" accept="image/*" style="width: 100%; font-size: 0.8rem;">
+                                <img id="featured-preview-2" src="https://via.placeholder.com/300x400?text=Empty" style="width: 100%; height: 200px; object-fit: cover; border-radius: 4px; margin-bottom: 0.5rem;" />
+                                <input type="file" id="featured-file-2" accept="image/*" style="width: 100%; font-size: 0.8rem;">
                             </div>
                             <div class="content-item-card" style="border: 1px solid #e5e7eb; padding: 1rem; border-radius: 6px; text-align: center;">
                                 <h4 style="margin: 0 0 0.5rem 0;">Image 4</h4>
-                                <img id="hero-preview-3" src="https://via.placeholder.com/300x400?text=Empty" style="width: 100%; height: 200px; object-fit: cover; border-radius: 4px; margin-bottom: 0.5rem;" />
-                                <input type="file" id="hero-file-3" accept="image/*" style="width: 100%; font-size: 0.8rem;">
+                                <img id="featured-preview-3" src="https://via.placeholder.com/300x400?text=Empty" style="width: 100%; height: 200px; object-fit: cover; border-radius: 4px; margin-bottom: 0.5rem;" />
+                                <input type="file" id="featured-file-3" accept="image/*" style="width: 100%; font-size: 0.8rem;">
                             </div>
                         </div>
                     </div>

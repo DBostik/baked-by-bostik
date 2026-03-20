@@ -3561,7 +3561,7 @@ let siteContentFetched = false;
 let currentSiteContent = {};
 
 const THEME_CARD_COUNT = 8;
-const HERO_COUNT = 4;
+const FEATURED_COUNT = 4;
 
 const THEME_CARD_DEFAULTS = [
     "Unicorns & Rainbows",
@@ -3572,6 +3572,17 @@ const THEME_CARD_DEFAULTS = [
     "Teachers & School",
     "Graduation",
     "Corporate & Events"
+];
+
+const THEME_CARD_LINK_DEFAULTS = [
+    "unicorn",
+    "baby",
+    "seasonal",
+    "princess",
+    "sports",
+    "teacher",
+    "graduation",
+    "corporate"
 ];
 
 async function initSiteContent() {
@@ -3600,30 +3611,30 @@ async function initSiteContent() {
 }
 
 function renderSiteContentForm() {
-    // 0. Global Background Preview
-    const bgPreview = document.getElementById('bg-preview');
-    const bgInput = document.getElementById('bg-file');
-    if (bgPreview && currentSiteContent.global_background && currentSiteContent.global_background.url) {
-        bgPreview.src = currentSiteContent.global_background.url;
+    // 0. Hero Single Preview
+    const heroSinglePreview = document.getElementById('hero-single-preview');
+    const heroSingleInput = document.getElementById('hero-single-file');
+    if (heroSinglePreview && currentSiteContent.hero_single && currentSiteContent.hero_single.url) {
+        heroSinglePreview.src = currentSiteContent.hero_single.url;
     }
-    if (bgInput && bgPreview) {
-        bgInput.onchange = (e) => {
+    if (heroSingleInput && heroSinglePreview) {
+        heroSingleInput.onchange = (e) => {
             if (e.target.files && e.target.files[0]) {
                 const reader = new FileReader();
-                reader.onload = (ev) => { bgPreview.src = ev.target.result; };
+                reader.onload = (ev) => { heroSinglePreview.src = ev.target.result; };
                 reader.readAsDataURL(e.target.files[0]);
             }
         };
     }
 
-    // 1. Hero Carousel Previews
-    const heroData = currentSiteContent.hero || [];
-    for (let i = 0; i < HERO_COUNT; i++) {
-        const preview = document.getElementById(`hero-preview-${i}`);
-        const input = document.getElementById(`hero-file-${i}`);
+    // 1. Featured Strip Previews
+    const featuredData = currentSiteContent.featured || [];
+    for (let i = 0; i < FEATURED_COUNT; i++) {
+        const preview = document.getElementById(`featured-preview-${i}`);
+        const input = document.getElementById(`featured-file-${i}`);
         
-        if (heroData[i] && heroData[i].url) {
-            preview.src = heroData[i].url;
+        if (featuredData[i] && featuredData[i].url) {
+            preview.src = featuredData[i].url;
         }
         
         // Preview local file on select
@@ -3645,10 +3656,11 @@ function renderSiteContentForm() {
         themesContainer.innerHTML = '';
         
         for (let i = 0; i < THEME_CARD_COUNT; i++) {
-            const tData = themesData[i] || { title: THEME_CARD_DEFAULTS[i], url: '' };
+            const tData = themesData[i] || { title: THEME_CARD_DEFAULTS[i], link: THEME_CARD_LINK_DEFAULTS[i], url: '' };
             const cardHtml = `
                 <div class="content-item-card" style="border: 1px solid #e5e7eb; padding: 1rem; border-radius: 6px; text-align: center;">
                     <input type="text" id="theme-title-${i}" value="${tData.title || ''}" placeholder="Theme Title" style="width: 100%; border:1px solid #ccc; border-radius:4px; padding:0.4rem; margin-bottom:0.5rem; font-weight:bold; text-align:center;">
+                    <input type="text" id="theme-link-${i}" value="${tData.link || THEME_CARD_LINK_DEFAULTS[i] || ''}" placeholder="Gallery Tags (e.g. princess, fairy)" title="The tag(s) used to filter images in the gallery when this theme is clicked. Separate multiple tags with commas." style="width: 100%; border:1px solid #ccc; border-radius:4px; padding:0.4rem; margin-bottom:0.5rem; font-size:0.85rem; text-align:center; color:#4b5563;">
                     <img id="theme-preview-${i}" src="${tData.url || 'https://via.placeholder.com/300x300?text=Empty'}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 4px; margin-bottom: 0.5rem;" />
                     <input type="file" id="theme-file-${i}" accept="image/*" style="width: 100%; font-size: 0.8rem;">
                 </div>
@@ -3681,37 +3693,37 @@ async function saveSiteContent() {
     
     try {
         const updateData = {
-            global_background: currentSiteContent.global_background || null,
-            hero: currentSiteContent.hero || [],
+            hero_single: currentSiteContent.hero_single || null,
+            featured: currentSiteContent.featured || [],
             themes: currentSiteContent.themes || [],
             updated_at: serverTimestamp()
         };
         
-        // 0. Process Global Background
-        const bgInput = document.getElementById('bg-file');
-        if (bgInput && bgInput.files && bgInput.files.length > 0) {
-            btn.textContent = `Uploading Background...`;
-            const file = bgInput.files[0];
-            const storagePath = `site_content/homepage/bg_${Date.now()}_${file.name}`;
+        // 0. Process Hero Single Image
+        const heroSingleInput = document.getElementById('hero-single-file');
+        if (heroSingleInput && heroSingleInput.files && heroSingleInput.files.length > 0) {
+            btn.textContent = `Uploading Hero Image...`;
+            const file = heroSingleInput.files[0];
+            const storagePath = `site_content/homepage/hero_single_${Date.now()}_${file.name}`;
             const storageRef = ref(storage, storagePath);
             await uploadBytes(storageRef, file);
             const url = await getDownloadURL(storageRef);
             
-            updateData.global_background = { url: url };
+            updateData.hero_single = { url: url };
         }
         
-        // 1. Process Hero Images
-        for (let i = 0; i < HERO_COUNT; i++) {
-            const input = document.getElementById(`hero-file-${i}`);
+        // 1. Process Featured Images
+        for (let i = 0; i < FEATURED_COUNT; i++) {
+            const input = document.getElementById(`featured-file-${i}`);
             if (input && input.files && input.files.length > 0) {
-                btn.textContent = `Uploading Hero ${i+1}...`;
+                btn.textContent = `Uploading Featured ${i+1}...`;
                 const file = input.files[0];
-                const storagePath = `site_content/homepage/hero_${Date.now()}_${file.name}`;
+                const storagePath = `site_content/homepage/featured_${Date.now()}_${file.name}`;
                 const storageRef = ref(storage, storagePath);
                 await uploadBytes(storageRef, file);
                 const url = await getDownloadURL(storageRef);
                 
-                updateData.hero[i] = { url: url };
+                updateData.featured[i] = { url: url };
             }
             // Retain existing if no new file is selected.
         }
@@ -3720,9 +3732,11 @@ async function saveSiteContent() {
         for (let i = 0; i < THEME_CARD_COUNT; i++) {
             const input = document.getElementById(`theme-file-${i}`);
             const titleInput = document.getElementById(`theme-title-${i}`);
+            const linkInput = document.getElementById(`theme-link-${i}`);
             
             if (!updateData.themes[i]) updateData.themes[i] = {};
             if (titleInput) updateData.themes[i].title = titleInput.value;
+            if (linkInput) updateData.themes[i].link = linkInput.value.toLowerCase().trim();
             
             if (input && input.files && input.files.length > 0) {
                 btn.textContent = `Uploading Theme ${i+1}...`;

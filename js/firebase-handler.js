@@ -16,32 +16,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (snap.exists()) {
                 const data = snap.data();
                 
-                // 0. Setup Global Background Image
-                if (data.global_background && data.global_background.url) {
-                    const styleStyle = document.createElement('style');
-                    styleStyle.innerHTML = `body::before { background-image: url('${data.global_background.url}') !important; }`;
-                    document.head.appendChild(styleStyle);
+                // 1. Setup Single Hero Image
+                if (data.hero_single && data.hero_single.url && heroImg) {
+                    heroImg.src = data.hero_single.url;
                 }
                 
-                // 1. Setup Hero Slider if data.hero exists
-                if (data.hero && data.hero.length > 0) {
-                    const heroImageUrls = data.hero.map(h => h.url).filter(Boolean);
-                    if (heroImageUrls.length > 0 && heroImg) {
-                        heroImg.src = heroImageUrls[0]; // Set first image immediately
-                        heroImg.style.transition = 'opacity 0.3s ease-in-out';
-                        
-                        if (heroImageUrls.length > 1) {
-                            let currentIndex = 0;
-                            setInterval(() => {
-                                heroImg.style.opacity = '0.5';
-                                setTimeout(() => {
-                                    currentIndex = (currentIndex + 1) % heroImageUrls.length;
-                                    heroImg.src = heroImageUrls[currentIndex];
-                                    heroImg.style.opacity = '1';
-                                }, 300); // Wait for fade out
-                            }, 5000); // Rotate every 5 seconds
+                // 1.5 Setup Featured Work Strip
+                const featuredGrid = document.querySelector('.featured-grid');
+                if (data.featured && data.featured.length > 0 && featuredGrid) {
+                    const featuredItems = featuredGrid.querySelectorAll('.featured-item img');
+                    featuredItems.forEach((img, index) => {
+                        if (data.featured[index] && data.featured[index].url) {
+                            img.src = data.featured[index].url;
                         }
-                    }
+                    });
                 }
                 
                 // 2. Setup Theme Cards
@@ -58,9 +46,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                             // Only override title if it's not a generic placeholder
                             if (h3 && tData.title && !tData.title.startsWith('Theme ')) {
                                 h3.textContent = tData.title;
-                                // Create slug matching gallery category generation: lowercase, replace spaces with hyphens, remove special chars
+                            }
+                            // Override link href using explicit tag or title fallback
+                            if (tData.link) {
+                                card.href = `gallery?theme=${encodeURIComponent(tData.link)}`;
+                            } else if (tData.title && !tData.title.startsWith('Theme ')) {
                                 const tagSlug = tData.title.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-                                card.href = `gallery.html?theme=${tagSlug}`;
+                                card.href = `gallery?theme=${tagSlug}`;
                             }
                         }
                     });

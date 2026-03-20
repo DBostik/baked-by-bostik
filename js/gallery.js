@@ -82,13 +82,37 @@ async function initGallery() {
 function renderFilters() {
     filterContainer.innerHTML = '';
 
+    if (window.activeTagFilter) {
+        const tagLabel = window.activeTagFilter.split(',').map(t => t.trim() ? t.trim().charAt(0).toUpperCase() + t.trim().slice(1) : '').filter(Boolean).join(', ');
+        const tagBtn = document.createElement('button');
+        tagBtn.className = 'filter-btn active';
+        tagBtn.textContent = 'Tag: ' + tagLabel + ' ✕';
+        tagBtn.title = 'Clear tag filter';
+        tagBtn.addEventListener('click', async () => {
+            window.activeTagFilter = null;
+            const url = new URL(window.location);
+            url.searchParams.delete('theme');
+            window.history.pushState({}, '', url);
+            const header = document.querySelector('.page-header h1');
+            if (header) header.textContent = 'Gallery';
+            
+            currentFilter = 'all';
+            renderFilters();
+            gridContainer.innerHTML = ''; 
+            lastDoc = null; 
+            await loadItems(true);
+        });
+        filterContainer.appendChild(tagBtn);
+    }
+
     categories.forEach(cat => {
         const btn = document.createElement('button');
-        btn.className = 'filter-btn' + (cat.slug === currentFilter ? ' active' : '');
+        const isActive = (cat.slug === currentFilter && !window.activeTagFilter);
+        btn.className = 'filter-btn' + (isActive ? ' active' : '');
         btn.textContent = cat.label;
         btn.dataset.filter = cat.slug;
         btn.addEventListener('click', async () => {
-            if (currentFilter === cat.slug && !window.activeTagFilter) return; // Already active
+            if (cat.slug === currentFilter && !window.activeTagFilter) return; // Already active
             currentFilter = cat.slug;
             
             // Clear URL and active tag filter
@@ -161,7 +185,10 @@ async function loadItems(resetGrid = false) {
             // Tag filtering
             if (window.activeTagFilter) {
                 const searchString = `${item.display_name || ''} ${item.tags || ''}`.toLowerCase();
-                if (!searchString.includes(window.activeTagFilter)) {
+                const filterTags = window.activeTagFilter.split(',').map(t => t.trim()).filter(t => t.length > 0);
+                
+                const matches = filterTags.some(tag => searchString.includes(tag));
+                if (!matches) {
                     return; // Skip rendering
                 }
             }
