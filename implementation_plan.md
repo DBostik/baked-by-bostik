@@ -72,6 +72,24 @@
 - [x] In `admin.js`, declare `let leadsSourceChartInstance = null;` and add rendering logic at the end of `updateCharts()` that counts `step2_data.hear_about_us` values from all requests and renders a horizontal bar chart.
 - [x] Normalize referral entries: strip referral names from "Friend/Family Referral: [Name]" before counting.
 
+## 🔴 Milestone 25: Security & Code Quality Hardening
+**Priority**: 🔴 High — Fix before next production deploy.
+
+**Goal**: Tighten Firestore security rules, add XSS sanitization, fix broken links, exclude dev files from deploy.
+
+**Phase 1: Firestore Rules + Deploy Exclusions (Engineer)**
+- [ ] Harden `firestore.rules`: Restrict public `update` on `customers` to only allow `name`, `email`, `phone`, `last_updated` fields.
+- [ ] Harden `firestore.rules`: Restrict public `update` on `requests` to only allow `status`, `step2_data`, `updated_at` fields, and enforce `status == 'AWAITING_DETAILS'` for public writes.
+- [ ] Update `firebase.json` hosting `ignore` to exclude `*.py`, `*.sh`, `*.command`, `*.mjs`, `seed-reviews.html`, `gallery_items.html`, `verify_deploy.txt`.
+- [ ] Test: Submit test order through public form (Step 1 + Step 2) to confirm form still works.
+- [ ] Test: Attempt unauthorized update via browser console to confirm it's blocked.
+
+**Phase 2: XSS Sanitization + Path Fixes (Engineer)**
+- [ ] Add `escapeHtml()` utility function to `admin.js`.
+- [ ] Apply `escapeHtml()` to all user-submitted text in `renderTable()`, `renderBoard()`, `renderLedgerTable()`, and `renderModal()`.
+- [ ] Fix `about.html` footer: Change `href="privacy.html"` to `href="/privacy.html"`.
+- [ ] Fix `gallery.html` footer: Same change.
+
 ## 🔮 FUTURE ROADMAP (Backlog)
 
 ### 🟡 Milestone 13: Resources & Guides

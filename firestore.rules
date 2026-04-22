@@ -3,23 +3,30 @@ service cloud.firestore {
   match /databases/{database}/documents {
     
     // Customers Collection
-    // Public: Can create/update their own customer record (blind write via setDoc)
-    // Admin: Can read all, write all
     match /customers/{customerId} {
-      allow get: if request.auth != null;
-      allow list: if request.auth != null;
-      allow create: if true; 
-      allow update: if true;
-      allow delete: if request.auth != null;
+      // Admin: full access
+      allow read, delete: if request.auth != null;
+      // Public: can create new customer records
+      allow create: if true;
+      // Public: can only update the 4 fields the order form writes
+      // Admin: can update anything
+      allow update: if request.auth != null
+          || request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['name', 'email', 'phone', 'last_updated']);
     }
     
     // Requests Collection
-    // Public: Can create new requests
-    // Admin: Can read list, view details, update status (drag-and-drop), delete
     match /requests/{requestId} {
-      allow read, write: if request.auth != null;
+      // Admin: full access
+      allow read, delete: if request.auth != null;
+      // Public: can create new requests
       allow create: if true;
-      allow update: if true; // Required for Step 2 of public order form
+      // Public: can only update step2_data, status, and updated_at (Step 2 form)
+      // Admin: can update anything
+      allow update: if request.auth != null
+          || (request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['status', 'step2_data', 'updated_at'])
+              && request.resource.data.status == 'AWAITING_DETAILS');
     }
 
     // Orders Collection

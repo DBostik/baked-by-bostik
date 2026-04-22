@@ -31,7 +31,18 @@
             "src/**",
             "*.md",
             "package.json",
-            "package-lock.json"
+            "package-lock.json",
+            "*.py",
+            "*.sh",
+            "*.command",
+            "*.mjs",
+            "seed-reviews.html",
+            "gallery_items.html",
+            "verify_deploy.txt",
+            "firestore.indexes.json",
+            "NEXT_ENGINEER_PROMPT.md",
+            "DEPLOY.md",
+            "DOMAIN_SETUP.md"
         ]
     }
 }
