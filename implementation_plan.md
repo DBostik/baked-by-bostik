@@ -63,14 +63,14 @@
 - [x] Update the admin edit mode category dropdown (~line 1149) to use `Cakes` instead of `Custom Cake`, with a selected check that handles legacy values.
 
 **Phase 2: Allergy Indicators (Engineer)**
-- [ ] In `admin.js` `renderTable()`, add a `⚠️` icon next to the customer name in the list view for requests where `step2_data.allergies === 'yes'`. Include allergy details in the tooltip.
-- [ ] In `admin.js` `renderBoard()`, add a `<span class="card-tag tag-allergy">⚠️ ALLERGY</span>` badge to Kanban cards for requests with allergies.
-- [ ] Add `.allergy-indicator` and `.tag-allergy` CSS styles to `admin.css`.
+- [x] In `admin.js` `renderTable()`, add a `⚠️` icon next to the customer name in the list view for requests where `step2_data.allergies === 'yes'`. Include allergy details in the tooltip.
+- [x] In `admin.js` `renderBoard()`, add a `<span class="card-tag tag-allergy">⚠️ ALLERGY</span>` badge to Kanban cards for requests with allergies.
+- [x] Add `.allergy-indicator` and `.tag-allergy` CSS styles to `admin.css`.
 
 **Phase 3: Leads by Source Chart (Engineer)**
-- [ ] In `admin/index.html`, add a new `<canvas id="leadsSourceChart">` chart card inside `#page-analytics .analytics-grid`.
-- [ ] In `admin.js`, declare `let leadsSourceChartInstance = null;` and add rendering logic at the end of `updateCharts()` that counts `step2_data.hear_about_us` values from all requests and renders a horizontal bar chart.
-- [ ] Normalize referral entries: strip referral names from "Friend/Family Referral: [Name]" before counting.
+- [x] In `admin/index.html`, add a new `<canvas id="leadsSourceChart">` chart card inside `#page-analytics .analytics-grid`.
+- [x] In `admin.js`, declare `let leadsSourceChartInstance = null;` and add rendering logic at the end of `updateCharts()` that counts `step2_data.hear_about_us` values from all requests and renders a horizontal bar chart.
+- [x] Normalize referral entries: strip referral names from "Friend/Family Referral: [Name]" before counting.
 
 ## 🔮 FUTURE ROADMAP (Backlog)
 

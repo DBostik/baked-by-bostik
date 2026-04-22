@@ -711,10 +711,15 @@ function renderTable() {
         const eventDate = req.step1_data?.event_date || '-';
         const type = req.step1_data?.category || '-';
         const status = req.status || 'NEW';
+        const hasAllergy = req.step2_data?.allergies === 'yes';
+        const allergyDetails = req.step2_data?.allergy_details || 'Allergy noted';
+        const allergyIcon = hasAllergy
+            ? ` <span class="allergy-indicator" title="⚠️ ALLERGY: ${allergyDetails}">⚠️</span>`
+            : '';
 
         tr.innerHTML = `
             <td>${date}</td>
-            <td><strong>${custName}</strong></td>
+            <td><strong>${custName}</strong>${allergyIcon}</td>
             <td>${eventDate}</td>
             <td>${type}</td>
             <td><span class="status-badge status-${status}">${status}</span></td>
@@ -837,6 +842,7 @@ function renderBoard() {
             </div>
 
             ${req.step1_data?.rush_flag ? '<span class="card-tag tag-rush">URGENT</span>' : ''}
+            ${req.step2_data?.allergies === 'yes' ? `<span class="card-tag tag-allergy" title="${req.step2_data?.allergy_details || 'Allergy noted'}">⚠️ ALLERGY</span>` : ''}
         `;
 
         // Drag listeners for Card
@@ -2733,6 +2739,7 @@ function initRecordPaymentLogic() {
 
 let revenueChartInstance = null;
 let productMixChartInstance = null;
+let leadsSourceChartInstance = null;
 
 function initAnalyticsLogic() {
     const btnExport = document.getElementById('btn-export-csv');
@@ -2932,6 +2939,54 @@ function updateCharts() {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+    }
+
+    // --- Leads by Source Chart ---
+    const ctxLeads = document.getElementById('leadsSourceChart');
+    if (ctxLeads) {
+        const sourceCounts = {};
+
+        requests.forEach(req => {
+            let source = req.step2_data?.hear_about_us;
+            if (!source) return;
+            // Normalize: strip referral name suffix (e.g. "Friend/Family Referral: Jane" -> "Friend/Family Referral")
+            source = source.replace(/:\s*.+$/, '').trim();
+            sourceCounts[source] = (sourceCounts[source] || 0) + 1;
+        });
+
+        const sourceLabels = Object.keys(sourceCounts).sort((a, b) => sourceCounts[b] - sourceCounts[a]);
+        const sourceData = sourceLabels.map(l => sourceCounts[l]);
+
+        if (leadsSourceChartInstance) {
+            leadsSourceChartInstance.data.labels = sourceLabels;
+            leadsSourceChartInstance.data.datasets[0].data = sourceData;
+            leadsSourceChartInstance.update();
+        } else {
+            leadsSourceChartInstance = new Chart(ctxLeads, {
+                type: 'bar',
+                data: {
+                    labels: sourceLabels,
+                    datasets: [{
+                        label: 'Leads',
+                        data: sourceData,
+                        backgroundColor: '#818cf8',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
+                    }
                 }
             });
         }

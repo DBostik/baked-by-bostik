@@ -1193,6 +1193,27 @@ body {
     font-weight: 700;
 }
 
+.card-tag.tag-allergy {
+    background: #FFFBEB;
+    color: #B45309;
+    border: 1px solid #FDE68A;
+    align-self: flex-start;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    margin-top: 0.25rem;
+    font-weight: 700;
+    cursor: help;
+}
+
+.allergy-indicator {
+    display: inline-block;
+    margin-left: 4px;
+    font-size: 0.85rem;
+    cursor: help;
+    vertical-align: middle;
+}
+
 /* CUSTOMER ACTIONS */
 .action-buttons {
     display: flex;
