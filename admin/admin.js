@@ -2959,10 +2959,46 @@ function updateCharts() {
 
         const sourceLabels = Object.keys(sourceCounts).sort((a, b) => sourceCounts[b] - sourceCounts[a]);
         const sourceData = sourceLabels.map(l => sourceCounts[l]);
+        const totalLeads = sourceData.reduce((sum, v) => sum + v, 0);
+
+        // --- Per-bar color mapping ---
+        function getSourceColor(label) {
+            const l = label.toLowerCase();
+            if (l.includes('google'))          return '#4285F4'; // Google blue
+            if (l.includes('social') || l.includes('instagram') || l.includes('facebook') || l.includes('tiktok')) return '#E1306C'; // Social pink
+            if (l.includes('friend') || l.includes('family') || l.includes('referral')) return '#10B981'; // Emerald green
+            if (l.includes('returning') || l.includes('repeat') || l.includes('customer')) return '#F59E0B'; // Amber
+            if (l.includes('not specified') || l.includes('unknown') || l === '') return '#D1D5DB'; // Light gray
+            return '#6B7280'; // Default gray for "Other" / unrecognized
+        }
+        const barColors = sourceLabels.map(l => getSourceColor(l));
+
+        // --- Populate KPI Cards ---
+        const kpiTotal = document.getElementById('leads-kpi-total');
+        const kpiTop   = document.getElementById('leads-kpi-top');
+        const kpiRef   = document.getElementById('leads-kpi-referral');
+
+        if (kpiTotal) kpiTotal.textContent = totalLeads || '0';
+
+        if (kpiTop) {
+            kpiTop.textContent = sourceLabels.length > 0 ? sourceLabels[0] : '—';
+        }
+
+        if (kpiRef) {
+            const referralCount = sourceLabels.reduce((sum, l) => {
+                if (l.toLowerCase().includes('friend') || l.toLowerCase().includes('family') || l.toLowerCase().includes('referral')) {
+                    return sum + sourceCounts[l];
+                }
+                return sum;
+            }, 0);
+            const referralPct = totalLeads > 0 ? Math.round((referralCount / totalLeads) * 100) : 0;
+            kpiRef.textContent = referralPct + '%';
+        }
 
         if (leadsSourceChartInstance) {
             leadsSourceChartInstance.data.labels = sourceLabels;
             leadsSourceChartInstance.data.datasets[0].data = sourceData;
+            leadsSourceChartInstance.data.datasets[0].backgroundColor = barColors;
             leadsSourceChartInstance.update();
         } else {
             leadsSourceChartInstance = new Chart(ctxLeads, {
@@ -2972,19 +3008,43 @@ function updateCharts() {
                     datasets: [{
                         label: 'Leads',
                         data: sourceData,
-                        backgroundColor: '#818cf8',
-                        borderRadius: 4
+                        backgroundColor: barColors,
+                        borderRadius: 6,
+                        barThickness: 22
                     }]
                 },
                 options: {
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const count = context.parsed.x;
+                                    const pct = totalLeads > 0 ? Math.round((count / totalLeads) * 100) : 0;
+                                    return `  ${count} lead${count !== 1 ? 's' : ''} (${pct}%)`;
+                                }
+                            },
+                            backgroundColor: 'rgba(26, 42, 58, 0.92)',
+                            titleColor: '#E8B4B8',
+                            bodyColor: '#ffffff',
+                            borderColor: 'rgba(255,255,255,0.15)',
+                            borderWidth: 1,
+                            padding: 10,
+                            cornerRadius: 8
+                        }
+                    },
                     scales: {
                         x: {
                             beginAtZero: true,
-                            ticks: { stepSize: 1 }
+                            ticks: { stepSize: 1, color: '#94A3B8', font: { size: 11 } },
+                            grid: { color: 'rgba(0,0,0,0.04)' }
+                        },
+                        y: {
+                            ticks: { color: '#64748B', font: { size: 12, weight: '500' } },
+                            grid: { display: false }
                         }
                     }
                 }

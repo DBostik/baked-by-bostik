@@ -442,10 +442,28 @@
                         </div>
 
                         <!-- Leads by Source Chart -->
-                        <div class="chart-card"
+                        <div class="chart-card leads-source-card"
                             style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                            <h3 style="margin-top:0; color:#374151; font-size:1.1rem;">Leads by Source</h3>
-                            <div style="position: relative; height: 300px; width: 100%;">
+                            <h3 style="margin-top:0; color:#374151; font-size:1.1rem; margin-bottom:0.75rem;">Leads by Source</h3>
+
+                            <!-- KPI Pill Row -->
+                            <div class="leads-kpi-row">
+                                <div class="leads-kpi-pill">
+                                    <span class="leads-kpi-pill-label">Total</span>
+                                    <span class="leads-kpi-pill-value" id="leads-kpi-total">—</span>
+                                </div>
+                                <div class="leads-kpi-pill">
+                                    <span class="leads-kpi-pill-label">Top Source</span>
+                                    <span class="leads-kpi-pill-value leads-kpi-pill-value--sm" id="leads-kpi-top">—</span>
+                                </div>
+                                <div class="leads-kpi-pill">
+                                    <span class="leads-kpi-pill-label">Referral</span>
+                                    <span class="leads-kpi-pill-value" id="leads-kpi-referral">—</span>
+                                </div>
+                            </div>
+
+                            <!-- Chart Canvas -->
+                            <div style="position: relative; height: 260px; width: 100%;">
                                 <canvas id="leadsSourceChart"></canvas>
                             </div>
                         </div>
