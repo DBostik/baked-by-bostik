@@ -47,6 +47,31 @@
 - [x] Implement `openPaymentModal()` and `initRecordPaymentLogic()` which adds a new document to `orders/{orderId}/payments` and recalculates `amount_paid` and `balance_due` on the parent `order` document.
 - [x] Update the Ledger Table logic to reflect the new `amount_paid` dynamically.
 
+## 🟡 Milestone 24: Admin Dashboard Optimization
+**Priority**: 🟡 Medium — Quality of life improvements for daily admin workflow.
+
+**Goal**: Improve readability, add visual cues, fix analytics accuracy, and add new analytics charts.
+
+**Phase 1: Ledger, Payment, & Analytics Normalization (Engineer)**
+- [x] In `admin.js` `renderLedgerTable()`, replace the raw Firestore document ID in the "Request ID" column with the customer's name + order number suffix (e.g., "Jane Smith · #04222026-1234"). Look up `customers[o.customer_id]?.name`.
+- [x] In `admin/index.html`, change the Ledger `<th>` from "Request ID" to "Customer / Order".
+- [x] Make each ledger `<tr>` row clickable → calls `openModal(o.request_id)` to open the request detail modal. Prevent click when the Delete button is targeted.
+- [x] In `admin/index.html` `#payment-modal`, add `<option value="Venmo">Venmo</option>` to the `#payment-method` select dropdown (after Cash, before Check).
+- [x] Add a `normalizeCategory(cat)` helper near `updateCharts()` that maps `cakes`/`Custom Cake` → `Cakes`, `cookies` → `Cookies`, `cupcakes` → `Cupcakes`.
+- [x] Use `normalizeCategory()` in the product mix counting loop inside `updateCharts()`.
+- [x] Update `js/app.js` Step 1 form option values from lowercase (`cookies`, `cakes`, `cupcakes`) to title case (`Cookies`, `Cakes`, `Cupcakes`).
+- [x] Update the admin edit mode category dropdown (~line 1149) to use `Cakes` instead of `Custom Cake`, with a selected check that handles legacy values.
+
+**Phase 2: Allergy Indicators (Engineer)**
+- [ ] In `admin.js` `renderTable()`, add a `⚠️` icon next to the customer name in the list view for requests where `step2_data.allergies === 'yes'`. Include allergy details in the tooltip.
+- [ ] In `admin.js` `renderBoard()`, add a `<span class="card-tag tag-allergy">⚠️ ALLERGY</span>` badge to Kanban cards for requests with allergies.
+- [ ] Add `.allergy-indicator` and `.tag-allergy` CSS styles to `admin.css`.
+
+**Phase 3: Leads by Source Chart (Engineer)**
+- [ ] In `admin/index.html`, add a new `<canvas id="leadsSourceChart">` chart card inside `#page-analytics .analytics-grid`.
+- [ ] In `admin.js`, declare `let leadsSourceChartInstance = null;` and add rendering logic at the end of `updateCharts()` that counts `step2_data.hear_about_us` values from all requests and renders a horizontal bar chart.
+- [ ] Normalize referral entries: strip referral names from "Friend/Family Referral: [Name]" before counting.
+
 ## 🔮 FUTURE ROADMAP (Backlog)
 
 ### 🟡 Milestone 13: Resources & Guides

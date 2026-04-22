@@ -150,9 +150,9 @@ function initOrderModal() {
                     <div class="form-group half">
                         <label>Order Type *</label>
                         <select name="type" required id="orderTypeSelect">
-                            <option value="cookies">Cookies</option>
-                            <option value="cakes">Cakes</option>
-                            <option value="cupcakes">Cupcakes</option>
+                            <option value="Cookies">Cookies</option>
+                            <option value="Cakes">Cakes</option>
+                            <option value="Cupcakes">Cupcakes</option>
                         </select>
                     </div>
                     <div class="form-group half">
@@ -246,7 +246,7 @@ function initOrderModal() {
 
     // Helper text logic
     typeInput.addEventListener('change', (e) => {
-        if (e.target.value === 'cakes') {
+        if (e.target.value === 'Cakes') {
             qtyLabel.innerText = "Number of people to serve *";
             form.qty.placeholder = "e.g. 20 guests";
             form.qty.type = "text";

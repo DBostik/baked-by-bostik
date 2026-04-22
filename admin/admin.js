@@ -627,10 +627,16 @@ function renderLedgerTable() {
         const amountPaid = parseFloat(o.amount_paid) || 0;
         const status = o.status || 'ACTIVE';
 
+        // Human-readable customer name lookup
+        const custName = customers[o.customer_id]?.name || o.customer_name || 'Unknown';
+        const shortId = (o.request_id || o.id || '').slice(-8);
+        const displayId = `${custName} · #${shortId}`;
+
         const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
         tr.innerHTML = `
             <td>${dateStr}</td>
-            <td><strong>#${o.id || o.request_id}</strong></td>
+            <td><strong>${displayId}</strong></td>
             <td>$${amountTotal.toFixed(2)}</td>
             <td>$${amountPaid.toFixed(2)}</td>
             <td><span class="status-badge status-${status}">${status}</span></td>
@@ -639,12 +645,20 @@ function renderLedgerTable() {
             </td>
         `;
 
-        tr.querySelector('.btn-delete-order').addEventListener('click', async () => {
+        // Clicking the row opens the request detail modal
+        tr.addEventListener('click', () => {
+            const reqId = o.request_id || o.id;
+            if (reqId) openModal(reqId);
+        });
+
+        // Prevent Delete button click from bubbling up to the row click
+        tr.querySelector('.btn-delete-order').addEventListener('click', async (e) => {
+            e.stopPropagation();
             if (confirm('Are you sure you want to PERMANENTLY delete this order and its payments? This cannot be undone.')) {
                 try {
                     await deleteOrderAndPayments(o.id);
                     alert("Order deleted successfully.");
-                } catch(e) {
+                } catch(err) {
                     alert("Failed to delete order.");
                 }
             }
@@ -1146,10 +1160,10 @@ function renderModalBody(req, cust, isEditing) {
                       <div class="form-group">
                          <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Category</label>
                          <select name="category" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
-                             <option value="Custom Cake" ${s1.category === 'Custom Cake' ? 'selected' : ''}>Custom Cake</option>
-                             <option value="Cupcakes" ${s1.category === 'Cupcakes' ? 'selected' : ''}>Cupcakes</option>
-                             <option value="Cookies" ${s1.category === 'Cookies' ? 'selected' : ''}>Cookies</option>
-                             <option value="Other" ${(s1.category !== 'Custom Cake' && s1.category !== 'Cupcakes' && s1.category !== 'Cookies') ? 'selected' : ''}>Other</option>
+                             <option value="Cakes" ${(s1.category === 'Cakes' || s1.category === 'cakes' || s1.category === 'Custom Cake') ? 'selected' : ''}>Cakes</option>
+                             <option value="Cupcakes" ${(s1.category === 'Cupcakes' || s1.category === 'cupcakes') ? 'selected' : ''}>Cupcakes</option>
+                             <option value="Cookies" ${(s1.category === 'Cookies' || s1.category === 'cookies') ? 'selected' : ''}>Cookies</option>
+                             <option value="Other" ${(s1.category !== 'Cakes' && s1.category !== 'cakes' && s1.category !== 'Custom Cake' && s1.category !== 'Cupcakes' && s1.category !== 'cupcakes' && s1.category !== 'Cookies' && s1.category !== 'cookies') ? 'selected' : ''}>Other</option>
                          </select>
                       </div>
 
@@ -2733,6 +2747,19 @@ function initAnalyticsLogic() {
     }
 }
 
+/**
+ * Normalize order category strings to canonical title-case values.
+ * Handles legacy lowercase values and old "Custom Cake" label.
+ */
+function normalizeCategory(cat) {
+    if (!cat) return 'Other';
+    const lower = cat.toLowerCase().trim();
+    if (lower === 'cakes' || lower === 'custom cake') return 'Cakes';
+    if (lower === 'cookies') return 'Cookies';
+    if (lower === 'cupcakes') return 'Cupcakes';
+    return cat; // Return original if no match
+}
+
 function updateCharts() {
     const ctxRevenue = document.getElementById('revenueChart');
     if (ctxRevenue) {
@@ -2875,7 +2902,7 @@ function updateCharts() {
         const counts = {};
 
         requests.forEach(req => {
-            const cat = req.step1_data?.category || 'Other';
+            const cat = normalizeCategory(req.step1_data?.category || 'Other');
             counts[cat] = (counts[cat] || 0) + 1;
         });
 
