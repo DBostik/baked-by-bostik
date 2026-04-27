@@ -570,7 +570,18 @@ function updateStats() {
     if (els.countRevenue) {
         // Sum of all payments (approximated by 'amount_paid' on order doc, 
         // assuming we maintain that field. Or we can default to total_price if paid is missing for backward compat)
-        const totalRevenue = orders.reduce((sum, order) => sum + (parseFloat(order.amount_paid) || 0), 0);
+        let totalRevenue = orders.reduce((sum, order) => sum + (parseFloat(order.amount_paid) || 0), 0);
+        
+        // Add Seasonal Revenue
+        if (typeof seasonalOrders !== 'undefined') {
+            totalRevenue += seasonalOrders.reduce((sum, order) => {
+                if (order.status === 'CONFIRMED' || order.status === 'COMPLETED') {
+                    return sum + (parseFloat(order.total_price) || 0);
+                }
+                return sum;
+            }, 0);
+        }
+
         els.countRevenue.textContent = `$${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
     }
 
@@ -2825,6 +2836,37 @@ function updateCharts() {
             });
         });
 
+        if (typeof seasonalOrders !== 'undefined') {
+            seasonalOrders.forEach(order => {
+                if (order.status !== 'CONFIRMED' && order.status !== 'COMPLETED') return;
+
+                let date = null;
+                if (order.created_at && order.created_at.seconds) {
+                    date = new Date(order.created_at.seconds * 1000);
+                } else if (order.date) {
+                    date = new Date(order.date);
+                }
+
+                const collected = parseFloat(order.total_price) || 0;
+
+                if (date && date.getFullYear() === currentYear) {
+                    const monthName = monthLabels[date.getMonth()];
+                    revenueByMonth[monthName] += collected;
+                }
+
+                revenueItems.push({
+                    dateObj: date || new Date(0),
+                    dateStr: date ? date.toLocaleDateString() : 'N/A',
+                    custName: order.parent_name || "Unknown",
+                    items: `Seasonal: ${order.num_sets} Sets`,
+                    collected: collected,
+                    outstanding: 0,
+                    reqId: null,
+                    seasonalId: order.id
+                });
+            });
+        }
+
         const dataValues = monthLabels.map(m => revenueByMonth[m]);
 
         if (revenueChartInstance) {
@@ -2890,6 +2932,8 @@ function updateCharts() {
                     tr.onclick = function () {
                         if (item.reqId) {
                             openModal(item.reqId);
+                        } else if (item.seasonalId && typeof openSeasonalModal === 'function') {
+                            openSeasonalModal(item.seasonalId);
                         } else {
                             alert("No linked request details found (ID missing on order).");
                         }
@@ -4132,17 +4176,21 @@ function escapeHtml(unsafe) {
 
 function loadSeasonalOrders() {
     const tableBody = document.getElementById('seasonal-table-body');
-    const emptyState = document.getElementById('seasonal-empty-state');
     const badge = document.getElementById('seasonal-badge');
+    const campaignFilterEl = document.getElementById('seasonal-campaign-filter');
 
     if (!tableBody) return;
+
+    if (campaignFilterEl && !campaignFilterEl.hasAttribute('data-listener')) {
+        campaignFilterEl.addEventListener('change', () => renderSeasonalOrders());
+        campaignFilterEl.setAttribute('data-listener', 'true');
+    }
 
     if (unsubscribeSeasonal) unsubscribeSeasonal();
 
     const q = query(collection(db, "seasonal_orders"), orderBy("created_at", "desc"));
     unsubscribeSeasonal = onSnapshot(q, (snapshot) => {
         seasonalOrders = [];
-        tableBody.innerHTML = '';
         
         snapshot.forEach(doc => {
             seasonalOrders.push({ id: doc.id, ...doc.data() });
@@ -4153,51 +4201,116 @@ function loadSeasonalOrders() {
             badge.style.display = seasonalOrders.length > 0 ? 'inline-block' : 'none';
         }
 
-        if (seasonalOrders.length === 0) {
-            if (emptyState) emptyState.classList.remove('hidden');
-            return;
-        }
-        
-        if (emptyState) emptyState.classList.add('hidden');
-
-        seasonalOrders.forEach(o => {
-            const dateStr = o.created_at ? new Date(o.created_at.seconds * 1000).toLocaleDateString() : 'N/A';
-            const teacherNames = (o.teacher_names || []).join(', ');
-            const status = o.status || 'PENDING_PAYMENT';
-            
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${dateStr}</td>
-                <td><strong>${escapeHtml(o.parent_name || 'Unknown')}</strong><br><small>${escapeHtml(o.parent_email || '')}</small></td>
-                <td>${o.num_sets}</td>
-                <td>${escapeHtml(teacherNames)}</td>
-                <td>$${parseFloat(o.total_price || 0).toFixed(2)}</td>
-                <td><span class="seasonal-tag status-${status}">${status}</span></td>
-                <td>
-                    <button class="btn-sm btn-toggle-seasonal-status" data-id="${o.id}" data-status="${status}">
-                        Toggle Status
-                    </button>
-                </td>
-            `;
-            
-            tableBody.appendChild(tr);
-        });
-
-        document.querySelectorAll('.btn-toggle-seasonal-status').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const id = e.target.getAttribute('data-id');
-                const currentStatus = e.target.getAttribute('data-status');
-                const newStatus = currentStatus === 'PENDING_PAYMENT' ? 'CONFIRMED' : 'PENDING_PAYMENT';
-                
-                try {
-                    await updateDoc(doc(db, "seasonal_orders", id), { status: newStatus });
-                } catch(err) {
-                    console.error("Error updating seasonal order status:", err);
-                    alert("Failed to update status.");
-                }
-            });
-        });
+        renderSeasonalOrders();
+        updateStats(); // Updates revenue KPIs with latest seasonal order statuses
     }, (error) => {
         console.error("Error fetching seasonal orders:", error);
     });
 }
+
+function renderSeasonalOrders() {
+    const tableBody = document.getElementById('seasonal-table-body');
+    const emptyState = document.getElementById('seasonal-empty-state');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '';
+    
+    const filterVal = document.getElementById('seasonal-campaign-filter')?.value || 'all';
+    
+    const filteredOrders = seasonalOrders.filter(o => {
+        if (filterVal === 'all') return true;
+        if (filterVal === 'legacy') return !o.campaign_id;
+        return o.campaign_id === filterVal;
+    });
+
+    if (filteredOrders.length === 0) {
+        if (emptyState) emptyState.classList.remove('hidden');
+        return;
+    }
+    
+    if (emptyState) emptyState.classList.add('hidden');
+
+    filteredOrders.forEach(o => {
+        const dateStr = o.created_at ? new Date(o.created_at.seconds * 1000).toLocaleDateString() : 'N/A';
+        const teacherNames = (o.teacher_names || []).join(', ');
+        const status = o.status || 'PENDING_PAYMENT';
+        
+        const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+        tr.onmouseover = function () { this.style.backgroundColor = '#f3f4f6'; };
+        tr.onmouseout = function () { this.style.backgroundColor = ''; };
+        tr.onclick = () => openSeasonalModal(o.id);
+
+        tr.innerHTML = `
+            <td>${dateStr}</td>
+            <td><strong>${escapeHtml(o.parent_name || 'Unknown')}</strong><br><small>${escapeHtml(o.parent_email || '')}</small></td>
+            <td>${o.num_sets}</td>
+            <td>${escapeHtml(teacherNames)}</td>
+            <td>$${parseFloat(o.total_price || 0).toFixed(2)}</td>
+            <td><span class="seasonal-tag status-${status}">${status}</span></td>
+            <td><button class="btn-sm btn-view">Edit</button></td>
+        `;
+        
+        tableBody.appendChild(tr);
+    });
+}
+
+function openSeasonalModal(orderId) {
+    const order = seasonalOrders.find(o => o.id === orderId);
+    if (!order) return;
+    
+    document.getElementById('seasonal-edit-id').value = order.id;
+    document.getElementById('seasonal-edit-parent-name').value = order.parent_name || '';
+    document.getElementById('seasonal-edit-email').value = order.parent_email || '';
+    document.getElementById('seasonal-edit-sets').value = order.num_sets || 1;
+    document.getElementById('seasonal-edit-teachers').value = (order.teacher_names || []).join(', ');
+    document.getElementById('seasonal-edit-total').value = parseFloat(order.total_price || 0).toFixed(2);
+    document.getElementById('seasonal-edit-status').value = order.status || 'PENDING_PAYMENT';
+    
+    document.getElementById('seasonal-detail-modal').classList.remove('hidden');
+}
+
+// Modal wiring
+document.getElementById('seasonal-detail-modal')?.querySelector('.close-modal')?.addEventListener('click', () => {
+    document.getElementById('seasonal-detail-modal').classList.add('hidden');
+});
+
+document.getElementById('btn-save-seasonal')?.addEventListener('click', async () => {
+    const id = document.getElementById('seasonal-edit-id').value;
+    const parent_name = document.getElementById('seasonal-edit-parent-name').value;
+    const email = document.getElementById('seasonal-edit-email').value;
+    const sets = parseInt(document.getElementById('seasonal-edit-sets').value, 10) || 1;
+    const teachersInput = document.getElementById('seasonal-edit-teachers').value;
+    const teachers = teachersInput.split(',').map(t => t.trim()).filter(t => t);
+    const total = parseFloat(document.getElementById('seasonal-edit-total').value) || 0;
+    const status = document.getElementById('seasonal-edit-status').value;
+    
+    try {
+        await updateDoc(doc(db, "seasonal_orders", id), {
+            parent_name: parent_name,
+            parent_email: email,
+            num_sets: sets,
+            teacher_names: teachers,
+            total_price: total,
+            status: status,
+            updated_at: serverTimestamp()
+        });
+        document.getElementById('seasonal-detail-modal').classList.add('hidden');
+    } catch(err) {
+        console.error("Error saving seasonal order:", err);
+        alert("Failed to save order updates.");
+    }
+});
+
+document.getElementById('btn-delete-seasonal')?.addEventListener('click', async () => {
+    const id = document.getElementById('seasonal-edit-id').value;
+    if (confirm("Are you sure you want to delete this seasonal order?")) {
+        try {
+            await deleteDoc(doc(db, "seasonal_orders", id));
+            document.getElementById('seasonal-detail-modal').classList.add('hidden');
+        } catch(err) {
+            console.error("Error deleting seasonal order:", err);
+            alert("Failed to delete order.");
+        }
+    }
+});

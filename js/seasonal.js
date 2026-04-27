@@ -95,6 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 total_price: totalPrice,
                 free_crayon_box: freeCrayonBox,
                 campaign: "teacher-appreciation-2026",
+                campaign_id: "teacher_appreciation_2026",
                 status: "PENDING_PAYMENT",
                 created_at: serverTimestamp(),
                 updated_at: serverTimestamp()

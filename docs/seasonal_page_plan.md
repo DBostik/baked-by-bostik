@@ -233,33 +233,53 @@ Follow existing patterns in `css/styles.css`:
 1. Test everything per the verification plan below
 2. Deploy: `firebase deploy --only firestore:rules,hosting`
 
+### Phase 5: Seasonal Orders Admin Management Upgrade — ENGINEER & DESIGNER
+**Scope:** Enhance Admin Dashboard to support full lifecycle tracking, campaign filtering, and analytics integration for seasonal orders.
+
+1. **Advanced Status Workflow & Edit Modal** (Engineer & Designer)
+   - In `admin/index.html`: Add HTML structure for `#seasonal-detail-modal` and a Campaign Filter dropdown above the seasonal table.
+   - In `admin/admin.js`: Create `openSeasonalModal(orderId)` logic to populate the modal with editable fields (Parent Name, Email, Sets, Teacher Names, Total Price).
+   - Change the status toggle to a dropdown: `PENDING_PAYMENT`, `CONFIRMED`, `COMPLETED`, `VOIDED`.
+   - Add "Save Changes" and "Delete Order" buttons and wire up their logic to update Firestore.
+   - Update `loadSeasonalOrders()` to apply the selected Campaign Filter.
+
+2. **Campaign Filtering & Archiving** (Engineer)
+   - In `js/seasonal.js`: Add a hidden `campaign_id: 'teacher_appreciation_2026'` to the Firestore submission payload so all incoming public orders are auto-categorized.
+   - In `admin/admin.js`: Ensure the Campaign Filter dropdown correctly filters the `seasonal_orders` table. Un-tagged orders should be classified as "Legacy".
+
+3. **Analytics Integration** (Engineer)
+   - In `admin/admin.js`: Update `updateStats()` to include the total price of all `CONFIRMED` and `COMPLETED` seasonal orders in the global `$ Revenue` KPI card.
+   - Update `updateCharts()` to inject seasonal revenue into the "Monthly Revenue" bar chart alongside custom orders.
+   - Include seasonal orders in the "Recent Revenue Sources" ledger below the charts.
+
 ---
 
 ## ✅ Verification Plan
 
 ### Functional Tests
-- [ ] Submit a test seasonal order → verify document appears in Firestore `seasonal_orders`
-- [ ] Submit a waitlist entry → verify document in `seasonal_waitlist`
-- [ ] Change "Number of Sets" → verify correct number of teacher name fields appear
-- [ ] Set 1 set → price shows $20, no crayon box message
-- [ ] Set 3 sets → price shows $60, crayon box message appears
-- [ ] Submit with missing fields → form blocks submission
-- [ ] Pick a date outside May → form blocks or warns
+- [ ] Submit a test seasonal order → verify document appears in Firestore `seasonal_orders` with the correct `campaign_id`.
+- [ ] Submit a waitlist entry → verify document in `seasonal_waitlist`.
+- [ ] Change "Number of Sets" → verify correct number of teacher name fields appear.
+- [ ] Set 1 set → price shows $20, no crayon box message.
+- [ ] Set 3 sets → price shows $60, crayon box message appears.
+- [ ] Submit with missing fields → form blocks submission.
 
 ### Visual / Responsive Tests
-- [ ] Desktop (1200px+): full split-hero, 3-col product cards, inline form
-- [ ] Tablet (768px): layouts adapt, images scale
-- [ ] Mobile (375px): everything stacked, form full-width, Venmo QR readable
+- [ ] Desktop (1200px+): full split-hero, 3-col product cards, inline form.
+- [ ] Tablet (768px): layouts adapt, images scale.
+- [ ] Mobile (375px): everything stacked, form full-width, Venmo QR readable.
 
 ### Navigation Tests
-- [ ] Click "Seasonal" from every page → arrives at `/seasonal`
-- [ ] Seasonal nav link has accent pill styling
-- [ ] Mobile nav drawer shows seasonal link with accent
+- [ ] Click "Seasonal" from every page → arrives at `/seasonal`.
+- [ ] Seasonal nav link has accent pill styling.
+- [ ] Mobile nav drawer shows seasonal link with accent.
 
 ### Admin Tests
-- [ ] Seasonal orders appear in admin dashboard
-- [ ] Can toggle status PENDING_PAYMENT → CONFIRMED
-- [ ] Badge count updates
+- [ ] Seasonal orders appear in admin dashboard.
+- [ ] Clicking an order opens the new Seasonal Detail Modal.
+- [ ] Can edit fields and change status to `COMPLETED`.
+- [ ] Campaign Filter successfully hides/shows orders.
+- [ ] Global Revenue KPI increases when a seasonal order is `CONFIRMED` or `COMPLETED`.
 
 ### Deploy
 ```bash
