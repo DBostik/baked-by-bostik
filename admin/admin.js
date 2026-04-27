@@ -4120,6 +4120,16 @@ async function deleteApprovedReview(id) {
 let seasonalOrders = [];
 let unsubscribeSeasonal = null;
 
+function escapeHtml(unsafe) {
+    if (!unsafe) return '';
+    return String(unsafe)
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+}
+
 function loadSeasonalOrders() {
     const tableBody = document.getElementById('seasonal-table-body');
     const emptyState = document.getElementById('seasonal-empty-state');
