@@ -788,6 +788,7 @@ img {
         width: 100%;
         text-align: center;
         margin-top: var(--space-4);
+        white-space: nowrap;
     }
 
     .nav-list.active {
