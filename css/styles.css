@@ -167,6 +167,29 @@ img {
     width: 100%;
 }
 
+.seasonal-nav-link {
+    background-color: var(--color-accent);
+    border-radius: var(--radius-full);
+    padding: 6px 16px;
+    animation: pulseNav 2s infinite;
+}
+
+.seasonal-nav-link:hover,
+.seasonal-nav-link.active {
+    background-color: var(--color-accent-hover);
+    color: var(--color-primary) !important;
+}
+
+.seasonal-nav-link::after {
+    display: none; /* remove the underline effect */
+}
+
+@keyframes pulseNav {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
 .header-actions {
     display: flex;
     align-items: center;
@@ -756,6 +779,15 @@ img {
     .nav-list .nav-link.active {
         color: var(--color-accent);
         border-bottom: 2px solid var(--color-accent);
+    }
+
+    .nav-list .seasonal-nav-link {
+        background-color: var(--color-accent);
+        color: var(--color-primary) !important;
+        border-bottom: none !important;
+        width: 100%;
+        text-align: center;
+        margin-top: var(--space-4);
     }
 
     .nav-list.active {

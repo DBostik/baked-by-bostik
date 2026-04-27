@@ -90,6 +90,40 @@
 - [ ] Fix `about.html` footer: Change `href="privacy.html"` to `href="/privacy.html"`.
 - [ ] Fix `gallery.html` footer: Same change.
 
+## 🔴 Milestone 26: Seasonal Page — Teacher Appreciation Cookie Sale
+**Priority**: 🔴 HIGH — Must be live by April 28, 2026.
+
+**Goal**: Add a new rotating Seasonal Page (`/seasonal`) to the website. First campaign: End-of-Year Teacher Appreciation Cookie Sale — personalized 3-cookie gift boxes at $20/set, limited to 15 orders, free crayon cookie box at 3+ sets, Venmo payment only, May pickup in Glen Ellyn.
+
+> [!IMPORTANT]
+> Full detailed plan, design spec, sales copy, Firestore data model, and ready-to-paste prompts are in **[docs/seasonal_page_plan.md](docs/seasonal_page_plan.md)**. Read that file FIRST before starting any work.
+
+**Phase 1: Foundation — Engineer**
+- [x] Update `firestore.rules` — add `seasonal_orders` and `seasonal_waitlist` collection rules (public create, admin read/write).
+- [x] Create `seasonal.html` — complete seasonal landing page with hero, product showcase, urgency counter, one-step order form, Venmo payment section, sold-out/waitlist state, FAQ, standard header/footer.
+- [x] Create `js/seasonal.js` — form logic: dynamic teacher name fields, auto price calc ($20×sets), free crayon box notification at 3+ sets, Firestore submission to `seasonal_orders`, waitlist submission to `seasonal_waitlist`.
+- [x] Update navigation across ALL pages — add "Seasonal 🍎" accent link to header `nav-list` and footer `footer-nav`.
+- [x] Update `index.html` Section F (seasonal banner) — link to `/seasonal`, update copy for teacher appreciation sale, add toggle mechanism.
+
+**Phase 2: Design & Polish — Designer**
+- [ ] Create `css/seasonal.css` — hero, product cards, urgency bar, form styling, Venmo card, sold-out state, bonus callout, full mobile responsive, micro-animations.
+- [ ] Add `.seasonal-nav-link` accent pill styles to `css/styles.css` (header + mobile nav).
+- [ ] Polish seasonal section on homepage.
+
+**Phase 3: Admin Dashboard — Engineer**
+- [x] In `admin/admin.js` — add `loadSeasonalOrders()`, render seasonal orders table, status toggle (PENDING_PAYMENT → CONFIRMED).
+- [x] In `admin/index.html` — add seasonal orders sidebar link + container.
+- [x] In `admin/admin.css` — add 🍎 seasonal badge/tag styles.
+
+**Phase 4: QA & Deploy**
+- [ ] Test form submission, dynamic fields, price calc, validation.
+- [ ] Test mobile responsiveness.
+- [ ] Verify Firestore writes (seasonal_orders + seasonal_waitlist).
+- [ ] Verify admin dashboard shows seasonal orders.
+- [ ] Deploy: `firebase deploy --only firestore:rules,hosting`
+
+---
+
 ## 🔮 FUTURE ROADMAP (Backlog)
 
 ### 🟡 Milestone 13: Resources & Guides

@@ -199,6 +199,9 @@ async function initDashboard(user) {
     // Init Analytics (Milestone 5)
     initAnalyticsLogic();
 
+    // Init Seasonal Orders
+    loadSeasonalOrders();
+
     // Init Deposit Modal Close Button (User Feedback Fix)
     const depositCloseBtn = els.depositModal.querySelector('.close-modal');
     if (depositCloseBtn) {
@@ -345,6 +348,8 @@ function showPage(pageName) {
     if (reviewsPage) reviewsPage.classList.add('hidden');
     const ledgerPage = document.getElementById('page-ledger');
     if (ledgerPage) ledgerPage.classList.add('hidden');
+    const seasonalPage = document.getElementById('page-seasonal');
+    if (seasonalPage) seasonalPage.classList.add('hidden');
 
     // Show target
     const target = document.getElementById(`page-${pageName}`);
@@ -359,6 +364,8 @@ function showPage(pageName) {
         initReviews();
     } else if (pageName === 'ledger') {
         renderLedgerTable();
+    } else if (pageName === 'seasonal') {
+        // already loaded via listener, but could refresh here
     }
 }
 
@@ -4107,4 +4114,80 @@ async function deleteApprovedReview(id) {
         console.error('Error deleting review:', err);
         alert('Failed to delete review.');
     }
+}
+
+// --- SEASONAL ORDERS LOGIC ---
+let seasonalOrders = [];
+let unsubscribeSeasonal = null;
+
+function loadSeasonalOrders() {
+    const tableBody = document.getElementById('seasonal-table-body');
+    const emptyState = document.getElementById('seasonal-empty-state');
+    const badge = document.getElementById('seasonal-badge');
+
+    if (!tableBody) return;
+
+    if (unsubscribeSeasonal) unsubscribeSeasonal();
+
+    const q = query(collection(db, "seasonal_orders"), orderBy("created_at", "desc"));
+    unsubscribeSeasonal = onSnapshot(q, (snapshot) => {
+        seasonalOrders = [];
+        tableBody.innerHTML = '';
+        
+        snapshot.forEach(doc => {
+            seasonalOrders.push({ id: doc.id, ...doc.data() });
+        });
+
+        if (badge) {
+            badge.textContent = seasonalOrders.length;
+            badge.style.display = seasonalOrders.length > 0 ? 'inline-block' : 'none';
+        }
+
+        if (seasonalOrders.length === 0) {
+            if (emptyState) emptyState.classList.remove('hidden');
+            return;
+        }
+        
+        if (emptyState) emptyState.classList.add('hidden');
+
+        seasonalOrders.forEach(o => {
+            const dateStr = o.created_at ? new Date(o.created_at.seconds * 1000).toLocaleDateString() : 'N/A';
+            const teacherNames = (o.teacher_names || []).join(', ');
+            const status = o.status || 'PENDING_PAYMENT';
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${dateStr}</td>
+                <td><strong>${escapeHtml(o.parent_name || 'Unknown')}</strong><br><small>${escapeHtml(o.parent_email || '')}</small></td>
+                <td>${o.num_sets}</td>
+                <td>${escapeHtml(teacherNames)}</td>
+                <td>$${parseFloat(o.total_price || 0).toFixed(2)}</td>
+                <td><span class="seasonal-tag status-${status}">${status}</span></td>
+                <td>
+                    <button class="btn-sm btn-toggle-seasonal-status" data-id="${o.id}" data-status="${status}">
+                        Toggle Status
+                    </button>
+                </td>
+            `;
+            
+            tableBody.appendChild(tr);
+        });
+
+        document.querySelectorAll('.btn-toggle-seasonal-status').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = e.target.getAttribute('data-id');
+                const currentStatus = e.target.getAttribute('data-status');
+                const newStatus = currentStatus === 'PENDING_PAYMENT' ? 'CONFIRMED' : 'PENDING_PAYMENT';
+                
+                try {
+                    await updateDoc(doc(db, "seasonal_orders", id), { status: newStatus });
+                } catch(err) {
+                    console.error("Error updating seasonal order status:", err);
+                    alert("Failed to update status.");
+                }
+            });
+        });
+    }, (error) => {
+        console.error("Error fetching seasonal orders:", error);
+    });
 }

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Appreciation Cookie Sale | Baked By Bostik</title>
+    <meta name="description" content="Personalized end-of-year teacher appreciation cookie gift boxes — handcrafted with love in Glen Ellyn.">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/buttons.css">
+    <link rel="stylesheet" href="/css/styles.css?v=6">
+    <link rel="stylesheet" href="/css/seasonal.css">
+    <link rel="icon" type="image/jpg" href="/logo.JPG">
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="/index.html" class="logo-link">
+                <img src="/assets/logo.JPG" alt="Baked By Bostik" class="header-logo">
+            </a>
+
+            <ul class="nav-list">
+                <li><a href="/index.html" class="nav-link">Home</a></li>
+                <li><a href="/gallery.html" class="nav-link">Gallery</a></li>
+                <li><a href="/menu.html" class="nav-link">Menu</a></li>
+                <li><a href="/about.html" class="nav-link">About</a></li>
+                <li><a href="/seasonal.html" class="nav-link seasonal-nav-link active">Seasonal 🍎</a></li>
+            </ul>
+
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="openOrderModal()">Request an Order</button>
+            </div>
+            <button class="mobile-menu-toggle" aria-label="Open menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+        </div>
+    </header>
+
+    <main id="seasonal-main" class="seasonal-page">
+        <!-- 2. Hero Section -->
+        <section class="hero-section seasonal-hero">
+            <div class="container hero-grid">
+                <div class="hero-content">
+                    <h1 class="hero-title fade-in-up">The Sweetest Way to Say Thank You 🍎</h1>
+                    <p class="hero-subtitle fade-in-up delay-1">Personalized end-of-year teacher appreciation cookie gift boxes — handcrafted with love in Glen Ellyn.</p>
+                    <div class="urgency-badge fade-in-up delay-2">⚡ Limited Edition — Only 15 Sets Available</div>
+                    <div class="hero-buttons fade-in-up delay-2">
+                        <a href="#order-form-section" class="btn btn-primary">Reserve Your Set Now →</a>
+                    </div>
+                </div>
+                <div class="hero-image-wrapper fade-in-right">
+                    <img src="/assets/images/Season Page/IMG_3877.jpeg" alt="Teacher Appreciation Gift Box" class="hero-img">
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Product Showcase Section -->
+        <section class="product-showcase bg-cream">
+            <div class="container text-center">
+                <h2 class="section-title">What's Inside Each Gift Box</h2>
+                <p class="subtitle">Each beautifully packaged gift box contains <strong>3 hand-decorated sugar cookies</strong> personalized with your teacher's name:</p>
+                <div class="themes-grid seasonal-grid">
+                    <div class="theme-card">
+                        <img src="/assets/images/Season Page/IMG_3883.jpeg" alt="Thank You Apple">
+                        <h3>🍎 "Thank You" Apple</h3>
+                        <p>Personalized with the teacher's name</p>
+                    </div>
+                    <div class="theme-card">
+                        <img src="/assets/images/Season Page/IMG_3921.jpeg" alt="Notebook Heart">
+                        <h3>📓 Notebook Heart</h3>
+                        <p>Because every great teacher writes on your heart</p>
+                    </div>
+                    <div class="theme-card">
+                        <img src="/assets/images/Season Page/IMG_3881.jpeg" alt="Pencil Cookie">
+                        <h3>✏️ Pencil</h3>
+                        <p>The classic symbol of learning</p>
+                    </div>
+                </div>
+                <div class="price-callout">
+                    <h3>$20 per gift box</h3>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Crayon Bonus Banner -->
+        <section class="bonus-banner">
+            <div class="container banner-inner">
+                <div class="banner-text">
+                    <h3>🖍️ Order 3 or more sets and receive a FREE Crayon Cookie Box!</h3>
+                    <p>4 colorful crayon-shaped cookies in a fun "Freshly Baked Crayons" box!</p>
+                </div>
+                <div class="banner-image">
+                    <img src="/assets/images/Season Page/IMG_3878.jpeg" alt="Free Crayon Cookie Box" class="bonus-img">
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. Urgency Bar -->
+        <section class="urgency-bar text-white text-center">
+            <div class="container">
+                <p>⏰ <strong>Limited to just 15 orders</strong> — once they're gone, they're gone! Pickup available throughout May in Glen Ellyn. Payment via Venmo is required upfront to confirm your spot.</p>
+            </div>
+        </section>
+
+        <!-- 6. How It Works -->
+        <section class="how-it-works-section bg-cream">
+            <div class="container">
+                <h2 class="section-title text-center">How It Works</h2>
+                <div class="steps-grid">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <h3>Fill out the form below</h3>
+                        <p>Tell us your name, how many sets, and each teacher's name.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <h3>Pay via Venmo</h3>
+                        <p>Send payment to @Kristen-Bostik (QR code below) to lock in your order.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <h3>Pick up in May</h3>
+                        <p>Grab your beautifully packaged gift boxes in Glen Ellyn.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. Order Form Section -->
+        <section id="order-form-section" class="contact-section">
+            <div class="container">
+                <div class="order-form-wrapper">
+                    <h2 class="text-center" style="margin-top:0;">Reserve Your Sets</h2>
+                    
+                    <form id="seasonal-order-form">
+                        <div class="form-group">
+                            <label for="parent-name">Parent Name</label>
+                            <input type="text" id="parent-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="parent-email">Email</label>
+                            <input type="email" id="parent-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="parent-phone">Phone Number</label>
+                            <input type="tel" id="parent-phone" required placeholder="(555) 555-5555">
+                        </div>
+                        <div class="form-group">
+                            <label for="pickup-date">Pickup Date (May 2026 only)</label>
+                            <input type="date" id="pickup-date" min="2026-05-01" max="2026-05-31" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="num-sets">Number of Sets ($20 each)</label>
+                            <select id="num-sets" required>
+                                <option value="" disabled selected>Select quantity...</option>
+                                <option value="1">1 Set ($20)</option>
+                                <option value="2">2 Sets ($40)</option>
+                                <option value="3">3 Sets ($60) + FREE Crayon Box</option>
+                                <option value="4">4 Sets ($80) + FREE Crayon Box</option>
+                                <option value="5">5 Sets ($100) + FREE Crayon Box</option>
+                            </select>
+                        </div>
+                        
+                        <div id="teacher-names-container">
+                            <!-- Dynamic inputs will be inserted here -->
+                        </div>
+
+                        <div id="price-calculator" class="price-summary" style="display: none;">
+                            <div class="price-summary-inner">
+                                <span>Total Price:</span>
+                                <span id="total-price-display">$0</span>
+                            </div>
+                            <div id="crayon-bonus-msg" style="display: none;">
+                                🖍️ Your order includes a FREE Crayon Cookie Box!
+                            </div>
+                        </div>
+
+                        <button type="submit" id="submit-order-btn" class="btn btn-primary submit-btn-full">Reserve & Continue to Payment</button>
+                    </form>
+
+                    <!-- 8. Payment Section (Hidden by default) -->
+                    <div id="payment-section" style="display: none; text-align: center;">
+                        <h3>🎉 Order Reserved!</h3>
+                        <p>To confirm your spot, please send <strong id="venmo-amount">$0</strong> via Venmo to <strong>@Kristen-Bostik</strong></p>
+                        <img src="/assets/images/Venmo Info.JPEG" alt="Venmo QR Code" class="qr-code-img">
+                        <p class="text-muted" style="font-size: 0.9rem;">Once payment is received, you will receive a confirmation email within 24 hours.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9. Sold Out State (Hidden by default) -->
+        <section id="sold-out-section" class="contact-section" style="display: none;">
+            <div class="container text-center">
+                <div class="sold-out-wrapper">
+                    <h2>🎉 SOLD OUT — Thank You!</h2>
+                    <p>All 15 sets have been claimed! Join our waitlist to be first in line for our next seasonal drop.</p>
+                    
+                    <form id="waitlist-form" style="margin-top: 1.5rem;">
+                        <div class="form-group text-left">
+                            <label for="waitlist-name">Name</label>
+                            <input type="text" id="waitlist-name" required>
+                        </div>
+                        <div class="form-group text-left">
+                            <label for="waitlist-email">Email</label>
+                            <input type="email" id="waitlist-email" required>
+                        </div>
+                        <button type="submit" id="submit-waitlist-btn" class="btn btn-primary submit-btn-full">Join Waitlist</button>
+                    </form>
+                    <div id="waitlist-success" class="waitlist-success-msg" style="display: none;">
+                        You're on the list! We'll be in touch.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 10. FAQ Accordion -->
+        <section class="faq-section bg-cream">
+            <div class="container">
+                <h2 class="section-title text-center">Frequently Asked Questions</h2>
+                <div class="faq-grid">
+                    <details class="faq-item">
+                        <summary>When can I pick up my order?</summary>
+                        <div class="faq-content">
+                            <p>Pickup is available throughout May 2026 in Glen Ellyn. You can select your preferred pickup date when placing your order.</p>
+                        </div>
+                    </details>
+                    <details class="faq-item">
+                        <summary>Can I customize the cookie designs or colors?</summary>
+                        <div class="faq-content">
+                            <p>For this limited edition drop, the designs and colors are set as shown. However, the Apple cookie will be personalized with your teacher's name!</p>
+                        </div>
+                    </details>
+                    <details class="faq-item">
+                        <summary>Is payment required upfront?</summary>
+                        <div class="faq-content">
+                            <p>Yes, due to the limited quantity (only 15 sets), payment via Venmo is required upfront to secure your spot. Unpaid reservations may be released to the waitlist.</p>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <div class="footer-col">
+                <h3>Baked By Bostik</h3>
+                <a href="mailto:hello@bakedbybostik.com">hello@bakedbybostik.com</a>
+                <div class="social-links">
+                    <a href="https://instagram.com/bakedbybostik" target="_blank">Instagram</a>
+                    <a href="https://www.facebook.com/profile.php?id=61554467784437" target="_blank">Facebook</a>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <img src="/assets/logo.JPG" alt="Baked By Bostik" class="footer-logo">
+            </div>
+
+            <div class="footer-col">
+                <nav class="footer-nav">
+                    <a href="/policies.html">Policies</a>
+                    <a href="/resources.html">Resources</a>
+                    <a href="/privacy.html">Privacy Policy</a>
+                    <a href="/terms.html">Terms</a>
+                    <a href="/leave-review.html">Leave a Review</a>
+                    <a href="/seasonal.html">Seasonal</a>
+                </nav>
+            </div>
+        </div>
+        <div class="local-delivery-banner">
+            Local delivery available for an added fee, based on location.
+        </div>
+    </footer>
+
+    <script src="/js/app.js"></script>
+    <script type="module" src="/js/seasonal.js"></script>
+</body>
+
+</html>

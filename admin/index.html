@@ -143,6 +143,11 @@
                             Ledger
                         </a>
                     </li>
+                    <li>
+                        <a href="#" data-page="seasonal">
+                            🍎 Seasonal Orders <span id="seasonal-badge" class="seasonal-badge"></span>
+                        </a>
+                    </li>
                     <!-- Future: Settings -->
 
                 </ul>
@@ -658,6 +663,34 @@
                         </table>
                         <div id="ledger-empty-state" class="empty-state hidden">
                             <p>No orders found.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEASONAL PAGE -->
+                <div id="page-seasonal" class="page-section hidden">
+                    <header class="page-header">
+                        <h1>🍎 Seasonal Orders</h1>
+                    </header>
+                    <div class="table-card">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Parent Name</th>
+                                    <th># Sets</th>
+                                    <th>Teacher Names</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="seasonal-table-body">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                        <div id="seasonal-empty-state" class="empty-state hidden">
+                            <p>No seasonal orders yet.</p>
                         </div>
                     </div>
                 </div>
