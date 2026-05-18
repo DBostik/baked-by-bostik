@@ -392,3 +392,93 @@
   max-width: 800px;
   margin: 0 auto;
 }
+
+/* ============================================================
+   SEASONAL PLACEHOLDER STYLES
+   Active when no campaign is running.
+   ============================================================ */
+
+.seasonal-placeholder-page {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+}
+
+.seasonal-placeholder-section {
+  width: 100%;
+  padding: var(--space-12) 0;
+  background: linear-gradient(135deg, var(--color-bg-cream) 0%, #fff8f5 100%);
+}
+
+.seasonal-placeholder-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-backdrop);
+  border: var(--glass-border);
+  border-radius: var(--radius-xl, 1.5rem);
+  box-shadow: var(--shadow-xl);
+  padding: var(--space-12) var(--space-8);
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.placeholder-icon {
+  font-size: 4rem;
+  margin-bottom: var(--space-4);
+  animation: pulseBadge 3s ease-in-out infinite;
+  display: inline-block;
+}
+
+.placeholder-title {
+  font-family: var(--font-heading);
+  font-size: var(--text-4xl, 2.25rem);
+  color: var(--color-primary);
+  margin-bottom: var(--space-4);
+  line-height: 1.2;
+}
+
+.placeholder-subtitle {
+  font-size: var(--text-lg);
+  color: var(--color-text-muted);
+  max-width: 480px;
+  margin: 0 auto var(--space-6);
+  line-height: 1.6;
+}
+
+.placeholder-divider {
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-primary));
+  border-radius: var(--radius-full);
+  margin: 0 auto var(--space-6);
+}
+
+.placeholder-cta-text {
+  font-size: var(--text-base);
+  color: var(--color-text-main);
+  margin-bottom: var(--space-8);
+  font-weight: 500;
+}
+
+.placeholder-buttons {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  .seasonal-placeholder-card {
+    padding: var(--space-8) var(--space-6);
+  }
+
+  .placeholder-title {
+    font-size: var(--text-3xl, 1.875rem);
+  }
+
+  .placeholder-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
