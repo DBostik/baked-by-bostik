@@ -93,3 +93,19 @@ npx firebase deploy --only functions --project bakedbybostik-5eb55
     *   If you see a `404` error, the secret hasn't been created yet. Go to Google Cloud Secret Manager and manually create the secret.
     *   If you see a `403` error when deploying via GitHub Actions, the robotic Service Account (`824666210371-compute@developer.gserviceaccount.com`) lacks permission to explicitly *read* the newly created secret.
     *   **The Fix:** You must go into the Google Cloud Secret Manager UI, click on the specific secret, click the "Permissions" tab, and manually assign the `Secret Manager Secret Accessor` role to the aforementioned Default Compute Service Account. Run this for every secret the function needs.
+
+---
+
+## 5. Notes for Claude (Cowork) sessions
+
+Added Sep 6, 2026 with Milestone 24 (Costing). Read this before touching git from a Cowork session.
+
+* **Where the code is**: `~/Desktop/BBB Website` on Dave's Mac mini (this folder). It is the clone of `DBostik/baked-by-bostik`, branch `main`. Pushing `main` deploys hosting, functions and rules through GitHub Actions within a few minutes.
+* **Workflow Dave wants**: edit the local files here, test, then push after he says "approved". No pull requests, no merging for him to do.
+* **Git inside the Cowork VM mount is quirky**. The mounted folder rejects appends and some unlinks, so:
+  * fetch with `git fetch --no-write-fetch-head origin main`, then `git merge --ff-only origin/main`;
+  * before `git commit`, run `mv .git/logs .git/logs.hold`, commit with `-c core.logAllRefUpdates=false`, then `mv .git/logs.hold .git/logs` (the reflog just misses that one entry);
+  * a stale `.git/index.lock` can appear; removing it needs the session's delete permission for the Desktop folder (ask once);
+  * set identity per command: `-c user.name="Dave Bostik" -c user.email="dabosti@gmail.com"`.
+* **Pushing** needs a GitHub fine-grained token (Contents: read/write on this repo). If Dave has saved one, it is in `~/Desktop/My Info For Claude/github-token.txt` (never copy it into the repo). Push with `git push https://x-access-token:$(cat "$HOME/mnt/Desktop/My Info For Claude/github-token.txt")@github.com/DBostik/baked-by-bostik.git main`.
+* **Costing module map**: `admin/costing.js` (screens and Firestore), `admin/costing-units.js` (unit conversion and cost math, pure functions), `admin/costing.css`, `admin/costing-seed.json` (starter data from Kristen's sheet). `admin/admin.js` only has a one-line hook in `showPage()`. Rules: `firestore.rules` (`isAdmin()` UID list, `isPricebot()`). Plan and phases: the "Baked By Bostik Costing Plan" page in Dave's Claude artifacts; `implementation_plan.md` Milestone 7 lists the phases.
