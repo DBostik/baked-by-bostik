@@ -23,6 +23,11 @@ setGlobalOptions({ maxInstances: 10 });
  * IAM may still allow unauthenticated HTTP reachability (invoker public) so the
  * browser can call these endpoints; this check is the real gate.
  */
+// Admin logins allowed to call the quote functions (keep in sync with firestore.rules / storage.rules).
+const ADMIN_UIDS = new Set([
+    'LYJpCo6DEIO9w9Yurupuw0uyxpJ2', // shared Baked By Bostik admin login
+]);
+
 async function requireFirebaseAuth(req) {
     const header = req.headers.authorization || '';
     const match = /^Bearer\s+(.+)$/i.exec(header);
@@ -31,13 +36,20 @@ async function requireFirebaseAuth(req) {
         err.status = 401;
         throw err;
     }
+    let decoded;
     try {
-        return await admin.auth().verifyIdToken(match[1]);
+        decoded = await admin.auth().verifyIdToken(match[1]);
     } catch (e) {
         const err = new Error('Unauthorized');
         err.status = 401;
         throw err;
     }
+    if (!ADMIN_UIDS.has(decoded.uid)) {
+        const err = new Error('Forbidden');
+        err.status = 403;
+        throw err;
+    }
+    return decoded;
 }
 
 
@@ -245,7 +257,7 @@ exports.createQuotePDF = onRequest({ cors: true, invoker: 'public' }, async (req
 
     } catch (error) {
         console.error("PDF Gen Error", error);
-        const status = error.status === 401 ? 401 : 500;
+        const status = (error.status === 401 || error.status === 403) ? error.status : 500;
         res.status(status).json({ error: error.message });
     }
 });
@@ -332,7 +344,7 @@ exports.dispatchQuoteEmail = onRequest({ cors: true, invoker: 'public' }, async 
 
     } catch (error) {
         console.error("Email Error", error);
-        const status = error.status === 401 ? 401 : 500;
+        const status = (error.status === 401 || error.status === 403) ? error.status : 500;
         res.status(status).json({ error: error.message });
     }
 });

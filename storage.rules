@@ -2,34 +2,45 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
 
-    // Signed-in admin: full access
+    // Admin logins (keep in sync with firestore.rules). Add a UID to give another login admin access.
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.uid in [
+          'LYJpCo6DEIO9w9Yurupuw0uyxpJ2'   // shared Baked By Bostik admin login
+        ];
+    }
+
+    // Admin: full access to everything
     match /{allPaths=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if isAdmin();
     }
 
-    // Customer inspiration uploads on the public order form.
-    // Anonymous create only for small images — no public read/update/delete.
+    // Customer inspiration uploads on the public order form (js/order-flow.js).
+    // Anonymous customers may only CREATE image files under 15 MB; no anonymous update or delete.
+    // Read stays public for this path on purpose: the form calls getDownloadURL() right after
+    // uploadBytes(), which needs read permission, and paths are not guessable (request id + timestamp + name).
     match /requests/{requestId}/{fileName} {
-      allow create: if request.resource.size < 5 * 1024 * 1024
-                    && request.resource.contentType.matches('image/(jpeg|png|webp)');
-      allow read, update, delete: if request.auth != null;
+      allow create: if request.resource.size < 15 * 1024 * 1024
+                    && request.resource.contentType.matches('image/.*');
+      allow read: if true;
+      allow update, delete: if isAdmin();
     }
 
-    // Quotes (Generated PDFs) — customers open via link
+    // Quotes (generated PDFs): customers open them from the emailed link
     match /quotes/{fileName} {
       allow read: if true;
     }
 
-    // Gallery Images - Public read, Admin write
+    // Gallery images: public read, admin write
     match /gallery/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
 
-    // Site Content Images - Public read, Admin write
+    // Site content images: public read, admin write
     match /site_content/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
   }
 }
