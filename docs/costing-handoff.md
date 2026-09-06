@@ -1,6 +1,6 @@
 # Costing module: handoff for the next session
 
-Last updated: Sep 6, 2026 (end of Phase 2). Read this first, then `DEPLOY.md` section 5.
+Last updated: Sep 6, 2026 (end of Phase 3). Read this first, then `DEPLOY.md` section 5.
 
 ## What this is
 
@@ -28,15 +28,18 @@ page in Dave's Claude artifacts. This file is the engineering handoff.
 
 | File | Role |
 | --- | --- |
-| `admin/costing.js` | Shared plumbing (Firebase app/db, live state via `onSnapshot`, modal, toast, page/action registries) plus Phase 1 screens: Costing Home, Ingredients & Supplies, Log Prices, Recipes, Costing Settings (incl. pricing settings and both starter-data loaders). Exports `state`, helpers, `registerPage`, `registerAction`, `pricingCtx`, `pricingSettings`. |
+| `admin/costing-main.js` | The only costing `<script>` tag in `index.html`. Imports the other costing modules by plain relative path so each runs once. (Before Phase 3, `costing.js?v=2` in the tag plus `./costing.js` in the imports made the browser run costing.js twice: doubled click handlers.) Do not add `?v=` to costing script tags; `firebase.json` sends `Cache-Control: no-cache` for `/admin/**` instead. |
+| `admin/costing.js` | Shared plumbing (Firebase app/db, live state via `onSnapshot`, modal, toast, page/action registries, extension points) plus Phase 1 screens: Costing Home, Ingredients & Supplies, Log Prices, Recipes, Costing Settings (incl. pricing settings and both starter-data loaders). Exports `state`, helpers, `registerPage`, `registerAction`, `registerExtension`, `pricingCtx`, `pricingSettings`, `recordPrices`, `loadPriceHistory`, `ingredientStatus`, `marginRows`. |
 | `admin/costing-units.js` | Pure functions: unit normalization, recipe-line parser, volume/weight/count conversion via per-ingredient factors, recipe costing (`costRecipe`, `perUnitCosts`), CSV. Runs in Node. |
 | `admin/costing-pricing.js` | Pure functions: product geometry scaling (`fillingGrams`, `outerGrams`, `batterBatches`), `priceEstimate` (cost-plus), `DEFAULT_PRICING`. Runs in Node. |
 | `admin/costing-products.js` | Products & Sizes screen and product editor (registers page `costing-products`). |
 | `admin/costing-estimator.js` | Estimator and Estimates screens, request-modal hook (registers `costing-estimator`, `costing-estimates`). |
+| `admin/costing-history.js` | Pure functions for Phase 3 (run in Node): date helpers, `priceAsOf`, `ingredientsAsOf` (prices as they were on a date), `unitCostSeries`, `buildSnapshot`, `snapshotAsOf`, `series`, `changeTable`, `movers`, `priceJumps`, `jumpKey`, `pruneDismissed`, `recipesUsing`. |
+| `admin/costing-reports.js` | Reports screen (registers `costing-reports`): price history chart per ingredient with one line per source, biggest movers (30 days), price-jump alerts with Dismiss, recipe/product cost over 3/6/12 months from `cost_snapshots` plus a "now vs 3/6/12 months ago" table. Also: the price-jump card on Costing Home (extension `home`), the "Alerts and cost history" card on Costing Settings (extension `settings`, incl. Rebuild cost history), the Costing tile on the Analytics page (`#costing-analytics-tile`), and snapshot writing (`afterPrices` extension, plus a weekly "touch" when Home/Reports opens). Charts via the global `Chart` (Chart.js from the CDN tag in `index.html`). |
 | `admin/costing.css` | All Costing styles (prefix `c-`), leans on `admin.css` variables. |
 | `admin/costing-seed.json` | Phase 1 starter data from Kristen's sheet (ingredients, sources, dated prices, 14 recipes, review flags). |
 | `admin/costing-seed-phase2.json` | Phase 2 starter data (real packaging supplies, 4 products, pricing defaults, recipe patches). |
-| `admin/index.html` | Sidebar items `data-page="costing-*"`, page containers `#page-costing-* > .costing-body`, script tags. |
+| `admin/index.html` | Sidebar items `data-page="costing-*"`, page containers `#page-costing-* > .costing-body`, the `#costing-analytics-tile` card inside `.analytics-grid`, and the single `costing-main.js` script tag. |
 | `admin/admin.js` | Untouched except one line in `showPage()` that hides `.costing-page` elements. Nav clicks are handled by admin.js; costing.js listens on the same links to render. |
 | `firestore.rules` | `isAdmin()` UID list, `isPricebot()`, Costing collections. `storage.rules` uses the same admin list. |
 | `tools/costing-tests/` | Node unit tests and the Playwright harness (see its README). Run them before every commit. |
@@ -45,7 +48,10 @@ Conventions: vanilla ES modules, no bundler, Firebase 10.7.1 modular SDK from gs
 UI is rendered with template strings; every clickable element carries `data-action="..."` handled by the registry
 in `costing.js` (Phase 1 actions are in its `switch`; other modules use `registerAction`). Escape all user text with
 `esc()`. Modals: `openModal(html, ctx)` / `closeModal()` / `getModalCtx()`. Money helpers in `costing-units.js`.
-Keep new work in new files that register pages/actions; do not grow `admin.js`.
+Keep new work in new files that register pages/actions; do not grow `admin.js`. To add to a Phase 1 screen from a new
+file use `registerExtension(point, fn)`: `home(body)` and `settings(body)` return HTML appended to that screen,
+`afterPrices(entries, touchedIds)` runs after `recordPrices` commits, `dataChanged()` runs on every rerender (any
+collection changed, even with no costing page showing). New modules must be imported from `costing-main.js`.
 
 ## Firestore data (all admin-only unless noted)
 
@@ -54,7 +60,8 @@ Keep new work in new files that register pages/actions; do not grow `admin.js`.
   packageQty, packageUnit, productUrl, preferred, needsPackage, active, currentPrice, currentPriceDate,
   currentMethod), reviewFlags[{text, resolved}], nameLower, createdAt, updatedAt. Pricebot may read.
   * `ingredients/{id}/prices/{auto}`: sourceId, price, date (`YYYY-MM-DD` string), method
-    (`import` | `trip` | `edit` | `receipt` | `bot`), note, packageQty, packageUnit, enteredBy, createdAt.
+    (`import` | `trip` | `edit` | `receipt` | `bot`), note, packageQty, packageUnit, `qty` (packages bought; set by
+    Log Prices since Phase 3, default 1; null for edits and older entries; inventory reads this), enteredBy, createdAt.
 * `recipes/{id}`: name, category (`cake` | `cupcake` | `cookie` | `frosting` | `filling` | `other`), creator,
   sourceUrl, notes, `lines[]` ({text, qty, unit, ingredientId | recipeId, note}; unit `batch` for sub-recipes),
   `yield` ({type: `batter` | `volume` | `count`, value, unit, label, scoopTable?}), reviewFlags, timestamps.
@@ -75,7 +82,16 @@ Keep new work in new files that register pages/actions; do not grow `admin.js`.
   `snapshot` ({totals, items, settingsUsed, at}), createdAt, updatedAt.
 * `costing_settings/global`: staleDaysDefault, stores[], wasteAllowancePct, `pricing` ({hourlyRate, profitPct,
   overheadType `pct` | `flat`, overheadValue, roundTo, marginAlertPct, roundCakeBatches, roundFrostingBatches,
-  roundCupcakeBatches, roundCookieBatches}), seededAt, phase2SeededAt.
+  roundCupcakeBatches, roundCookieBatches}), `alerts` ({priceJumpPct (default 10), dismissed[] of jump keys
+  `ingredientId|sourceId|date|price`, pruned to the last 90 days on write}), seededAt, phase2SeededAt.
+* `cost_snapshots/{YYYY-MM-DD}` (Phase 3): one document per day; date, trigger (`prices` | `open` | `backfill` |
+  `rebuild`), reconstructed (true for backfilled months), `recipes` ({id: {name, category, total, ok, perCount,
+  countLabel, perCup, perGram}}), `products` ({`productId|sizeOrTierId`: {name, label, family, costBasis, materials,
+  labor, suggested, menu, marginPct, ok}}), `ingredients` ({id: {name, kind, baseUnit, unitCost, price, priceDate,
+  sourceId, carriedBack}}), counts, at. Written by the admin page after every price save, when Home or Reports opens
+  and the newest snapshot is over 7 days old, and by "Rebuild cost history" (month-ends back to the first price entry,
+  prices as of each date with the first known price carried back; never replaces a non-reconstructed snapshot).
+  Reports read the whole collection (ordered by date, limit 600); with a few writes a month that stays small.
 * Reserved for later phases (rules already in place): `menu_prices`, `price_proposals` (pricebot may create
   well-formed pending proposals), `receipt_queue`.
 
@@ -90,6 +106,11 @@ suggested = cost basis x (1 + profit) rounded up to `roundTo`; margin = (menu - 
   estimator, pricing, saved estimates, request hook) are built, tested and deployed (Sep 6, 2026).
   PR #1 (security: quote functions require the admin login, storage uploads limited to images under 15 MB) was
   merged the same day with a fix that keeps the order form's `getDownloadURL` working.
+* **Phase 3** (reports and alerts) was built Sep 6, 2026 (evening): Reports screen, price-jump alerts with Dismiss on
+  Costing Home, Analytics tile, `cost_snapshots`, "Packages" (qty) on Log Prices, alert threshold setting, Rebuild cost
+  history. It also fixed the double-loaded `costing.js` (see `costing-main.js`). Committed locally; pushed once Dave
+  approves. Kristen's first steps after the deploy: Costing Settings, "Rebuild cost history" once; set "Flag a price
+  move over (%)"; log one real trip and watch Home, Reports and the Analytics tile.
 * Kristen has loaded the Phase 1 starter data and tried the screens ("works well so far"). She still needs to
   press **Load Phase 2 starter data** in Costing Settings after the Phase 2 deploy, then work the review list
   (butter price first) and check the hours per cake size (her 3/4/5/6 hours make every size price below cost;
@@ -103,11 +124,10 @@ suggested = cost basis x (1 + profit) rounded up to `roundTo`; margin = (menu - 
 
 ## Next phases (from the plan page; inventory added Sep 6 at Dave's request)
 
-3. **Reports and alerts** (1 to 2 sessions): price history charts per ingredient/source (Chart.js is already on
-   the admin page), recipe and product cost over 3/6/12 months (needs periodic cost snapshots: add a small
-   `cost_snapshots` collection written when prices change or by a monthly routine), cost-jump alerts, Analytics
-   page tile. Also start capturing **quantity bought** on Log Prices (a `qty` field on each price entry) so
-   inventory has data from day one.
+3. **Reports and alerts**: done (see Status). Possible second pass after Kristen's feedback: alert on the Analytics
+   tile for proposals once Phase 4 lands; the monthly routine could also write a `cost_snapshots` doc (it would need
+   read access to recipes and products, which the pricebot does not have today; the admin page's weekly touch covers
+   it for now).
 4. **Monthly price bot and receipts** (2 sessions + Dave's setup steps C and D on the plan page): Claude Routine
    on Dave's subscription signs in as the pricebot (env vars in a "Bakery bot" cloud environment), reads
    `ingredients` sources with product links, web-searches prices, writes `price_proposals`; Price Reviews inbox in
@@ -125,10 +145,14 @@ suggested = cost basis x (1 + profit) rounded up to `roundTo`; margin = (menu - 
 
 ## Testing
 
-`node tools/costing-tests/test-units.mjs && node tools/costing-tests/test-pricing.mjs` (pure math), then
-`python3 tools/costing-tests/harness/prepare.py && node tools/costing-tests/harness/run-phase2.js` (renders every
-screen with the seed data in headless Chromium and prints a JSON summary; `errors` must be empty). Add a check for
-every screen you add. There is no staging site; Kristen tests on the live admin after each approved push.
+`node tools/costing-tests/test-units.mjs && node tools/costing-tests/test-pricing.mjs && node tools/costing-tests/test-reports.mjs`
+(pure math), then `python3 tools/costing-tests/harness/prepare.py` and `node tools/costing-tests/harness/run-phase1.js`,
+`run-phase2.js`, `run-phase3.js` (each renders screens with the seed data in headless Chromium and prints a JSON
+summary; `errors` must be empty apart from blocked font/CDN loads). Add a check for every screen you add. The Playwright
+harness cannot run inside the Cowork VM on the Mac (no root, Chromium's system libraries are missing), so run it in the
+cloud container: tar `admin/`, `js/firebase-config.js` and `tools/costing-tests` from the Mac, stage the tar, extract in
+the container, run there, and copy changed files back with `device_commit_files` (that is how Phase 3 was tested).
+There is no staging site; Kristen tests on the live admin after each approved push.
 
 ## Setup still pending for Phase 4 (Dave)
 

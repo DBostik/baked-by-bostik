@@ -11,10 +11,12 @@ for f in (repo / 'admin').glob('costing*'): shutil.copy(f, site / 'admin' / f.na
 shutil.copy(repo / 'admin' / 'admin.css', site / 'admin' / 'admin.css')
 shutil.copy(repo / 'js' / 'firebase-config.js', site / 'js' / 'firebase-config.js')
 for f in (here / 'stubs').glob('*.js'): shutil.copy(f, site / 'stubs' / f.name)
+(site / 'vendor').mkdir()
+shutil.copy(here / 'vendor' / 'chart.umd.js', site / 'vendor' / 'chart.umd.js')
 s = (repo / 'admin' / 'index.html').read_text()
 import re
 s = re.sub(r'<script type="module" src="/admin/admin.js[^"]*"></script>', '', s)
-s = s.replace('<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>', '')
+s = s.replace('<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>', '<script src="/vendor/chart.umd.js"></script>')  # vendored copy so charts render offline
 s = s.replace('<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>', '')
 im = """<script type="importmap">{"imports":{
  "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js":"/stubs/app.js",

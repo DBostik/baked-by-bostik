@@ -122,3 +122,14 @@ Added Sep 6, 2026 with Milestone 24 (Costing). Read this before touching git fro
   mv .git/logs.hold .git/logs`. If that ever bus-errors, use the clone route.
 * Handoff for the Costing work: `docs/costing-handoff.md`. Tests: `tools/costing-tests/README.md`.
 * Files ending in " 2.jpg" that appear in `assets/` are dataless macOS duplicates (0 blocks); safe to delete, never commit.
+
+### Update Sep 6, 2026 (after Phase 3)
+
+* The Playwright browser harness (`tools/costing-tests/harness`) does not run inside the Cowork VM on the Mac: `npm i -g playwright`
+  works with `npm config set prefix ~/.npm-global`, but Chromium needs system libraries (libXdamage and friends) and the VM has
+  no root. Run the harness in the cloud container instead: tar `admin/`, `js/firebase-config.js` and `tools/costing-tests`
+  into `tools/costing-tests/harness/site/` (gitignored), stage that tar, extract it in the container, run there, then copy
+  changed files back with `device_commit_files`. Node unit tests run fine in the VM.
+* Costing scripts: `admin/index.html` has one tag, `costing-main.js`, which imports the other costing modules. Never add
+  `?v=` to a costing script tag (it made `costing.js` load twice). `firebase.json` sends `Cache-Control: no-cache` for
+  `/admin/**`, so browsers recheck admin files on every load and a deploy shows up right away.

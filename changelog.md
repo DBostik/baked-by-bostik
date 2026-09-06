@@ -15,6 +15,14 @@
 
 ## 📅 September 2026
 
+### 🟢 Milestone 24, Phase 3: Reports and Alerts - Sep 6, 2026
+- **Reports** (`admin/costing-reports.js`, math in `admin/costing-history.js`): price history chart per ingredient (cost per unit, one line per source, entries table with packages bought), biggest movers over the last 30 days with the recipes each one touches, price-jump alerts, and recipe / product cost over 3, 6 and 12 months with a "now vs 3/6/12 months ago" table.
+- **Cost snapshots** (`cost_snapshots/{YYYY-MM-DD}`): every recipe, product size and ingredient cost, saved automatically when a price is logged or edited and when Home or Reports opens after a quiet week. "Rebuild cost history" in Costing Settings reconstructs one point per month back to the first price entry (labeled reconstructed, dashed on the chart).
+- **Alerts**: price moves over a threshold (Costing Settings, default 10%) show on Costing Home with a Dismiss button; dismissed keys live in `costing_settings/global.alerts`. The Analytics page gained a Costing tile: proposals waiting (Phase 4), stale prices, products under the margin threshold, price jumps.
+- **Log Prices** has a "Packages" column (packages bought, default 1) saved as `qty` on each price entry so inventory (Phase 6) has data from day one.
+- **Fix**: `costing.js` was loading twice (the `?v=2` script tag versus plain `./costing.js` imports), which doubled every click handler (the recipe editor's "Paste lines" button did nothing). One entry file `admin/costing-main.js` now loads the module, and `firebase.json` sends `Cache-Control: no-cache` for `/admin/**` so deploys show up without version query strings.
+- **Tests**: `tools/costing-tests/test-reports.mjs` (61 checks) and `harness/run-phase3.js`; Chart.js vendored for the harness.
+
 ### 🟢 Milestone 24, Phase 2: Products, Estimator, Pricing - Sep 6, 2026
 - **Products & Sizes** (`admin/costing-products.js`): the four products Kristen sells (celebration cakes with 6/8/10/12-inch sizes, cupcakes, sugar cookies, drop cookies) with menu prices, labor hours, batter batches per cake recipe, frosting calibration (one buttercream batch on a 6-inch 3-layer, scaled by geometry to other sizes), packaging kits, add-on minutes and upcharges, tiers for cupcakes and cookies. Standard-version cost, suggested price and margin shown per size.
 - **Estimator** (`admin/costing-estimator.js`): build an order from products (multi-tier cakes, flavor / filling / outer frosting per tier, extra layers, ganache drip, fondant figures, topper, decor items, custom lines; cupcakes and cookies by the dozen with tiers and character add-ons). Live breakdown: ingredients, supplies, waste, labor at her rate, overhead, cost basis, suggested price (cost-plus, rounded up), menu price and margin. Estimates save with a snapshot and can be linked to a request; the Request Details modal shows the linked estimate and a one-tap "New estimate" for that request.

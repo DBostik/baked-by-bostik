@@ -36,6 +36,7 @@
 .c-card h3 { margin: 0 0 0.75rem; font-family: var(--font-heading); color: var(--primary); font-size: 1.05rem; }
 .c-card-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem; }
 .c-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.c-two-col > * { min-width: 0; }
 @media (max-width: 1000px) { .c-two-col { grid-template-columns: 1fr; } }
 .c-stats { grid-template-columns: repeat(4, 1fr); }
 .c-stats .stat-card { cursor: pointer; }
@@ -176,3 +177,23 @@ body.c-modal-open { overflow: hidden; }
 .c-bd-big { font-size: 1.15rem; font-weight: 700; color: var(--primary); background: rgba(26, 42, 58, 0.05); border-radius: var(--radius-sm); padding: 0.5rem 0.6rem !important; margin: 0.4rem -0.6rem; }
 .c-req-estimates { display: flex; justify-content: space-between; align-items: center; gap: 1rem; background: rgba(26, 42, 58, 0.05); border-radius: var(--radius-md); padding: 0.6rem 0.9rem; margin: 0 0 0.75rem; font-size: 0.9rem; }
 .c-req-estimates .btn-secondary { flex: 0 0 auto; }
+
+/* ---------------- Phase 3: reports, alerts, analytics tile ---------------- */
+.c-chart { position: relative; height: 280px; width: 100%; margin: 0.25rem 0 1rem; }
+@media (max-width: 760px) { .c-chart { height: 220px; } }
+.c-range { display: inline-flex; gap: 0.3rem; margin-left: auto; }
+.c-range .btn-secondary { width: auto; }
+.c-range .btn-secondary.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.c-badge-up { background: #fee2e2; color: #b91c1c; }
+.c-badge-down { background: var(--status-book-bg); color: var(--status-book-text); }
+.c-badge-flat { background: rgba(26, 42, 58, 0.06); color: var(--text-muted); }
+.c-jump .c-flag-text span { color: var(--text-main); }
+.c-jump-dismissed { opacity: 0.6; }
+.c-row-active td { background: rgba(26, 42, 58, 0.06); }
+.c-pills { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+.c-pill { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.7rem 0.9rem; border-radius: var(--radius-md); background: rgba(26, 42, 58, 0.05); cursor: pointer; }
+.c-pill:hover { background: rgba(26, 42, 58, 0.09); }
+.c-pill-value { font-size: 1.35rem; font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; }
+.c-pill-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 700; }
+.c-qty-in { width: 5rem; text-align: right; }
+.c-history summary a { margin-left: 0.4rem; font-weight: 400; }

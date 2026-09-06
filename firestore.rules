@@ -126,6 +126,11 @@ service cloud.firestore {
     match /costing_settings/{docId} {
       allow read, write: if isAdmin();
     }
+    // Phase 3: one document per day (id YYYY-MM-DD) with every recipe, product and ingredient cost,
+    // written by the admin page when prices change. Feeds the cost-over-time reports.
+    match /cost_snapshots/{snapshotId} {
+      allow read, write: if isAdmin();
+    }
 
     // Phase 4: proposals from the price bot or a receipt scan, reviewed by an admin.
     // The bot can only create well-formed proposals; it cannot read, change or delete them.

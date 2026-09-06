@@ -147,10 +147,10 @@
 - [x] **Ingredient Tracker**: Database of ingredients and supplies with sources and dated price history (Milestone 24, Phase 1, Sep 2026).
 - [x] **Recipe Costing**: Live batch and per-unit costs from current prices; unit conversion; sub-recipes (Milestone 24, Phase 1).
 - [x] **Products & Estimator**: cake configurator (size, flavor, filling, frosting, add-ons, tiers), cost-plus pricing, saved estimates linked to requests (Milestone 24, Phase 2, Sep 2026).
-- [ ] **Reports & Alerts**: price history charts, cost over time, margin alerts, Analytics tile (Phase 3).
+- [x] **Reports & Alerts**: price history charts, cost over time, price-jump and margin alerts, Analytics tile (Milestone 24, Phase 3, Sep 2026).
 - [ ] **Price Bot & Receipts**: monthly price check and receipt scanning via Claude Routines into a review inbox (Phase 4).
 - [ ] **Add to Quote**: push estimate lines into the quote modal (Phase 5).
-- [ ] **Stock Alerts**: Low-stock notifications based on upcoming orders (not planned yet).
+- [ ] **Inventory**: on-hand counts, reorder points and low-stock alerts; stock in from shopping trips and receipts, stock out when an order completes (Phase 6).
 
 ### 🟡 Milestone 8: Marketing Automation
 **Goal**: Retain customers and increase lifetime value.

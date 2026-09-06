@@ -23,6 +23,14 @@
         "public": ".",
         "cleanUrls": true,
         "trailingSlash": true,
+        "headers": [
+            {
+                "source": "/admin/**",
+                "headers": [
+                    { "key": "Cache-Control", "value": "no-cache" }
+                ]
+            }
+        ],
         "ignore": [
             "firebase.json",
             "**/.*",

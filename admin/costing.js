@@ -17,13 +17,20 @@ const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const COSTING_VERSION = '2.0.0';
-const PAGES = ['costing-home', 'costing-ingredients', 'costing-log', 'costing-recipes', 'costing-products', 'costing-estimator', 'costing-estimates', 'costing-settings'];
-// Other costing modules (products, estimator) plug in here.
+const COSTING_VERSION = '3.0.0';
+const PAGES = ['costing-home', 'costing-ingredients', 'costing-log', 'costing-recipes', 'costing-products', 'costing-estimator', 'costing-estimates', 'costing-reports', 'costing-settings'];
+// Other costing modules (products, estimator, reports) plug in here.
 const pageRenderers = {};
 const actionHandlers = {};
 export function registerPage(name, fn) { pageRenderers[name] = fn; }
 export function registerAction(name, fn) { actionHandlers[name] = fn; }
+// Extension points so other modules can add to Phase 1 screens without growing this file:
+//   home(body) / settings(body) -> HTML string appended to that screen;
+//   afterPrices(entries, touchedIds) -> called after recordPrices commits;
+//   dataChanged() -> called on every rerender (any collection changed), even when no costing page is showing.
+export const extensions = { home: [], settings: [], afterPrices: [], dataChanged: [] };
+export function registerExtension(point, fn) { (extensions[point] || (extensions[point] = [])).push(fn); }
+function runExtensions(point, ...args) { return (extensions[point] || []).map(fn => { try { return fn(...args); } catch (e) { console.error(point, e); return ''; } }); }
 const RECIPE_CATEGORIES = ['cake', 'cupcake', 'cookie', 'frosting', 'filling', 'other'];
 const KINDS = ['ingredient', 'supply'];
 const DEFAULT_SETTINGS = { staleDaysDefault: 60, stores: ['Costco', 'Walmart', 'Amazon', "Pete's Fresh Market", 'Tap'], wasteAllowancePct: 5 };
@@ -40,7 +47,7 @@ export const state = {
     unsubs: [],
     ingFilter: { q: '', kind: '', category: '' },
     recFilter: { q: '', category: '' },
-    tripDraft: { store: '', date: todayISO(), prices: {} },
+    tripDraft: { store: '', date: todayISO(), prices: {}, qty: {} },
 };
 
 // ------------------------------------------------------------------ helpers
@@ -66,7 +73,7 @@ export function toast(msg, kind = 'ok') {
 }
 
 // Status of an ingredient's preferred source
-function ingredientStatus(ing) {
+export function ingredientStatus(ing) {
     const src = U.preferredSource(ing);
     if (!src) return { code: 'nosource', label: 'No source', cls: 'c-badge-warn' };
     if (U.num(src.currentPrice) == null) return { code: 'noprice', label: 'No price', cls: 'c-badge-warn' };
@@ -142,8 +149,9 @@ export async function saveSettings(patch) {
     await setDoc(doc(db, 'costing_settings', 'global'), { ...patch, updatedAt: serverTimestamp() }, { merge: true });
 }
 
-// Record a price for a source: history entry + source's current price. entries: [{ingredientId, sourceId, price, date, note, method}]
-async function recordPrices(entries) {
+// Record a price for a source: history entry + source's current price.
+// entries: [{ingredientId, sourceId, price, date, note, method, qty}] (qty = packages bought, kept for inventory)
+export async function recordPrices(entries) {
     const batch = writeBatch(db);
     const touched = new Map();
     for (const e of entries) {
@@ -163,15 +171,17 @@ async function recordPrices(entries) {
         batch.set(pref, {
             sourceId: src.id, price, date, method: e.method || 'edit', note: e.note || '',
             packageQty: U.num(src.packageQty), packageUnit: src.packageUnit || null,
+            qty: U.num(e.qty), // packages bought (null when not a purchase, e.g. a correction)
             enteredBy: state.user?.email || null, createdAt: serverTimestamp()
         });
     }
     for (const [id, sources] of touched) batch.update(doc(db, 'ingredients', id), { sources, updatedAt: serverTimestamp() });
     await batch.commit();
+    runExtensions('afterPrices', entries, [...touched.keys()]);
     return touched.size;
 }
 
-async function loadPriceHistory(ingredientId) {
+export async function loadPriceHistory(ingredientId) {
     const q = query(collection(db, 'ingredients', ingredientId, 'prices'), orderBy('date', 'desc'), limit(200));
     const snap = await getDocs(q);
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -185,7 +195,7 @@ export function showCostingPage(name) {
     render(name);
 }
 
-export function rerender() { if (state.page) render(state.page); }
+export function rerender() { if (state.page) render(state.page); runExtensions('dataChanged'); }
 export function pricingCtx() { return { ingredients: state.ingredients, recipes: state.recipes, products: state.products }; }
 export function pricingSettings() {
     const p = { ...P.DEFAULT_PRICING, ...(state.settings.pricing || {}) };
@@ -244,6 +254,7 @@ function renderHome(body) {
         <div class="stat-card" data-action="go" data-page="costing-recipes"><div><span class="stat-label">Recipes</span><span class="stat-number">${recs.length}</span></div></div>
     </div>
     ${problems.length ? `<div class="c-card c-warnbox"><strong>${problems.length} recipe${problems.length > 1 ? 's' : ''} cannot be fully costed yet:</strong> ${problems.map(x => `<a href="#" data-action="open-recipe" data-id="${esc(x.r.id)}">${esc(x.r.name)}</a>`).join(', ')}. Open one to see which line needs attention.</div>` : ''}
+    ${runExtensions('home', body).join('')}
     ${marginAlertsHtml()}
     <div class="c-two-col">
       <div class="c-card">
@@ -266,9 +277,8 @@ function renderHome(body) {
       </div>
     </div>`;
 }
-// Products whose standard version is below the margin threshold at menu price
-function marginAlertsHtml() {
-    if (!state.products.size) return '';
+// Standard version of every active product size/tier priced at today's prices: [{p, o, est}]
+export function marginRows() {
     const ctx = pricingCtx(); const ps = pricingSettings();
     const rows = [];
     state.products.forEach(p => {
@@ -279,6 +289,13 @@ function marginAlertsHtml() {
             rows.push({ p, o, est });
         });
     });
+    return rows;
+}
+// Products whose standard version is below the margin threshold at menu price
+function marginAlertsHtml() {
+    if (!state.products.size) return '';
+    const ps = pricingSettings();
+    const rows = marginRows();
     const bad = rows.filter(r => r.est.totals.belowAlert);
     if (!rows.length) return '';
     return `<div class="c-card">
@@ -426,8 +443,8 @@ function sourceCard(s, idx, ing, stores, history) {
             <input class="c-input" data-f="newDate" type="date" value="${todayISO()}">
             <input class="c-input" data-f="newNote" placeholder="note (optional)">
         </div>
-        ${hist.length ? `<details class="c-history"><summary>Price history (${hist.length})</summary><table class="c-table c-table-sm"><thead><tr><th>Date</th><th class="num">Price</th><th>How</th><th>Note</th></tr></thead><tbody>
-            ${hist.map(h => `<tr><td>${fmtDate(h.date)}</td><td class="num">${U.fmtMoney(h.price)}</td><td>${esc(h.method || '')}</td><td class="c-muted">${esc(h.note || '')}</td></tr>`).join('')}</tbody></table></details>` : ''}
+        ${hist.length ? `<details class="c-history"><summary>Price history (${hist.length}) <a href="#" class="c-small" data-action="report-ingredient" data-id="${esc(ing.id || '')}">chart</a></summary><table class="c-table c-table-sm"><thead><tr><th>Date</th><th class="num">Price</th><th class="num">Bought</th><th>How</th><th>Note</th></tr></thead><tbody>
+            ${hist.map(h => `<tr><td>${fmtDate(h.date)}</td><td class="num">${U.fmtMoney(h.price)}</td><td class="num">${U.num(h.qty) != null ? esc(U.fmtQty(h.qty)) : ''}</td><td>${esc(h.method || '')}</td><td class="c-muted">${esc(h.note || '')}</td></tr>`).join('')}</tbody></table></details>` : ''}
     </div>`;
 }
 function readIngredientForm(ctx) {
@@ -477,9 +494,9 @@ function renderLog(body) {
         <label class="c-inline-label">Date <input class="c-input" id="trip-date" type="date" value="${esc(d.date)}"></label>
         <button class="btn-primary btn-sm" data-action="save-trip" ${filled ? '' : 'disabled'}>Save ${filled || ''} price${filled === 1 ? '' : 's'}</button>
       </div>
-      <p class="c-muted c-small">Type the package price for what you bought. Leave the rest blank. Package sizes are shown so you know what the price is for; fix a size from the item's page if it is wrong.</p>
+      <p class="c-muted c-small">Type the package price for what you bought and leave the rest blank. "Packages" is how many you bought (usually 1); it is kept for inventory. Package sizes are shown so you know what the price is for; fix a size from the item's page if it is wrong.</p>
       <div class="c-table-wrap"><table class="c-table">
-        <thead><tr><th>Item</th><th>Package</th><th class="num">Last price</th><th class="num">New price</th></tr></thead>
+        <thead><tr><th>Item</th><th>Package</th><th class="num">Last price</th><th class="num">New price</th><th class="num">Packages</th></tr></thead>
         <tbody>
         ${rows.map(({ i, s }) => {
         const key = i.id + '|' + s.id;
@@ -488,9 +505,10 @@ function renderLog(body) {
             <td>${esc(pkgLabel(s)) || '<span class="c-badge c-badge-warn">size?</span>'}${s.needsPackage ? ' <span class="c-muted">(confirm)</span>' : ''}</td>
             <td class="num">${U.num(s.currentPrice) != null ? U.fmtMoney(s.currentPrice) : '—'}<br><span class="c-muted">${s.currentPriceDate ? fmtDate(s.currentPriceDate) : ''}</span></td>
             <td class="num"><input class="c-input c-price-in" type="number" step="0.01" min="0" inputmode="decimal" data-key="${esc(key)}" value="${esc(d.prices[key] ?? '')}" placeholder="$"></td>
+            <td class="num"><input class="c-input c-qty-in" type="number" step="1" min="0" inputmode="numeric" data-key="${esc(key)}" value="${esc(d.qty[key] ?? 1)}" title="Packages bought"></td>
         </tr>`;
     }).join('')}
-        ${rows.length ? '' : `<tr><td colspan="4" class="c-muted">No items have a source at ${esc(d.store || 'this store')} yet. Add the store on an item's page first.</td></tr>`}
+        ${rows.length ? '' : `<tr><td colspan="5" class="c-muted">No items have a source at ${esc(d.store || 'this store')} yet. Add the store on an item's page first.</td></tr>`}
         </tbody></table></div>
     </div>`;
     $('#trip-store', body).addEventListener('change', e => { d.store = e.target.value; renderLog(body); });
@@ -500,13 +518,18 @@ function renderLog(body) {
         const n = Object.values(d.prices).filter(v => U.num(v) != null).length;
         const btn = $('[data-action="save-trip"]', body); btn.disabled = !n; btn.textContent = `Save ${n || ''} price${n === 1 ? '' : 's'}`;
     }));
+    $$('.c-qty-in', body).forEach(inp => inp.addEventListener('input', e => { d.qty[e.target.dataset.key] = e.target.value; }));
 }
 async function saveTrip() {
     const d = state.tripDraft;
-    const entries = Object.entries(d.prices).map(([k, v]) => { const [ingredientId, sourceId] = k.split('|'); return { ingredientId, sourceId, price: U.num(v), date: d.date, method: 'trip', note: `Shopping trip, ${d.store}` }; }).filter(e => e.price != null);
+    const entries = Object.entries(d.prices).map(([k, v]) => {
+        const [ingredientId, sourceId] = k.split('|');
+        const qty = d.qty[k] === undefined || d.qty[k] === '' ? 1 : U.num(d.qty[k]);
+        return { ingredientId, sourceId, price: U.num(v), date: d.date, method: 'trip', note: `Shopping trip, ${d.store}`, qty };
+    }).filter(e => e.price != null);
     if (!entries.length) return;
     const n = await recordPrices(entries);
-    d.prices = {};
+    d.prices = {}; d.qty = {};
     toast(`Saved ${entries.length} price${entries.length === 1 ? '' : 's'} across ${n} item${n === 1 ? '' : 's'}`);
 }
 
@@ -747,6 +770,7 @@ function renderSettings(body) {
         <div class="c-inline"><button class="btn-secondary btn-sm" data-action="export-ingredients">Ingredients &amp; prices</button> <button class="btn-secondary btn-sm" data-action="export-recipes">Recipes</button> <button class="btn-secondary btn-sm" data-action="export-history">Price history</button></div>
         <p class="c-muted c-small" style="margin-top:1rem">Costing module ${COSTING_VERSION}</p>
       </div>
+      ${runExtensions('settings', body).join('')}
     </div>`;
 }
 
