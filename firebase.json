@@ -29,6 +29,7 @@
             "**/node_modules/**",
             "functions/**",
             "src/**",
+            "tools/**",
             "*.md",
             "package.json",
             "package-lock.json",

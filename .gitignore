@@ -18,3 +18,7 @@ ui-debug.log*
 .env
 functions/.env
 scripts/service-account.json
+
+# Costing test harness output
+tools/costing-tests/harness/site/
+tools/costing-tests/harness/shot*.png

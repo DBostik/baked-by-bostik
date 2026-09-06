@@ -109,3 +109,16 @@ Added Sep 6, 2026 with Milestone 24 (Costing). Read this before touching git fro
   * set identity per command: `-c user.name="Dave Bostik" -c user.email="dabosti@gmail.com"`.
 * **Pushing** needs a GitHub fine-grained token (Contents: read/write on this repo). If Dave has saved one, it is in `~/Desktop/My Info For Claude/github-token.txt` (never copy it into the repo). Push with `git push https://x-access-token:$(cat "$HOME/mnt/Desktop/My Info For Claude/github-token.txt")@github.com/DBostik/baked-by-bostik.git main`.
 * **Costing module map**: `admin/costing.js` (screens and Firestore), `admin/costing-units.js` (unit conversion and cost math, pure functions), `admin/costing.css`, `admin/costing-seed.json` (starter data from Kristen's sheet). `admin/admin.js` only has a one-line hook in `showPage()`. Rules: `firestore.rules` (`isAdmin()` UID list, `isPricebot()`). Plan and phases: the "Baked By Bostik Costing Plan" page in Dave's Claude artifacts; `implementation_plan.md` Milestone 7 lists the phases.
+
+### Update Sep 6, 2026 (after Phase 2)
+
+* `git fetch` that brings new objects into the mounted folder dies with a bus error (pack indexing on the mount).
+  When you need commits from GitHub (a PR, or someone else pushed), clone into `$HOME` on the VM (real filesystem),
+  do the merge there, then bring it back: `git rev-list --objects OLD..NEW | git pack-objects --stdout > $HOME/sync.pack`
+  in the clone, and in the mounted repo `git unpack-objects < $HOME/sync.pack`, `git update-ref refs/heads/main NEW`,
+  `git update-ref refs/remotes/origin/main NEW`, `git reset --hard main` (with `.git/logs` moved aside as above).
+* Pushing straight from the mounted repo: `mv .git/logs .git/logs.hold; git -c core.logAllRefUpdates=false push
+  https://x-access-token:$(cat "$HOME/mnt/Desktop/My Info For Claude/github-token.txt")@github.com/DBostik/baked-by-bostik.git main;
+  mv .git/logs.hold .git/logs`. If that ever bus-errors, use the clone route.
+* Handoff for the Costing work: `docs/costing-handoff.md`. Tests: `tools/costing-tests/README.md`.
+* Files ending in " 2.jpg" that appear in `assets/` are dataless macOS duplicates (0 blocks); safe to delete, never commit.
