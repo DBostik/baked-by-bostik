@@ -128,12 +128,34 @@ suggested = cost basis x (1 + profit) rounded up to `roundTo`; margin = (menu - 
    tile for proposals once Phase 4 lands; the monthly routine could also write a `cost_snapshots` doc (it would need
    read access to recipes and products, which the pricebot does not have today; the admin page's weekly touch covers
    it for now).
-4. **Monthly price bot and receipts** (2 sessions + Dave's setup steps C and D on the plan page): Claude Routine
-   on Dave's subscription signs in as the pricebot (env vars in a "Bakery bot" cloud environment), reads
-   `ingredients` sources with product links, web-searches prices, writes `price_proposals`; Price Reviews inbox in
-   the admin (approve writes a `prices` entry with method `bot`); receipt upload in the admin -> Storage `receipts/`
-   -> `receipt_queue` doc -> Cloud Function fires the receipt Routine (API trigger) -> proposals with method `receipt`.
-   Fallback: share the receipt with Claude in the app. Helper script for the routine goes in `scripts/pricebot/`.
+4. **Monthly price bot and receipts** (2 sessions). Design revised Sep 6, 2026 with Dave after Phase 3, because a
+   Cowork session cannot create a cloud environment, set environment variables, or generate an API trigger token
+   (no tools for those), but it CAN create scheduled tasks (Routines) with `create_trigger`, as it did for Dave's SEO
+   re-benchmark. So:
+   * **Bot login**: Firebase Auth user `pricebot@bakedbybostik.com`, UID `USNXR3iZcdVnNUY2VdPdoeYE3BI2` (done, in the
+     rules). The password lives in `~/Desktop/My Info For Claude/pricebot-password.txt` on the Mac mini (Dave creates
+     it; never in the repo, a prompt, or chat). Routines run linked to the Mac (`requires_local_device: true`) and read
+     the file with `device_bash`, then sign in from the cloud container via the Identity Toolkit REST API
+     (`signInWithPassword`, web API key from `js/firebase-config.js`) and use the Firestore REST API with the ID token.
+     If the Mac is offline when a routine fires, it reports that and stops; nothing else is needed.
+   * **Two scheduled tasks, created by Claude** (no Dave clicks): "BBB monthly price check" on the 1st of each month
+     (reads `ingredients` sources with product links, web-searches prices, writes `price_proposals` with foundAt, link,
+     confidence note, status `pending`); "BBB receipt scanner" daily in the morning (reads `receipt_queue` docs with
+     status `pending`, fetches the photo from Storage, matches lines to ingredients/sources, writes proposals with
+     method `receipt`, marks the queue doc done). A run that finds nothing ends in seconds. Rules already let the
+     pricebot read `ingredients` and create pending `price_proposals`; add read on `receipt_queue` + update of its
+     status, and Storage read on `receipts/` for the pricebot UID. No Cloud Function and no API trigger.
+   * **Admin side** (new file `admin/costing-reviews.js`): Price Reviews inbox (approve writes a `prices` entry with
+     method `bot` or `receipt` through `recordPrices`, edit, dismiss; source link beside every line); "Upload receipt"
+     button (Storage `receipts/{date}-{id}.jpg`, `receipt_queue` doc); the Analytics tile and Costing Home "proposals
+     waiting" numbers switch from 0 to the real count; the "share the photo with Claude in the app" fallback is
+     documented in Costing Settings. The bot's deterministic parts go in `scripts/pricebot/` (Node, no dependencies)
+     so the routine prompt is short: run the script to fetch the watch list, do the looking up, run the script to
+     write proposals.
+   * Kickoff for the next session: read this file and `DEPLOY.md` section 5, run the tests, confirm the password file
+     exists (`ls "$HOME/mnt/Desktop/My Info For Claude"` in device_bash; do not print its contents), then build the
+     admin side first (testable with the harness), the script second, and create the two scheduled tasks last, with a
+     "run now" of the price check so Kristen has a first batch to review.
 5. **Add to quote** (1 session): button on a saved estimate that pushes items ({name, qty, price}) into the existing
    Create Quote / Invoice modal in `admin.js` (`renderQuoteItems`, items array), suggested price prefilled.
 6. **Inventory** (2 to 3 sessions; Dave asked for it Sep 6): on-hand quantity per supply and later per ingredient,
@@ -156,8 +178,7 @@ There is no staging site; Kristen tests on the live admin after each approved pu
 
 ## Setup still pending for Phase 4 (Dave)
 
-Cloud environment "Bakery bot" with `PRICEBOT_EMAIL`, `PRICEBOT_PASSWORD`, `FIREBASE_PROJECT_ID=bakedbybostik-5eb55`,
-`FIREBASE_WEB_API_KEY` (public key from `js/firebase-config.js`); two Routines at claude.ai/code/routines
-(monthly price check on a schedule; receipt scanner on an API trigger). Click-level steps are on the plan page
-(steps C and D). Trusted network access already allows `*.googleapis.com`, which covers Identity Toolkit, Firestore
-REST and Storage.
+Only one thing: the file `~/Desktop/My Info For Claude/pricebot-password.txt` containing the pricebot's password
+(plain text, one line). The plan page's steps C2, C3 and D (cloud environment, environment variables, Routines with an
+API trigger) are no longer needed; Claude creates the scheduled tasks. The cloud container already reaches
+`*.googleapis.com` (Identity Toolkit, Firestore REST, Storage).
