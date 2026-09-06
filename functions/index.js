@@ -19,6 +19,29 @@ admin.initializeApp();
 setGlobalOptions({ maxInstances: 10 });
 
 /**
+ * Require a Firebase Auth ID token (admin dashboard callers).
+ * IAM may still allow unauthenticated HTTP reachability (invoker public) so the
+ * browser can call these endpoints; this check is the real gate.
+ */
+async function requireFirebaseAuth(req) {
+    const header = req.headers.authorization || '';
+    const match = /^Bearer\s+(.+)$/i.exec(header);
+    if (!match) {
+        const err = new Error('Unauthorized');
+        err.status = 401;
+        throw err;
+    }
+    try {
+        return await admin.auth().verifyIdToken(match[1]);
+    } catch (e) {
+        const err = new Error('Unauthorized');
+        err.status = 401;
+        throw err;
+    }
+}
+
+
+/**
  * 1. Generate Quote PDF
  * Receives: { requestId, customerName, items: [], totals: {} }
  * Returns: { success: true, url: "..." }
@@ -27,6 +50,7 @@ exports.createQuotePDF = onRequest({ cors: true, invoker: 'public' }, async (req
     if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
 
     try {
+        await requireFirebaseAuth(req);
         const { requestId, customerName, items, totals } = req.body;
         if (!requestId) throw new Error("Missing requestId");
 
@@ -221,7 +245,8 @@ exports.createQuotePDF = onRequest({ cors: true, invoker: 'public' }, async (req
 
     } catch (error) {
         console.error("PDF Gen Error", error);
-        res.status(500).json({ error: error.message });
+        const status = error.status === 401 ? 401 : 500;
+        res.status(status).json({ error: error.message });
     }
 });
 
@@ -235,6 +260,7 @@ exports.dispatchQuoteEmail = onRequest({ cors: true, invoker: 'public' }, async 
     if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
 
     try {
+        await requireFirebaseAuth(req);
         const { customerEmail, pdfUrl, customerName, emailMessage, imageUrls = [] } = req.body;
 
         const SMTP_EMAIL = process.env.SMTP_EMAIL;
@@ -306,7 +332,8 @@ exports.dispatchQuoteEmail = onRequest({ cors: true, invoker: 'public' }, async 
 
     } catch (error) {
         console.error("Email Error", error);
-        res.status(500).json({ error: error.message });
+        const status = error.status === 401 ? 401 : 500;
+        res.status(status).json({ error: error.message });
     }
 });
 
