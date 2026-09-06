@@ -1,23 +1,23 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    
-    // Admin access to everything
+
+    // Signed-in admin: full access
     match /{allPaths=**} {
       allow read, write: if request.auth != null;
     }
 
-    // Public uploads for Request Images
-    // Pattern: requests/{requestId}/{filename}
+    // Customer inspiration uploads on the public order form.
+    // Anonymous create only for small images — no public read/update/delete.
     match /requests/{requestId}/{fileName} {
-      allow write: if true; 
-      allow read: if true; // Needed so Admin can see them in the dashboard publicly if not auth'd? No, Admin is auth'd. 
-                           // But keep read true for now to avoid broken images if token expires.
+      allow create: if request.resource.size < 5 * 1024 * 1024
+                    && request.resource.contentType.matches('image/(jpeg|png|webp)');
+      allow read, update, delete: if request.auth != null;
     }
-    
-    // Quotes (Generated PDFs)
+
+    // Quotes (Generated PDFs) — customers open via link
     match /quotes/{fileName} {
-        allow read: if true; // Allow customer to download PDF via link
+      allow read: if true;
     }
 
     // Gallery Images - Public read, Admin write

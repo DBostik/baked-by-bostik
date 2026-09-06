@@ -1964,9 +1964,15 @@ async function generatePDF() {
 
         const quoteNotes = document.getElementById('quote-notes').value;
 
+        if (!auth.currentUser) throw new Error('Not signed in');
+        const idToken = await auth.currentUser.getIdToken();
+
         const res = await fetch(fnUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`
+            },
             body: JSON.stringify({
                 requestId: currentQuoteRequest.id,
                 customerName: customerName,
@@ -2063,9 +2069,15 @@ async function sendEmail() {
         const projectId = firebaseConfig.authDomain ? firebaseConfig.authDomain.split('.')[0] : 'baked-by-bostik';
         const fnUrl = `https://us-central1-${projectId}.cloudfunctions.net/dispatchQuoteEmail`;
 
+        if (!auth.currentUser) throw new Error('Not signed in');
+        const idToken = await auth.currentUser.getIdToken();
+
         const res = await fetch(fnUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`
+            },
             body: JSON.stringify({
                 customerEmail: cust.email,
                 customerName: cust.name,
