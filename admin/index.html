@@ -9,7 +9,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="/admin/admin.css?v=3">
-    <link rel="stylesheet" href="/admin/costing.css?v=1">
+    <link rel="stylesheet" href="/admin/costing.css?v=2">
     <!-- Chart.js via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Using similar color scheme as public site if possible, but keeping it clean admin style -->
@@ -181,6 +181,30 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                             </svg>
                             Recipes
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-page="costing-products">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:0.75rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                            Products &amp; Sizes
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-page="costing-estimator">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:0.75rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                            Estimator
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-page="costing-estimates">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:0.75rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                            </svg>
+                            Estimates
                         </a>
                     </li>
                     <li>
@@ -771,6 +795,24 @@
                     </header>
                     <div class="costing-body"></div>
                 </div>
+                <div id="page-costing-products" class="page-section costing-page hidden">
+                    <header class="page-header">
+                        <h1>Products &amp; Sizes</h1>
+                    </header>
+                    <div class="costing-body"></div>
+                </div>
+                <div id="page-costing-estimator" class="page-section costing-page hidden">
+                    <header class="page-header">
+                        <h1>Estimator</h1>
+                    </header>
+                    <div class="costing-body"></div>
+                </div>
+                <div id="page-costing-estimates" class="page-section costing-page hidden">
+                    <header class="page-header">
+                        <h1>Estimates</h1>
+                    </header>
+                    <div class="costing-body"></div>
+                </div>
                 <div id="page-costing-settings" class="page-section costing-page hidden">
                     <header class="page-header">
                         <h1>Costing Settings</h1>
@@ -1314,7 +1356,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script type="module" src="/admin/admin.js?v=2"></script>
     <!-- Costing module (Milestone 24) -->
-    <script type="module" src="/admin/costing.js?v=1"></script>
+    <script type="module" src="/admin/costing.js?v=2"></script>
+    <script type="module" src="/admin/costing-products.js?v=1"></script>
+    <script type="module" src="/admin/costing-estimator.js?v=1"></script>
 </body>
 
 </html>

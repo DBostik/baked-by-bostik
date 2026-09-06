@@ -11,21 +11,29 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { firebaseConfig } from '../js/firebase-config.js';
 import * as U from './costing-units.js';
+import * as P from './costing-pricing.js';
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const COSTING_VERSION = '1.0.0';
-const PAGES = ['costing-home', 'costing-ingredients', 'costing-log', 'costing-recipes', 'costing-settings'];
+const COSTING_VERSION = '2.0.0';
+const PAGES = ['costing-home', 'costing-ingredients', 'costing-log', 'costing-recipes', 'costing-products', 'costing-estimator', 'costing-estimates', 'costing-settings'];
+// Other costing modules (products, estimator) plug in here.
+const pageRenderers = {};
+const actionHandlers = {};
+export function registerPage(name, fn) { pageRenderers[name] = fn; }
+export function registerAction(name, fn) { actionHandlers[name] = fn; }
 const RECIPE_CATEGORIES = ['cake', 'cupcake', 'cookie', 'frosting', 'filling', 'other'];
 const KINDS = ['ingredient', 'supply'];
 const DEFAULT_SETTINGS = { staleDaysDefault: 60, stores: ['Costco', 'Walmart', 'Amazon', "Pete's Fresh Market", 'Tap'], wasteAllowancePct: 5 };
 
-const state = {
+export const state = {
     user: null,
     ingredients: new Map(),
     recipes: new Map(),
+    products: new Map(),
+    estimates: new Map(),
     settings: { ...DEFAULT_SETTINGS },
     loaded: { ingredients: false, recipes: false, settings: false },
     page: null,
@@ -36,17 +44,17 @@ const state = {
 };
 
 // ------------------------------------------------------------------ helpers
-function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
-function todayISO() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
-function fmtDate(iso) { const d = U.toDate(iso); return d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'; }
-function slug(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'item'; }
-function uid(n = 6) { return Math.random().toString(36).slice(2, 2 + n); }
-function byName(a, b) { return String(a.name || '').localeCompare(String(b.name || '')); }
-function $(sel, root = document) { return root.querySelector(sel); }
-function $$(sel, root = document) { return Array.from(root.querySelectorAll(sel)); }
+export function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+export function todayISO() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+export function fmtDate(iso) { const d = U.toDate(iso); return d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'; }
+export function slug(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'item'; }
+export function uid(n = 6) { return Math.random().toString(36).slice(2, 2 + n); }
+export function byName(a, b) { return String(a.name || '').localeCompare(String(b.name || '')); }
+export function $(sel, root = document) { return root.querySelector(sel); }
+export function $$(sel, root = document) { return Array.from(root.querySelectorAll(sel)); }
 function staleDaysFor(ing) { return U.num(ing.staleDays) ?? U.num(state.settings.staleDaysDefault) ?? 60; }
 
-function toast(msg, kind = 'ok') {
+export function toast(msg, kind = 'ok') {
     let host = $('#costing-toasts');
     if (!host) { host = document.createElement('div'); host.id = 'costing-toasts'; document.body.appendChild(host); }
     const t = document.createElement('div');
@@ -70,8 +78,8 @@ function ingredientStatus(ing) {
     return { code: 'ok', label: `${days}d ago`, cls: 'c-badge-ok' };
 }
 
-function openFlags(obj) { return (obj.reviewFlags || []).filter(f => !(typeof f === 'object' && f.resolved)); }
-function flagText(f) { return typeof f === 'string' ? f : f.text; }
+export function openFlags(obj) { return (obj.reviewFlags || []).filter(f => !(typeof f === 'object' && f.resolved)); }
+export function flagText(f) { return typeof f === 'string' ? f : f.text; }
 
 // ------------------------------------------------------------------ data
 function subscribe() {
@@ -88,6 +96,16 @@ function subscribe() {
         state.loaded.recipes = true;
         rerender();
     }, err => { console.error('recipes', err); toast('Could not load recipes: ' + err.message, 'err'); }));
+    state.unsubs.push(onSnapshot(collection(db, 'products'), snap => {
+        state.products = new Map();
+        snap.forEach(d => state.products.set(d.id, { id: d.id, ...d.data() }));
+        rerender();
+    }, err => { console.error('products', err); }));
+    state.unsubs.push(onSnapshot(query(collection(db, 'estimates'), orderBy('updatedAt', 'desc'), limit(300)), snap => {
+        state.estimates = new Map();
+        snap.forEach(d => state.estimates.set(d.id, { id: d.id, ...d.data() }));
+        rerender();
+    }, err => { console.error('estimates', err); }));
     state.unsubs.push(onSnapshot(doc(db, 'costing_settings', 'global'), snap => {
         state.settings = { ...DEFAULT_SETTINGS, ...(snap.exists() ? snap.data() : {}) };
         state.loaded.settings = true;
@@ -120,7 +138,7 @@ async function saveRecipe(rec) {
 }
 async function deleteRecipe(id) { await deleteDoc(doc(db, 'recipes', id)); }
 
-async function saveSettings(patch) {
+export async function saveSettings(patch) {
     await setDoc(doc(db, 'costing_settings', 'global'), { ...patch, updatedAt: serverTimestamp() }, { merge: true });
 }
 
@@ -162,12 +180,19 @@ async function loadPriceHistory(ingredientId) {
 // ------------------------------------------------------------------ navigation
 function currentPageEl() { return state.page ? $('#page-' + state.page) : null; }
 
-function showCostingPage(name) {
+export function showCostingPage(name) {
     state.page = name;
     render(name);
 }
 
-function rerender() { if (state.page) render(state.page); }
+export function rerender() { if (state.page) render(state.page); }
+export function pricingCtx() { return { ingredients: state.ingredients, recipes: state.recipes, products: state.products }; }
+export function pricingSettings() {
+    const p = { ...P.DEFAULT_PRICING, ...(state.settings.pricing || {}) };
+    if (U.num(state.settings.wasteAllowancePct) != null) p.wasteAllowancePct = U.num(state.settings.wasteAllowancePct);
+    return p;
+}
+export { db, auth };
 
 function render(name) {
     const el = $('#page-' + name);
@@ -182,6 +207,7 @@ function render(name) {
         case 'costing-log': renderLog(body); break;
         case 'costing-recipes': renderRecipes(body); break;
         case 'costing-settings': renderSettings(body); break;
+        default: if (pageRenderers[name]) pageRenderers[name](body); else body.innerHTML = '<p class="c-muted">This screen is not loaded.</p>';
     }
 }
 
@@ -218,6 +244,7 @@ function renderHome(body) {
         <div class="stat-card" data-action="go" data-page="costing-recipes"><div><span class="stat-label">Recipes</span><span class="stat-number">${recs.length}</span></div></div>
     </div>
     ${problems.length ? `<div class="c-card c-warnbox"><strong>${problems.length} recipe${problems.length > 1 ? 's' : ''} cannot be fully costed yet:</strong> ${problems.map(x => `<a href="#" data-action="open-recipe" data-id="${esc(x.r.id)}">${esc(x.r.name)}</a>`).join(', ')}. Open one to see which line needs attention.</div>` : ''}
+    ${marginAlertsHtml()}
     <div class="c-two-col">
       <div class="c-card">
         <div class="c-card-head"><h3>Review list</h3><span class="c-muted">${flags.length} open</span></div>
@@ -237,6 +264,30 @@ function renderHome(body) {
     }).join('')}
         </div>
       </div>
+    </div>`;
+}
+// Products whose standard version is below the margin threshold at menu price
+function marginAlertsHtml() {
+    if (!state.products.size) return '';
+    const ctx = pricingCtx(); const ps = pricingSettings();
+    const rows = [];
+    state.products.forEach(p => {
+        if (p.active === false) return;
+        const opts = p.family === 'cake' ? (p.sizes || []) : (p.tiers || []);
+        opts.forEach(o => {
+            const est = P.priceEstimate({ items: [P.standardItemFor(p, o.id)] }, ctx, ps);
+            rows.push({ p, o, est });
+        });
+    });
+    const bad = rows.filter(r => r.est.totals.belowAlert);
+    if (!rows.length) return '';
+    return `<div class="c-card">
+        <div class="c-card-head"><h3>Margin at menu price</h3><span class="c-muted">${bad.length} of ${rows.length} below ${esc(ps.marginAlertPct)}%</span></div>
+        <p class="c-small c-muted">Standard version of each product (default flavor and frosting, no add-ons) at today's prices, with labor at ${U.fmtMoney(ps.hourlyRate)} per hour. Open the Estimator for the full breakdown.</p>
+        <div class="c-table-wrap"><table class="c-table c-table-sm"><thead><tr><th>Product</th><th class="num">Cost basis</th><th class="num">Suggested</th><th class="num">Menu</th><th class="num">Margin</th></tr></thead><tbody>
+        ${rows.map(r => `<tr><td>${esc(r.p.name)} · ${esc(r.o.label)}</td><td class="num">${U.fmtMoney(r.est.totals.costBasis)}</td><td class="num">${U.fmtMoney(r.est.totals.suggested)}</td><td class="num">${U.fmtMoney(r.est.totals.menu)}</td><td class="num"><span class="c-badge ${r.est.totals.belowAlert ? 'c-badge-warn' : 'c-badge-ok'}">${r.est.totals.marginPct == null ? '—' : r.est.totals.marginPct + '%'}</span></td></tr>`).join('')}
+        </tbody></table></div>
+        <p class="c-small c-muted">Margin = (menu price minus cost basis) / menu price. Cost basis includes labor at her rate, so a negative margin means the menu price does not cover her time plus materials.</p>
     </div>`;
 }
 function flagRow(f, priority) {
@@ -654,6 +705,7 @@ function addParsedLines(text) {
 // ------------------------------------------------------------------ SETTINGS
 function renderSettings(body) {
     const s = state.settings;
+    const pr = pricingSettings();
     const empty = state.ingredients.size === 0 && state.recipes.size === 0;
     body.innerHTML = `
     <div class="c-two-col">
@@ -667,10 +719,29 @@ function renderSettings(body) {
         <button class="btn-primary btn-sm" data-action="save-settings">Save defaults</button>
       </div>
       <div class="c-card">
+        <h3>Pricing</h3>
+        <p class="c-small">These drive every estimate. Suggested price = (materials with waste + labor + overhead) x (1 + profit), rounded up.</p>
+        <div class="c-form-grid">
+          <label>Hourly rate ($)<input class="c-input" id="p-rate" type="number" min="0" step="0.5" value="${esc(pr.hourlyRate)}"></label>
+          <label>Profit %<input class="c-input" id="p-profit" type="number" min="0" step="1" value="${esc(pr.profitPct)}"></label>
+          <label>Overhead type<select class="c-input" id="p-ohtype"><option value="pct" ${pr.overheadType === 'pct' ? 'selected' : ''}>% of materials + labor</option><option value="flat" ${pr.overheadType === 'flat' ? 'selected' : ''}>Flat $ per order</option></select></label>
+          <label>Overhead value<input class="c-input" id="p-ohvalue" type="number" min="0" step="0.5" value="${esc(pr.overheadValue)}"></label>
+          <label>Round suggested price up to ($)<input class="c-input" id="p-round" type="number" min="0" step="1" value="${esc(pr.roundTo)}"></label>
+          <label>Margin alert below (%)<input class="c-input" id="p-alert" type="number" step="1" value="${esc(pr.marginAlertPct)}"></label>
+          <label class="c-check c-span2"><input type="checkbox" id="p-roundcake" ${pr.roundCakeBatches ? 'checked' : ''}> Cakes use whole batches of batter (round up)</label>
+          <label class="c-check c-span2"><input type="checkbox" id="p-roundfrost" ${pr.roundFrostingBatches ? 'checked' : ''}> Frostings and fillings use whole batches too</label>
+        </div>
+        <button class="btn-primary btn-sm" data-action="save-pricing">Save pricing</button>
+      </div>
+      <div class="c-card">
         <h3>Data</h3>
         <p class="c-small">Starter data comes from Kristen's Google Sheet "Recipes + Cost Break Down": every ingredient, where it is bought, the dated prices, and all recipes. Items the sheet was unsure about carry a note on the Costing Home review list.</p>
         <button class="btn-primary btn-sm" data-action="import-seed" ${empty ? '' : 'disabled title="Only available while Costing is empty"'}>Load starter data</button>
         ${empty ? '' : '<p class="c-muted c-small">Already loaded. To start over, ask Dave; it is a one-line reset.</p>'}
+        <hr class="c-hr">
+        <p class="c-small">Phase 2 starter data adds Kristen's real packaging (boxes, boards, dowels, bags, shred) and the four products she sells with sizes, menu prices, labor hours and add-ons. Safe to run once; it never overwrites anything you have edited.</p>
+        <button class="btn-primary btn-sm" data-action="import-phase2" ${state.products.size ? 'disabled title="Products already loaded"' : ''}>Load Phase 2 starter data</button>
+        ${state.products.size ? `<p class="c-muted c-small">${state.products.size} products loaded.</p>` : ''}
         <hr class="c-hr">
         <p class="c-small">Export everything as CSV files you can open in Excel or Google Sheets.</p>
         <div class="c-inline"><button class="btn-secondary btn-sm" data-action="export-ingredients">Ingredients &amp; prices</button> <button class="btn-secondary btn-sm" data-action="export-recipes">Recipes</button> <button class="btn-secondary btn-sm" data-action="export-history">Price history</button></div>
@@ -720,6 +791,58 @@ async function importSeed() {
     return { ingredients: seed.ingredients.length, recipes: seed.recipes.length };
 }
 
+async function importPhase2() {
+    const res = await fetch('/admin/costing-seed-phase2.json?v=' + Date.now());
+    if (!res.ok) throw new Error('Could not load costing-seed-phase2.json');
+    const seed = await res.json();
+    let batch = writeBatch(db), n = 0;
+    const flush = async () => { if (n) { await batch.commit(); batch = writeBatch(db); n = 0; } };
+    let supplies = 0;
+    // retire Phase 1 placeholder supplies that were never priced
+    for (const id of (seed.replacedPlaceholders || [])) {
+        const ex = state.ingredients.get(id);
+        const seededToo = (seed.supplies || []).some(s => s.id === id);
+        if (ex && !seededToo && !(ex.sources || []).some(s => U.num(s.currentPrice) != null)) { batch.delete(doc(db, 'ingredients', id)); n++; }
+    }
+    for (const i of (seed.supplies || [])) {
+        const ex = state.ingredients.get(i.id);
+        const priced = ex && (ex.sources || []).some(s => U.num(s.currentPrice) != null);
+        if (priced) continue; // she already gave it a price; leave it alone
+        const sources = i.sources.map(s => {
+            const sorted = (s.prices || []).slice().sort((a, b) => a.date.localeCompare(b.date));
+            const last = sorted[sorted.length - 1];
+            const { prices, ...rest } = s;
+            return { ...rest, active: true, currentPrice: last ? last.price : null, currentPriceDate: last ? last.date : null, currentMethod: last ? 'import' : null };
+        });
+        const pref = sources.find(s => s.preferred) || sources[0];
+        const { id, sources: _s, ...rest } = i;
+        batch.set(doc(db, 'ingredients', id), {
+            ...rest, sources, preferredSourceId: pref ? pref.id : null,
+            reviewFlags: (i.reviewFlags || []).map(t => ({ text: t, resolved: false })),
+            nameLower: String(i.name).toLowerCase(), createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+        }); n++; supplies++;
+        for (const s of i.sources) for (const p of (s.prices || [])) {
+            batch.set(doc(collection(db, 'ingredients', id, 'prices')), { sourceId: s.id, price: p.price, date: p.date, method: 'import', note: p.note || '', packageQty: s.packageQty, packageUnit: s.packageUnit, enteredBy: 'seed', createdAt: serverTimestamp() }); n++;
+        }
+        if (n >= 400) await flush();
+    }
+    let products = 0;
+    for (const pdef of (seed.products || [])) {
+        if (state.products.has(pdef.id)) continue;
+        const { id, ...rest } = pdef;
+        batch.set(doc(db, 'products', id), { ...rest, reviewFlags: (pdef.reviewFlags || []).map(t => ({ text: t, resolved: false })), createdAt: serverTimestamp(), updatedAt: serverTimestamp() }); n++; products++;
+    }
+    for (const [rid, patch] of Object.entries(seed.recipePatches || {})) {
+        if (state.recipes.has(rid)) { batch.update(doc(db, 'recipes', rid), { ...patch, updatedAt: serverTimestamp() }); n++; }
+    }
+    // pricing defaults only where nothing is set yet
+    const current = state.settings.pricing || {};
+    const pricing = { ...(seed.pricingDefaults || {}), ...current };
+    batch.set(doc(db, 'costing_settings', 'global'), { pricing, phase2SeededAt: serverTimestamp(), updatedAt: serverTimestamp() }, { merge: true }); n++;
+    await flush();
+    return { supplies, products };
+}
+
 function download(filename, text) {
     const blob = new Blob([text], { type: 'text/csv;charset=utf-8' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click(); a.remove();
@@ -752,6 +875,8 @@ async function exportHistory() {
 
 // ------------------------------------------------------------------ modal plumbing
 let modalCtx = null;
+export function getModalCtx() { return modalCtx; }
+export function setModalCtx(c) { modalCtx = c; }
 function ensureModal() {
     let m = $('#costing-modal');
     if (m) return m;
@@ -763,14 +888,14 @@ function ensureModal() {
     m.addEventListener('click', e => { if (e.target === m) closeModal(); });
     return m;
 }
-function openModal(html, ctx) {
+export function openModal(html, ctx) {
     const m = ensureModal();
     modalCtx = ctx || {};
     $('#costing-modal-body', m).innerHTML = html;
     m.classList.remove('hidden');
     document.body.classList.add('c-modal-open');
 }
-function closeModal() {
+export function closeModal() {
     const m = $('#costing-modal'); if (!m) return;
     m.classList.add('hidden'); $('#costing-modal-body', m).innerHTML = ''; modalCtx = null;
     document.body.classList.remove('c-modal-open');
@@ -780,6 +905,7 @@ function closeModal() {
 async function handleAction(el, e) {
     const a = el.dataset.action;
     try {
+        if (actionHandlers[a]) { await actionHandlers[a](el, e); return; }
         switch (a) {
             case 'go': {
                 const page = el.dataset.page; const filter = el.dataset.filter;
@@ -849,6 +975,22 @@ async function handleAction(el, e) {
                 const stores = $('#s-stores').value.split(',').map(s => s.trim()).filter(Boolean);
                 await saveSettings({ staleDaysDefault: stale, wasteAllowancePct: waste, stores }); toast('Defaults saved'); break;
             }
+            case 'save-pricing': {
+                const pricing = {
+                    hourlyRate: U.num($('#p-rate').value) ?? 32, profitPct: U.num($('#p-profit').value) ?? 20,
+                    overheadType: $('#p-ohtype').value, overheadValue: U.num($('#p-ohvalue').value) ?? 0,
+                    roundTo: U.num($('#p-round').value) ?? 0, marginAlertPct: U.num($('#p-alert').value) ?? 0,
+                    roundCakeBatches: $('#p-roundcake').checked, roundFrostingBatches: $('#p-roundfrost').checked,
+                    wasteAllowancePct: U.num(state.settings.wasteAllowancePct) ?? 5,
+                };
+                await saveSettings({ pricing }); toast('Pricing saved'); break;
+            }
+            case 'import-phase2': {
+                if (!confirm('Load the Phase 2 starter data (packaging supplies and products)?')) return;
+                el.disabled = true; el.textContent = 'Loading…';
+                const r = await importPhase2(); toast(`Loaded ${r.supplies} supplies and ${r.products} products`);
+                break;
+            }
             case 'import-seed': {
                 if (!confirm('Load the starter data from the sheet? This only works while Costing is empty.')) return;
                 el.disabled = true; el.textContent = 'Loading…';
@@ -863,6 +1005,7 @@ async function handleAction(el, e) {
         console.error(err);
         toast(err.message || String(err), 'err');
         if (a === 'import-seed') { el.disabled = false; el.textContent = 'Load starter data'; }
+        if (a === 'import-phase2') { el.disabled = false; el.textContent = 'Load Phase 2 starter data'; }
     }
 }
 async function reopenIngredient() {

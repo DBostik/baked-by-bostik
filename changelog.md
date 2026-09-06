@@ -15,6 +15,14 @@
 
 ## 📅 September 2026
 
+### 🟢 Milestone 24, Phase 2: Products, Estimator, Pricing - Sep 6, 2026
+- **Products & Sizes** (`admin/costing-products.js`): the four products Kristen sells (celebration cakes with 6/8/10/12-inch sizes, cupcakes, sugar cookies, drop cookies) with menu prices, labor hours, batter batches per cake recipe, frosting calibration (one buttercream batch on a 6-inch 3-layer, scaled by geometry to other sizes), packaging kits, add-on minutes and upcharges, tiers for cupcakes and cookies. Standard-version cost, suggested price and margin shown per size.
+- **Estimator** (`admin/costing-estimator.js`): build an order from products (multi-tier cakes, flavor / filling / outer frosting per tier, extra layers, ganache drip, fondant figures, topper, decor items, custom lines; cupcakes and cookies by the dozen with tiers and character add-ons). Live breakdown: ingredients, supplies, waste, labor at her rate, overhead, cost basis, suggested price (cost-plus, rounded up), menu price and margin. Estimates save with a snapshot and can be linked to a request; the Request Details modal shows the linked estimate and a one-tap "New estimate" for that request.
+- **Estimates**: saved list with "saved vs today" suggested price, duplicate, reopen, delete.
+- **Pricing settings** in Costing Settings: hourly rate, profit %, overhead (% or flat), rounding, margin alert threshold, whole-batch rules. Costing Home gained a "Margin at menu price" table for every size and tier.
+- **Math** in `admin/costing-pricing.js` (pure, unit-tested): geometry scaling of filling (layer area) and outer frosting (top + side surface), whole-batch rounding, cost-plus formula.
+- **Starter data** `admin/costing-seed-phase2.json`: Kristen's real packaging supplies with prices (boxes, boards, drum, dowels, cookie boxes, shred, bags, cupcake boxes, piping bags) and the product definitions; loaded once from Costing Settings without overwriting anything she edited. Phase 1 placeholder supplies that never got a price are retired.
+
 ### 🟢 Milestone 24: Costing, Phase 1 (Ingredients, Prices, Recipes) - Sep 6, 2026
 - **New Costing area in the admin** (sidebar group "Costing"): Costing Home, Ingredients & Supplies, Log Prices, Recipes, Costing Settings. Code lives in its own files (`admin/costing.js`, `admin/costing-units.js`, `admin/costing.css`); `admin.js` only got a one-line hook in `showPage()` and `index.html` got the nav items, page containers and script tag.
 - **Ingredients & sources**: each ingredient/supply has a base unit (g, ml, each), conversion factors (grams per cup / each / ml), any number of sources (brand, store, package size, product link) with one preferred, and a dated price history in `ingredients/{id}/prices`. Stale prices are flagged after 60 days by default (per-item override).

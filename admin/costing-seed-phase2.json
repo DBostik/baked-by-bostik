@@ -1,0 +1,1235 @@
+{
+  "version": 2,
+  "generatedAt": "2026-09-06",
+  "supplies": [
+    {
+      "id": "cake-box-tall-12",
+      "name": "Tall cake box 12x12x12 with window (Mcfleet)",
+      "kind": "supply",
+      "category": "Boxes & bags",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "Every cake ships in one of these.",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "amazon",
+          "brand": "Mcfleet",
+          "store": "Amazon",
+          "packageQty": 10,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 24.99,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": []
+    },
+    {
+      "id": "dowels-plastic",
+      "name": "Plastic cake dowels 9.5 in (straw type)",
+      "kind": "supply",
+      "category": "Boards & drums",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "Every cake except smash cakes.",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "amazon",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 50,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 6.99,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Dowels per cake is set to 4 on each cake size; adjust in Products & Sizes if you use more or fewer."
+      ]
+    },
+    {
+      "id": "board-square-12",
+      "name": "Square paper cake board 12x12 (Way To Celebrate)",
+      "kind": "supply",
+      "category": "Boards & drums",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "Under 4, 6, 8 and 9-inch cakes.",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "walmart",
+          "brand": "Way To Celebrate",
+          "store": "Walmart",
+          "packageQty": 5,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 2.62,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": []
+    },
+    {
+      "id": "drum-square-12",
+      "name": "Cake drum 12 in square, 1/2 in thick (STARVAST)",
+      "kind": "supply",
+      "category": "Boards & drums",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "Under 10 and 12-inch cakes that are 3 to 4 layers, and multi-tier cakes.",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "amazon",
+          "brand": "STARVAST",
+          "store": "Amazon",
+          "packageQty": 10,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 26.99,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": []
+    },
+    {
+      "id": "board-round-4",
+      "name": "Round cake board 4 in",
+      "kind": "supply",
+      "category": "Boards & drums",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "amazon",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 20,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 7.99,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026. 6-inch pack price used for every size."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Price copied from the 6-inch boards (20 for $7.99); enter the real 4-inch pack price."
+      ]
+    },
+    {
+      "id": "board-round-6",
+      "name": "Round cake board 6 in",
+      "kind": "supply",
+      "category": "Boards & drums",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "amazon",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 20,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 7.99,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": []
+    },
+    {
+      "id": "board-round-8",
+      "name": "Round cake board 8 in",
+      "kind": "supply",
+      "category": "Boards & drums",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "amazon",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 20,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 7.99,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026. 6-inch pack price used for every size."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Price copied from the 6-inch boards (20 for $7.99); enter the real 8-inch pack price."
+      ]
+    },
+    {
+      "id": "board-round-9",
+      "name": "Round cake board 9 in",
+      "kind": "supply",
+      "category": "Boards & drums",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "amazon",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 20,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 7.99,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026. 6-inch pack price used for every size."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Price copied from the 6-inch boards (20 for $7.99); enter the real 9-inch pack price."
+      ]
+    },
+    {
+      "id": "board-round-10",
+      "name": "Round cake board 10 in",
+      "kind": "supply",
+      "category": "Boards & drums",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "amazon",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 20,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 7.99,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026. 6-inch pack price used for every size."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Price copied from the 6-inch boards (20 for $7.99); enter the real 10-inch pack price."
+      ]
+    },
+    {
+      "id": "board-round-12",
+      "name": "Round cake board 12 in",
+      "kind": "supply",
+      "category": "Boards & drums",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "amazon",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 20,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 7.99,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026. 6-inch pack price used for every size."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Price copied from the 6-inch boards (20 for $7.99); enter the real 12-inch pack price."
+      ]
+    },
+    {
+      "id": "labels-stickers",
+      "name": "Logo sticker + safety / ingredient label (per item)",
+      "kind": "supply",
+      "category": "Labels",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 365,
+      "sources": [
+        {
+          "id": "misc",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 100,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": [
+            {
+              "price": 20.0,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "Placeholder: 20 cents per item."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Placeholder cost of 20 cents per cake, box or dozen for the logo sticker and labels; enter the real label and sticker pack prices."
+      ]
+    },
+    {
+      "id": "cookie-box-small",
+      "name": "Cookie box 12x5x1.5 with window (JCXPACK), 4 to 5 cookies",
+      "kind": "supply",
+      "category": "Boxes & bags",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "One goes in every cookie order as the thank-you box.",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "amazon",
+          "brand": "JCXPACK",
+          "store": "Amazon",
+          "packageQty": 100,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 79.99,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": []
+    },
+    {
+      "id": "cookie-box-large",
+      "name": "Treat box 14x10x2.5 with window (TOMNK), 15 to 18 cookies",
+      "kind": "supply",
+      "category": "Boxes & bags",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "amazon",
+          "brand": "TOMNK",
+          "store": "Amazon",
+          "packageQty": 30,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 28.99,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": []
+    },
+    {
+      "id": "crinkle-paper",
+      "name": "Crinkle paper shred (one Hobby Lobby bag)",
+      "kind": "supply",
+      "category": "Boxes & bags",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "One bag fills the large cookie box; a third to a half fills the small box.",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "hobbylobby",
+          "brand": "",
+          "store": "Hobby Lobby",
+          "packageQty": 1,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 2.99,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026."
+            }
+          ]
+        },
+        {
+          "id": "dollartree",
+          "brand": "",
+          "store": "Dollar Tree",
+          "packageQty": 0.5,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": false,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 1.25,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026. A 1.8 oz Dollar Tree bag is about half a Hobby Lobby bag (2 per large box, 1 per small)."
+            }
+          ]
+        },
+        {
+          "id": "boxusa",
+          "brand": "BOX USA",
+          "store": "Amazon",
+          "packageQty": 40,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": false,
+          "needsPackage": true,
+          "notes": "",
+          "prices": [
+            {
+              "price": 57.47,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026. 10 lb box; bag-equivalents are a guess."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "The 10 lb BOX USA shred is entered as 40 Hobby-Lobby-bag equivalents; correct that if you know how many boxes it fills."
+      ]
+    },
+    {
+      "id": "cookie-bags-cello",
+      "name": "Cellophane cookie bags 5x7 self-seal",
+      "kind": "supply",
+      "category": "Boxes & bags",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "amazon",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 200,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 8.99,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": []
+    },
+    {
+      "id": "cookie-bags-heatseal",
+      "name": "Heat-seal treat bags 3.75x6 (Sunny Side Up Bakery)",
+      "kind": "supply",
+      "category": "Boxes & bags",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "hobbylobby",
+          "brand": "Sunny Side Up Bakery",
+          "store": "Hobby Lobby",
+          "packageQty": 50,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": [
+            {
+              "price": 1.79,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026. Bags per pack not given; 50 assumed."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Bags per pack was not given; 50 assumed. Fix the pack size and this becomes exact."
+      ]
+    },
+    {
+      "id": "charcuterie-box",
+      "name": "Charcuterie box 5.3x4.9x2.5 with lid (DeziWood), 8 to 10 cookies",
+      "kind": "supply",
+      "category": "Boxes & bags",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "amazon",
+          "brand": "DeziWood",
+          "store": "Amazon",
+          "packageQty": 100,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 29.89,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": []
+    },
+    {
+      "id": "cupcake-box-12",
+      "name": "Cupcake box, 12 count with window (VGOODALL)",
+      "kind": "supply",
+      "category": "Boxes & bags",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "amazon",
+          "brand": "VGOODALL",
+          "store": "Amazon",
+          "packageQty": 6,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 12.99,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": []
+    },
+    {
+      "id": "cupcake-liners",
+      "name": "Cupcake liners",
+      "kind": "supply",
+      "category": "Boxes & bags",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "any",
+          "brand": "",
+          "store": "Walmart",
+          "packageQty": 100,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "No price yet for cupcake liners; enter the pack size and price."
+      ]
+    },
+    {
+      "id": "piping-bags-12",
+      "name": "Piping bags 12 in disposable (anti-burst)",
+      "kind": "supply",
+      "category": "Consumables (overhead)",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "Tracked for price history only; consumables are covered by the overhead setting, not added per order.",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "amazon-a",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 100,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 7.49,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026."
+            }
+          ]
+        },
+        {
+          "id": "amazon-b",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 100,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": false,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 5.87,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": []
+    },
+    {
+      "id": "piping-bags-16-wilton",
+      "name": "Wilton disposable decorating bags 16 in",
+      "kind": "supply",
+      "category": "Consumables (overhead)",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "Thick icing and buttercream details. Covered by overhead.",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "amazon",
+          "brand": "Wilton",
+          "store": "Amazon",
+          "packageQty": 2,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 13.69,
+              "date": "2026-09-06",
+              "method": "import",
+              "note": "From Kristen, Sep 6 2026."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": []
+    }
+  ],
+  "replacedPlaceholders": [
+    "board-6",
+    "board-8",
+    "board-10",
+    "board-12",
+    "box-8",
+    "box-10",
+    "box-12",
+    "box-14",
+    "cookie-bags",
+    "cookie-box",
+    "dowels",
+    "cake-drum-12",
+    "cupcake-box-12",
+    "cupcake-liners"
+  ],
+  "products": [
+    {
+      "id": "celebration-cake",
+      "name": "Custom Celebration Cake",
+      "family": "cake",
+      "unitLabel": "cake",
+      "active": true,
+      "description": "3 cake layers, 2 filling layers. Menu: 6-inch $95+, 8-inch $125+, 10-inch $165+, 12-inch $225+, two-tier $225+.",
+      "layersDefault": 3,
+      "layerHeightIn": 1.5,
+      "refSizeId": "6",
+      "refFillingGrams": 420,
+      "refOuterGrams": 780,
+      "defaultFlavorRecipeId": "white-cake",
+      "defaultFillingRecipeId": "vanilla-buttercream",
+      "defaultOuterRecipeId": "vanilla-buttercream",
+      "premiumFillingIds": [
+        "ganache",
+        "strawberry-coulis"
+      ],
+      "sizes": [
+        {
+          "id": "6",
+          "label": "6-inch round",
+          "diameterIn": 6,
+          "menuPrice": 95,
+          "laborHours": 3,
+          "batter": {
+            "white-cake": 1,
+            "confetti-cake": 1,
+            "chocolate-cake": 1
+          },
+          "batterDefault": 1,
+          "dripGrams": 150,
+          "fillingGramsOverride": null,
+          "outerGramsOverride": null,
+          "kit": [
+            {
+              "supplyId": "cake-box-tall-12",
+              "qty": 1
+            },
+            {
+              "supplyId": "board-round-6",
+              "qty": 1
+            },
+            {
+              "supplyId": "board-square-12",
+              "qty": 1
+            },
+            {
+              "supplyId": "dowels-plastic",
+              "qty": 4
+            },
+            {
+              "supplyId": "labels-stickers",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "8",
+          "label": "8-inch round",
+          "diameterIn": 8,
+          "menuPrice": 125,
+          "laborHours": 4,
+          "batter": {
+            "white-cake": 2,
+            "confetti-cake": 2,
+            "chocolate-cake": 2
+          },
+          "batterDefault": 2,
+          "dripGrams": 200,
+          "fillingGramsOverride": null,
+          "outerGramsOverride": null,
+          "kit": [
+            {
+              "supplyId": "cake-box-tall-12",
+              "qty": 1
+            },
+            {
+              "supplyId": "board-round-8",
+              "qty": 1
+            },
+            {
+              "supplyId": "board-square-12",
+              "qty": 1
+            },
+            {
+              "supplyId": "dowels-plastic",
+              "qty": 4
+            },
+            {
+              "supplyId": "labels-stickers",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "10",
+          "label": "10-inch round",
+          "diameterIn": 10,
+          "menuPrice": 165,
+          "laborHours": 5,
+          "batter": {
+            "white-cake": 3,
+            "confetti-cake": 3,
+            "chocolate-cake": 2
+          },
+          "batterDefault": 3,
+          "dripGrams": 250,
+          "fillingGramsOverride": null,
+          "outerGramsOverride": null,
+          "kit": [
+            {
+              "supplyId": "cake-box-tall-12",
+              "qty": 1
+            },
+            {
+              "supplyId": "board-round-10",
+              "qty": 1
+            },
+            {
+              "supplyId": "drum-square-12",
+              "qty": 1
+            },
+            {
+              "supplyId": "dowels-plastic",
+              "qty": 4
+            },
+            {
+              "supplyId": "labels-stickers",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "12",
+          "label": "12-inch round",
+          "diameterIn": 12,
+          "menuPrice": 225,
+          "laborHours": 6,
+          "batter": {
+            "white-cake": 4,
+            "confetti-cake": 4,
+            "chocolate-cake": 3
+          },
+          "batterDefault": 4,
+          "dripGrams": 300,
+          "fillingGramsOverride": null,
+          "outerGramsOverride": null,
+          "kit": [
+            {
+              "supplyId": "cake-box-tall-12",
+              "qty": 1
+            },
+            {
+              "supplyId": "board-round-12",
+              "qty": 1
+            },
+            {
+              "supplyId": "drum-square-12",
+              "qty": 1
+            },
+            {
+              "supplyId": "dowels-plastic",
+              "qty": 4
+            },
+            {
+              "supplyId": "labels-stickers",
+              "qty": 1
+            }
+          ]
+        }
+      ],
+      "addons": {
+        "premiumFillingUpcharge": 15,
+        "extraLayerUpcharge": 15,
+        "extraLayerMinutes": 20,
+        "dripRecipeId": "ganache",
+        "dripMinutes": 5,
+        "dripUpcharge": 0,
+        "dripGramsDefault": 150,
+        "figureMinutes": 20,
+        "figureMaterialCost": 1.0,
+        "figureUpcharge": 20,
+        "topperMinutes": 25,
+        "topperDefaultCost": 8.0,
+        "tierMinutes": 5,
+        "tierKit": [
+          {
+            "supplyId": "dowels-plastic",
+            "qty": 4
+          },
+          {
+            "supplyId": "drum-square-12",
+            "qty": 1
+          }
+        ],
+        "perCakeOnlySupplyIds": [
+          "cake-box-tall-12",
+          "labels-stickers"
+        ]
+      },
+      "reviewFlags": [
+        "Frosting reference: one full buttercream batch (about 1,200 g) for a 6-inch 3-layer cake, split 420 g filling / 780 g outer. Adjust the split if that feels off.",
+        "Hours per size are the national-average figures Kristen gave (3/4/5/6). If they include baking and cooling time, lower them to hands-on time.",
+        "Extra layer set to 20 minutes and +$15 on the menu; fondant figures 20 minutes, $1 material, +$20 menu; topper 25 minutes, $8 default cost. Adjust as needed."
+      ]
+    },
+    {
+      "id": "cupcakes",
+      "name": "Custom Cupcakes",
+      "family": "cupcake",
+      "unitLabel": "dozen",
+      "active": true,
+      "description": "Minimum 2 dozen. Menu: Classic $3.75 each ($45/doz), Themed $4.50 to $5.50 each, Detailed $6+ each.",
+      "minimumQty": 2,
+      "defaultFlavorRecipeId": "white-cake",
+      "defaultFrostingRecipeId": "vanilla-buttercream",
+      "cupcakesPerBatch": {
+        "white-cake": 24,
+        "confetti-cake": 24,
+        "chocolate-cake": 24,
+        "lemon-cupcakes": 12
+      },
+      "cupcakesPerBatchDefault": 24,
+      "frostingGramsPerCupcake": 60,
+      "laborHoursPerDozen": 1.0,
+      "tiers": [
+        {
+          "id": "classic",
+          "label": "Classic design",
+          "menuPricePerDozen": 45,
+          "minutesPerUnit": 3
+        },
+        {
+          "id": "themed",
+          "label": "Themed / custom",
+          "menuPricePerDozen": 60,
+          "minutesPerUnit": 6
+        },
+        {
+          "id": "detailed",
+          "label": "Detailed / specialty",
+          "menuPricePerDozen": 72,
+          "minutesPerUnit": 10
+        }
+      ],
+      "kitPerDozen": [
+        {
+          "supplyId": "cupcake-box-12",
+          "qty": 1
+        },
+        {
+          "supplyId": "cupcake-liners",
+          "qty": 12
+        },
+        {
+          "supplyId": "labels-stickers",
+          "qty": 1
+        }
+      ],
+      "reviewFlags": [
+        "Cupcake labor is a placeholder: 1 hour per dozen to bake and box plus 3 / 6 / 10 minutes per cupcake by tier. Frosting per cupcake set to 60 g (about 1/4 cup). Cupcakes per cake-recipe batch set to 24."
+      ]
+    },
+    {
+      "id": "sugar-cookies",
+      "name": "Custom Sugar Cookies",
+      "family": "cookie",
+      "unitLabel": "dozen",
+      "active": true,
+      "description": "Minimum 2 dozen. Menu: Simply Sweet $60/doz, Masterpiece $72/doz, Luxe Elite $84+/doz, character add-on $10 each.",
+      "minimumQty": 2,
+      "doughRecipeId": "sugar-cookie",
+      "cookiesPerBatch": 24,
+      "icingRecipeId": "royal-icing",
+      "icingGramsPerCookie": 20,
+      "laborHoursPerDozen": 0.5,
+      "tiers": [
+        {
+          "id": "simply-sweet",
+          "label": "The Simply Sweet",
+          "menuPricePerDozen": 60,
+          "minutesPerUnit": 5
+        },
+        {
+          "id": "masterpiece",
+          "label": "The Masterpiece",
+          "menuPricePerDozen": 72,
+          "minutesPerUnit": 8
+        },
+        {
+          "id": "luxe-elite",
+          "label": "The Luxe Elite",
+          "menuPricePerDozen": 84,
+          "minutesPerUnit": 12
+        }
+      ],
+      "cookiesPerBox": 15,
+      "kitPerOrder": [
+        {
+          "supplyId": "cookie-box-small",
+          "qty": 1
+        },
+        {
+          "supplyId": "crinkle-paper",
+          "qty": 0.5
+        },
+        {
+          "supplyId": "labels-stickers",
+          "qty": 1
+        }
+      ],
+      "kitPerBox": [
+        {
+          "supplyId": "cookie-box-large",
+          "qty": 1
+        },
+        {
+          "supplyId": "crinkle-paper",
+          "qty": 1
+        },
+        {
+          "supplyId": "labels-stickers",
+          "qty": 1
+        }
+      ],
+      "kitPerCookie": [
+        {
+          "supplyId": "cookie-bags-cello",
+          "qty": 1
+        }
+      ],
+      "addons": {
+        "characterMinutes": 10,
+        "characterMaterialCost": 0.5,
+        "characterUpcharge": 10
+      },
+      "reviewFlags": [
+        "Sugar cookie placeholders: 24 cookies per dough batch, 20 g royal icing per cookie, 30 minutes per dozen to bake and pack, plus 5 / 8 / 12 minutes of decorating per cookie by tier, character add-on 10 minutes. Replace with your real numbers.",
+        "Per-cookie bag is set to the cellophane bags; switch the kit to the heat-seal bags when you change over."
+      ]
+    },
+    {
+      "id": "daily-drop-cookies",
+      "name": "Daily Drop (chocolate chip)",
+      "family": "cc-cookie",
+      "unitLabel": "dozen",
+      "active": true,
+      "description": "OG chocolate chip and rotating specials. Menu: mini $12/doz, regular $24/doz. Mostly thank-you gifts today.",
+      "doughRecipeId": "choc-chip-cookie",
+      "cookiesPerBatch": 72,
+      "laborHoursPerDozen": 0.25,
+      "tiers": [
+        {
+          "id": "mini",
+          "label": "Mini (#60 scoop)",
+          "menuPricePerDozen": 12,
+          "minutesPerUnit": 0,
+          "scoop": "60 (S)"
+        },
+        {
+          "id": "regular",
+          "label": "Regular (#40 scoop)",
+          "menuPricePerDozen": 24,
+          "minutesPerUnit": 0,
+          "scoop": "40 (L)"
+        }
+      ],
+      "cookiesPerBox": 9,
+      "kitPerOrder": [
+        {
+          "supplyId": "labels-stickers",
+          "qty": 1
+        }
+      ],
+      "kitPerBox": [
+        {
+          "supplyId": "charcuterie-box",
+          "qty": 1
+        }
+      ],
+      "kitPerCookie": [],
+      "reviewFlags": [
+        "Low priority per Kristen. Yield 72 minis per batch (#60 scoop) as she reported; 9 cookies per charcuterie box; 15 minutes per dozen placeholder."
+      ]
+    }
+  ],
+  "pricingDefaults": {
+    "hourlyRate": 32,
+    "wasteAllowancePct": 5,
+    "overheadType": "pct",
+    "overheadValue": 10,
+    "profitPct": 20,
+    "roundTo": 5,
+    "marginAlertPct": 15,
+    "roundCakeBatches": true,
+    "roundFrostingBatches": false,
+    "roundCupcakeBatches": false,
+    "roundCookieBatches": false
+  },
+  "recipePatches": {
+    "choc-chip-cookie": {
+      "yield.value": 72,
+      "yield.label": "72 cookies with a #60 scoop (Kristen)"
+    }
+  }
+}

@@ -146,7 +146,7 @@
 **Goal**: Track profitability and supplies.
 - [x] **Ingredient Tracker**: Database of ingredients and supplies with sources and dated price history (Milestone 24, Phase 1, Sep 2026).
 - [x] **Recipe Costing**: Live batch and per-unit costs from current prices; unit conversion; sub-recipes (Milestone 24, Phase 1).
-- [ ] **Products & Estimator**: cake configurator (size, flavor, filling, frosting, add-ons, tiers), cost-plus pricing, saved estimates linked to requests (Phase 2).
+- [x] **Products & Estimator**: cake configurator (size, flavor, filling, frosting, add-ons, tiers), cost-plus pricing, saved estimates linked to requests (Milestone 24, Phase 2, Sep 2026).
 - [ ] **Reports & Alerts**: price history charts, cost over time, margin alerts, Analytics tile (Phase 3).
 - [ ] **Price Bot & Receipts**: monthly price check and receipt scanning via Claude Routines into a review inbox (Phase 4).
 - [ ] **Add to Quote**: push estimate lines into the quote modal (Phase 5).
