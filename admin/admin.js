@@ -350,6 +350,8 @@ function showPage(pageName) {
     if (ledgerPage) ledgerPage.classList.add('hidden');
     const seasonalPage = document.getElementById('page-seasonal');
     if (seasonalPage) seasonalPage.classList.add('hidden');
+    // Costing pages (Milestone 24) are rendered by /admin/costing.js; hide them here so switching away works.
+    document.querySelectorAll('.costing-page').forEach(p => p.classList.add('hidden'));
 
     // Show target
     const target = document.getElementById(`page-${pageName}`);

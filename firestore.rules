@@ -1,29 +1,44 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+
+    // ------------------------------------------------------------------
+    // Who is who (Milestone 24). Add a UID to ADMIN_UIDS to give another
+    // login admin access. Previously any signed-in account was an admin.
+    // ------------------------------------------------------------------
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.uid in [
+          'LYJpCo6DEIO9w9Yurupuw0uyxpJ2'   // shared Baked By Bostik admin login
+        ];
+    }
+    // Price-check bot: reads ingredient sources, proposes prices. Nothing else.
+    function isPricebot() {
+      return request.auth != null && request.auth.uid == 'USNXR3iZcdVnNUY2VdPdoeYE3BI2';
+    }
+
     // Customers Collection
     match /customers/{customerId} {
       // Admin: full access
-      allow read, delete: if request.auth != null;
+      allow read, delete: if isAdmin();
       // Public: can create new customer records
       allow create: if true;
       // Public: can only update the 4 fields the order form writes
       // Admin: can update anything
-      allow update: if request.auth != null
+      allow update: if isAdmin()
           || request.resource.data.diff(resource.data).affectedKeys()
               .hasOnly(['name', 'email', 'phone', 'last_updated']);
     }
-    
+
     // Requests Collection
     match /requests/{requestId} {
       // Admin: full access
-      allow read, delete: if request.auth != null;
+      allow read, delete: if isAdmin();
       // Public: can create new requests
       allow create: if true;
       // Public: can only update step2_data, status, and updated_at (Step 2 form)
       // Admin: can update anything
-      allow update: if request.auth != null
+      allow update: if isAdmin()
           || (request.resource.data.diff(resource.data).affectedKeys()
               .hasOnly(['status', 'step2_data', 'updated_at'])
               && request.resource.data.status == 'AWAITING_DETAILS');
@@ -32,51 +47,99 @@ service cloud.firestore {
     // Seasonal Orders
     match /seasonal_orders/{orderId} {
       allow create: if true;
-      allow read, write: if request.auth != null;
+      allow read, write: if isAdmin();
     }
 
     // Seasonal Waitlist
     match /seasonal_waitlist/{entryId} {
       allow create: if true;
-      allow read, write: if request.auth != null;
+      allow read, write: if isAdmin();
     }
 
     // Orders Collection
     match /orders/{orderId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if isAdmin();
       match /payments/{paymentId} {
-        allow read, write: if request.auth != null;
+        allow read, write: if isAdmin();
       }
     }
 
     // Gallery Items - Public read, Admin write
     match /gallery_items/{itemId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
 
     // Gallery Categories - Public read, Admin write
     match /gallery_categories/{catId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
 
     // Site Content - Public read, Admin write
     match /site_content/{docId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
 
     // Pending Reviews - Public create, Admin read/write
     match /pending_reviews/{reviewId} {
       allow create: if true;
-      allow read, write: if request.auth != null;
+      allow read, write: if isAdmin();
     }
 
     // Approved Reviews - Public read, Admin write
     match /reviews/{reviewId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // ------------------------------------------------------------------
+    // Costing (Milestone 24)
+    // ------------------------------------------------------------------
+
+    // Ingredients and supplies, with their sources. The bot may read them
+    // (it needs the product links and current prices) but never write.
+    match /ingredients/{ingredientId} {
+      allow read: if isAdmin() || isPricebot();
+      allow write: if isAdmin();
+      // Price history per ingredient
+      match /prices/{priceId} {
+        allow read, write: if isAdmin();
+      }
+    }
+
+    match /recipes/{recipeId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Phase 2 collections, locked down now so nothing is open by accident
+    match /products/{productId} {
+      allow read, write: if isAdmin();
+    }
+    match /estimates/{estimateId} {
+      allow read, write: if isAdmin();
+    }
+    match /menu_prices/{priceId} {
+      allow read, write: if isAdmin();
+    }
+    match /costing_settings/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Phase 4: proposals from the price bot or a receipt scan, reviewed by an admin.
+    // The bot can only create well-formed proposals; it cannot read, change or delete them.
+    match /price_proposals/{proposalId} {
+      allow read, update, delete: if isAdmin();
+      allow create: if isAdmin()
+          || (isPricebot()
+              && request.resource.data.keys().hasAll(['ingredientId', 'sourceId', 'price', 'foundAt', 'status'])
+              && request.resource.data.status == 'pending'
+              && request.resource.data.price is number
+              && request.resource.data.price >= 0);
+    }
+    match /receipt_queue/{receiptId} {
+      allow read, write: if isAdmin();
     }
   }
 }

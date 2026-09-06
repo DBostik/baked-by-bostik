@@ -13,6 +13,17 @@
 
 ---
 
+## 📅 September 2026
+
+### 🟢 Milestone 24: Costing, Phase 1 (Ingredients, Prices, Recipes) - Sep 6, 2026
+- **New Costing area in the admin** (sidebar group "Costing"): Costing Home, Ingredients & Supplies, Log Prices, Recipes, Costing Settings. Code lives in its own files (`admin/costing.js`, `admin/costing-units.js`, `admin/costing.css`); `admin.js` only got a one-line hook in `showPage()` and `index.html` got the nav items, page containers and script tag.
+- **Ingredients & sources**: each ingredient/supply has a base unit (g, ml, each), conversion factors (grams per cup / each / ml), any number of sources (brand, store, package size, product link) with one preferred, and a dated price history in `ingredients/{id}/prices`. Stale prices are flagged after 60 days by default (per-item override).
+- **Log Prices**: shopping-trip entry by store; each typed price becomes a history entry and updates the source.
+- **Recipes**: lines entered as written (cups, tsp, sticks, oz, grams) and converted through the ingredient's factors; sub-recipes as components (Confetti Cake = White Cake + sprinkles); yield as batter weight, cups, or count; live batch cost, per-cup / per-cookie / per-100 g costs, and "prices as of" date. Paste-lines parser reads recipe text.
+- **Starter data**: `admin/costing-seed.json` built from Kristen's sheet "Recipes + Cost Break Down" (33 ingredients, 14 placeholder supplies, 14 recipes, 29 dated prices). Values the sheet was unsure about carry review flags shown on Costing Home. Loaded once from Costing Settings.
+- **Security**: `firestore.rules` now uses a named admin UID list (`isAdmin()`) instead of "any signed-in user", plus a limited `isPricebot()` identity for Phase 4. New collections locked to admins. Previous rules kept at `firestore.rules.backup-2026-09-06`.
+- **Next**: Phase 2 (products, cake configurator, pricing settings, saved estimates), Phase 3 (reports and alerts), Phase 4 (monthly price bot, receipts), Phase 5 (add to quote). See the Costing plan page.
+
 ## 📅 March 2026
 
 ### 🟢 Milestone 23: Finance Ledger & Order Auditing (COMPLETE) - Mar 18, 2026

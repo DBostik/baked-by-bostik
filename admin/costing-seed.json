@@ -1,0 +1,2652 @@
+{
+  "version": 1,
+  "generatedAt": "2026-09-06",
+  "sourceSheet": "Recipes + Cost Break Down (Google Sheet, read 2026-09-06)",
+  "settings": {
+    "staleDaysDefault": 60,
+    "stores": [
+      "Costco",
+      "Walmart",
+      "Amazon",
+      "Pete's Fresh Market",
+      "Tap"
+    ],
+    "wasteAllowancePct": 5
+  },
+  "ingredients": [
+    {
+      "id": "ap-flour",
+      "name": "All-purpose flour",
+      "kind": "ingredient",
+      "category": "Flour & leaveners",
+      "baseUnit": "g",
+      "gramsPerCup": 120,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "flour",
+        "all purpose flour",
+        "king arthur's all purpose flour",
+        "king arthur all-purpose flour",
+        "ap flour"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "costco-ka",
+          "brand": "King Arthur",
+          "store": "Costco",
+          "packageQty": 25,
+          "packageUnit": "lb",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": [
+            {
+              "price": 28.92,
+              "date": "2025-01-30",
+              "method": "import",
+              "note": "Worked back from $0.68 for 2.25 cups (1/16/25) and $0.62 for 2 cups (1/30/25): about $1.15 per lb. Bag size assumed 25 lb."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Confirm package size and price on the next shopping trip (size was not in the sheet; price is worked back from the per-recipe costs Kristen entered)."
+      ]
+    },
+    {
+      "id": "gf-flour",
+      "name": "Gluten-free flour",
+      "kind": "ingredient",
+      "category": "Flour & leaveners",
+      "baseUnit": "g",
+      "gramsPerCup": 120,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "gluten free flour",
+        "gluten-free flour blend"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "costco-ka-gf",
+          "brand": "King Arthur",
+          "store": "Costco",
+          "packageQty": 1,
+          "packageUnit": "lb",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "No price in the sheet. Enter the bag size and price when you next buy it."
+      ]
+    },
+    {
+      "id": "almond-flour",
+      "name": "Almond flour",
+      "kind": "ingredient",
+      "category": "Flour & leaveners",
+      "baseUnit": "g",
+      "gramsPerCup": 96,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "almond flour"
+      ],
+      "notes": "Contains tree nuts.",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "costco-kirkland",
+          "brand": "Kirkland",
+          "store": "Costco",
+          "packageQty": 3,
+          "packageUnit": "lb",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 11.99,
+              "date": "2025-01-30",
+              "method": "import",
+              "note": "From the ingredient list tab; the tab had no date, so this one is the sheet's era."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Price date was not in the sheet (entered as 1/30/25)."
+      ]
+    },
+    {
+      "id": "sugar",
+      "name": "Granulated sugar",
+      "kind": "ingredient",
+      "category": "Sugars",
+      "baseUnit": "g",
+      "gramsPerCup": 198,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "sugar",
+        "granulated sugar",
+        "white sugar",
+        "costco white sugar"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "costco-pioneer",
+          "brand": "Pioneer Sugar",
+          "store": "Costco",
+          "packageQty": 10,
+          "packageUnit": "lb",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": [
+            {
+              "price": 7.44,
+              "date": "2026-02-01",
+              "method": "import",
+              "note": "Worked back from $0.41 for 1.25 cups / 250 g (2/1/26): about $0.74 per lb. Bag size assumed 10 lb."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Confirm package size and price on the next shopping trip (size was not in the sheet; price is worked back from the per-recipe costs Kristen entered).",
+        "Sheet prices for sugar disagree with each other (from $0.63 to $1.15 per lb across tabs); the newest one was used."
+      ]
+    },
+    {
+      "id": "brown-sugar",
+      "name": "Brown sugar",
+      "kind": "ingredient",
+      "category": "Sugars",
+      "baseUnit": "g",
+      "gramsPerCup": 213,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "brown sugar",
+        "light brown sugar"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "walmart-gv",
+          "brand": "Great Value",
+          "store": "Walmart",
+          "packageQty": 2,
+          "packageUnit": "lb",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": [
+            {
+              "price": 2.18,
+              "date": "2026-02-01",
+              "method": "import",
+              "note": "Worked back from $0.60 for 1.25 cups / 250 g (2/1/26): about $1.09 per lb. Bag size assumed 2 lb."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Confirm package size and price on the next shopping trip (size was not in the sheet; price is worked back from the per-recipe costs Kristen entered)."
+      ]
+    },
+    {
+      "id": "powdered-sugar",
+      "name": "Powdered sugar",
+      "kind": "ingredient",
+      "category": "Sugars",
+      "baseUnit": "g",
+      "gramsPerCup": 113,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "powdered sugar",
+        "confectioners sugar",
+        "confectioners' sugar",
+        "icing sugar"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "costco-pioneer",
+          "brand": "Pioneer Sugar",
+          "store": "Costco",
+          "packageQty": 7,
+          "packageUnit": "lb",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 4.7,
+              "date": "2025-01-30",
+              "method": "import",
+              "note": "7 lb bag from the ingredient list tab. Price worked back from four recipes that agree with each other (about $0.67 per lb). The buttercream tab's $5.94 for 6 cups did not agree and was ignored."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Price worked back from recipe costs; confirm the 7 lb bag price."
+      ]
+    },
+    {
+      "id": "salt",
+      "name": "Salt",
+      "kind": "ingredient",
+      "category": "Flour & leaveners",
+      "baseUnit": "g",
+      "gramsPerCup": 288,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "salt",
+        "kosher salt",
+        "table salt"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "costco-kirkland",
+          "brand": "Kirkland",
+          "store": "Costco",
+          "packageQty": 30,
+          "packageUnit": "oz",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 2.99,
+              "date": "2025-01-30",
+              "method": "import",
+              "note": "30 oz container from the ingredient list tab; price not in the sheet, $2.99 is a placeholder."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Price is a placeholder; the sheet only had the container size."
+      ]
+    },
+    {
+      "id": "baking-powder",
+      "name": "Baking powder",
+      "kind": "ingredient",
+      "category": "Flour & leaveners",
+      "baseUnit": "g",
+      "gramsPerCup": 192,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "baking powder"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "walmart-gv",
+          "brand": "Great Value",
+          "store": "Walmart",
+          "packageQty": 8.1,
+          "packageUnit": "oz",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": [
+            {
+              "price": 2.01,
+              "date": "2025-01-30",
+              "method": "import",
+              "note": "Worked back from $0.07 for 2 tsp (1/30/25). The white cake tab's $0.32 for 2.25 tsp did not agree. Can size assumed 8.1 oz."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Confirm package size and price on the next shopping trip (size was not in the sheet; price is worked back from the per-recipe costs Kristen entered)."
+      ]
+    },
+    {
+      "id": "baking-soda",
+      "name": "Baking soda",
+      "kind": "ingredient",
+      "category": "Flour & leaveners",
+      "baseUnit": "g",
+      "gramsPerCup": 230,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "baking soda",
+        "bicarbonate of soda"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "walmart-ah",
+          "brand": "Arm & Hammer",
+          "store": "Walmart",
+          "packageQty": 1,
+          "packageUnit": "lb",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": [
+            {
+              "price": 1.32,
+              "date": "2025-01-30",
+              "method": "import",
+              "note": "Worked back from $0.02 for 1.5 tsp (1/30/25). Box size assumed 1 lb."
+            }
+          ]
+        },
+        {
+          "id": "costco-ah",
+          "brand": "Arm & Hammer",
+          "store": "Costco",
+          "packageQty": 13.5,
+          "packageUnit": "lb",
+          "productUrl": "",
+          "preferred": false,
+          "needsPackage": true,
+          "notes": "The cookie tab lists Arm & Hammer from Costco with $0.51 for 2 tsp, which does not agree with the Walmart figure.",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "Confirm package size and price on the next shopping trip (size was not in the sheet; price is worked back from the per-recipe costs Kristen entered).",
+        "Two stores listed in the sheet; Walmart set as preferred."
+      ]
+    },
+    {
+      "id": "cocoa",
+      "name": "Unsweetened cocoa powder",
+      "kind": "ingredient",
+      "category": "Chocolate",
+      "baseUnit": "g",
+      "gramsPerCup": 84,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "cocoa",
+        "cocoa powder",
+        "unsweetened cocoa powder",
+        "unsweetened cocoa"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "walmart-gv",
+          "brand": "Great Value",
+          "store": "Walmart",
+          "packageQty": 8,
+          "packageUnit": "oz",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": [
+            {
+              "price": 3.49,
+              "date": "2025-01-30",
+              "method": "import",
+              "note": "Worked back from $0.97 for 3/4 cup (the sheet said 3/4 tsp; the recipe is 3/4 cup). Container assumed 8 oz."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Confirm package size and price on the next shopping trip (size was not in the sheet; price is worked back from the per-recipe costs Kristen entered)."
+      ]
+    },
+    {
+      "id": "espresso-powder",
+      "name": "Instant espresso powder",
+      "kind": "ingredient",
+      "category": "Flavorings",
+      "baseUnit": "g",
+      "gramsPerCup": 110,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "espresso powder",
+        "instant coffee powder",
+        "instant coffee",
+        "instant espresso"
+      ],
+      "notes": "Nut-free friendly brand from the ganache tab: Medaglia D'Oro instant espresso.",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "walmart-medaglia",
+          "brand": "Medaglia D'Oro",
+          "store": "Walmart",
+          "packageQty": 2,
+          "packageUnit": "oz",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": [
+            {
+              "price": 3.98,
+              "date": "2025-01-30",
+              "method": "import",
+              "note": "Sheet had $0.16 (cake) and $0.06 (ganache) for 1 tsp, which disagree. $3.98 for a 2 oz jar is a placeholder."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Confirm package size and price on the next shopping trip (size was not in the sheet; price is worked back from the per-recipe costs Kristen entered)."
+      ]
+    },
+    {
+      "id": "meringue-powder",
+      "name": "Meringue powder",
+      "kind": "ingredient",
+      "category": "Flavorings",
+      "baseUnit": "g",
+      "gramsPerCup": 128,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "meringue powder",
+        "wilton meringue powder"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "walmart-wilton",
+          "brand": "Wilton",
+          "store": "Walmart",
+          "packageQty": 4,
+          "packageUnit": "oz",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": [
+            {
+              "price": 8.4,
+              "date": "2025-01-19",
+              "method": "import",
+              "note": "Worked back from $2.97 for 5 TBS (1/19/25). Container assumed 4 oz."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Confirm package size and price on the next shopping trip (size was not in the sheet; price is worked back from the per-recipe costs Kristen entered)."
+      ]
+    },
+    {
+      "id": "instant-pudding",
+      "name": "Instant vanilla pudding mix",
+      "kind": "ingredient",
+      "category": "Flavorings",
+      "baseUnit": "g",
+      "gramsPerCup": 150,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "jello instant vanilla pudding",
+        "instant vanilla pudding",
+        "vanilla instant pudding",
+        "instant pudding"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "petes-jello",
+          "brand": "Jell-O",
+          "store": "Pete's Fresh Market",
+          "packageQty": 3.4,
+          "packageUnit": "oz",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": [
+            {
+              "price": 1.17,
+              "date": "2025-01-30",
+              "method": "import",
+              "note": "Worked back from $0.11 for 1 TBS (1/30/25). Box assumed 3.4 oz."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Confirm package size and price on the next shopping trip (size was not in the sheet; price is worked back from the per-recipe costs Kristen entered)."
+      ]
+    },
+    {
+      "id": "sprinkles",
+      "name": "Rainbow sprinkles",
+      "kind": "ingredient",
+      "category": "Decor",
+      "baseUnit": "g",
+      "gramsPerCup": 180,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "sprinkles",
+        "rainbow sprinkles",
+        "great value rainbow sprinkles"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "walmart-gv",
+          "brand": "Great Value",
+          "store": "Walmart",
+          "packageQty": 10.5,
+          "packageUnit": "oz",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 2.58,
+              "date": "2025-01-30",
+              "method": "import",
+              "note": "10.5 oz container from the confetti tab. Price worked back from $0.39 for 1/4 cup."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Confirm the 10.5 oz container price."
+      ]
+    },
+    {
+      "id": "butter",
+      "name": "Unsalted butter",
+      "kind": "ingredient",
+      "category": "Dairy & eggs",
+      "baseUnit": "g",
+      "gramsPerCup": 227,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "butter",
+        "unsalted butter",
+        "kirkland unsalted butter"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "costco-kirkland",
+          "brand": "Kirkland",
+          "store": "Costco",
+          "packageQty": 4,
+          "packageUnit": "lb",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 23.59,
+              "date": "2026-02-01",
+              "method": "import",
+              "note": "Worked back from $4.42 for 3 sticks (2/1/26). Other tabs imply anywhere from $14 to $38 per 4 lb, so this needs a real price."
+            }
+          ]
+        },
+        {
+          "id": "amazon-butter",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 1,
+          "packageUnit": "lb",
+          "productUrl": "",
+          "preferred": false,
+          "needsPackage": true,
+          "notes": "Listed once in the sheet (buttercream tab) with no price.",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "TOP PRIORITY: the sheet's butter prices disagree wildly. Enter the real 4 lb price on the next Costco trip; every cake and frosting cost depends on it."
+      ]
+    },
+    {
+      "id": "heavy-cream",
+      "name": "Heavy whipping cream",
+      "kind": "ingredient",
+      "category": "Dairy & eggs",
+      "baseUnit": "ml",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": 1.0,
+      "aliases": [
+        "heavy cream",
+        "heavy whipping cream",
+        "whipping cream"
+      ],
+      "notes": "Nut-free friendly brand from the ganache tab: Dutch Farms.",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "petes-cream",
+          "brand": "",
+          "store": "Pete's Fresh Market",
+          "packageQty": 1,
+          "packageUnit": "quart",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": [
+            {
+              "price": 6.96,
+              "date": "2025-01-30",
+              "method": "import",
+              "note": "Worked back from $1.74 for 1 cup (1/30/25). Carton assumed 1 quart."
+            }
+          ]
+        },
+        {
+          "id": "walmart-cream",
+          "brand": "",
+          "store": "Walmart",
+          "packageQty": 1,
+          "packageUnit": "quart",
+          "productUrl": "",
+          "preferred": false,
+          "needsPackage": true,
+          "notes": "",
+          "prices": [
+            {
+              "price": 6.0,
+              "date": "2025-01-18",
+              "method": "import",
+              "note": "Worked back from $1.50 for 1 cup (1/18/25). Carton assumed 1 quart."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Confirm package size and price on the next shopping trip (size was not in the sheet; price is worked back from the per-recipe costs Kristen entered)."
+      ]
+    },
+    {
+      "id": "cream-cheese",
+      "name": "Cream cheese",
+      "kind": "ingredient",
+      "category": "Dairy & eggs",
+      "baseUnit": "g",
+      "gramsPerCup": 232,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "cream cheese"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "petes-cc",
+          "brand": "",
+          "store": "Pete's Fresh Market",
+          "packageQty": 8,
+          "packageUnit": "oz",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 1.99,
+              "date": "2025-01-30",
+              "method": "import",
+              "note": "8 oz at $1.99 from the cream cheese frosting tab."
+            }
+          ]
+        },
+        {
+          "id": "walmart-gv",
+          "brand": "Great Value",
+          "store": "Walmart",
+          "packageQty": 8,
+          "packageUnit": "oz",
+          "productUrl": "",
+          "preferred": false,
+          "needsPackage": false,
+          "notes": "From the ingredient list tab, no price.",
+          "prices": []
+        }
+      ],
+      "reviewFlags": []
+    },
+    {
+      "id": "eggs",
+      "name": "Eggs (large)",
+      "kind": "ingredient",
+      "category": "Dairy & eggs",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": 50,
+      "gramsPerMl": null,
+      "aliases": [
+        "eggs",
+        "egg",
+        "large eggs",
+        "egg whites",
+        "egg white",
+        "lg eggs"
+      ],
+      "notes": "Recipes that call for egg whites are costed as whole eggs (the yolk is not costed separately).",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "walmart-gv",
+          "brand": "Great Value",
+          "store": "Walmart",
+          "packageQty": 18,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": [
+            {
+              "price": 2.88,
+              "date": "2026-02-01",
+              "method": "import",
+              "note": "Worked back from $0.48 for 3 eggs (2/1/26). Carton assumed 18 count."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Confirm package size and price on the next shopping trip (size was not in the sheet; price is worked back from the per-recipe costs Kristen entered).",
+        "Older tabs had $0.53 for one egg and $0.18 for five egg whites; the newest figure was used."
+      ]
+    },
+    {
+      "id": "almond-milk",
+      "name": "Almond milk",
+      "kind": "ingredient",
+      "category": "Dairy & eggs",
+      "baseUnit": "ml",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": 1.03,
+      "aliases": [
+        "almond milk",
+        "unsweetened almond milk"
+      ],
+      "notes": "Contains tree nuts.",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "walmart-almond",
+          "brand": "Kirkland",
+          "store": "Walmart",
+          "packageQty": 64,
+          "packageUnit": "floz",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": [
+            {
+              "price": 2.84,
+              "date": "2025-01-30",
+              "method": "import",
+              "note": "Worked back from $0.36 for 1 cup. The sheet says brand Kirkland but store Walmart; one of those is off. Carton assumed 64 fl oz."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Confirm package size and price on the next shopping trip (size was not in the sheet; price is worked back from the per-recipe costs Kristen entered).",
+        "Brand (Kirkland) and store (Walmart) in the sheet do not match; fix whichever is wrong."
+      ]
+    },
+    {
+      "id": "vegetable-oil",
+      "name": "Vegetable oil",
+      "kind": "ingredient",
+      "category": "Fats & oils",
+      "baseUnit": "ml",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": 0.92,
+      "aliases": [
+        "vegetable oil",
+        "oil",
+        "canola oil",
+        "vegetable oil, or melted coconut oil"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "walmart-gv",
+          "brand": "Great Value",
+          "store": "Walmart",
+          "packageQty": 48,
+          "packageUnit": "floz",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": [
+            {
+              "price": 4.33,
+              "date": "2025-01-30",
+              "method": "import",
+              "note": "Worked back from $0.18 for 1/4 cup (white cake). The chocolate cake tab's $0.16 for 1/2 cup did not agree. Bottle assumed 48 fl oz."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Confirm package size and price on the next shopping trip (size was not in the sheet; price is worked back from the per-recipe costs Kristen entered)."
+      ]
+    },
+    {
+      "id": "water",
+      "name": "Water",
+      "kind": "ingredient",
+      "category": "Other",
+      "baseUnit": "ml",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": 1.0,
+      "aliases": [
+        "water",
+        "tap water"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "tap",
+          "brand": "",
+          "store": "Tap",
+          "packageQty": 1,
+          "packageUnit": "gallon",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 0,
+              "date": "2025-01-30",
+              "method": "import",
+              "note": "Tap water, costed at $0."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": []
+    },
+    {
+      "id": "clear-vanilla",
+      "name": "Clear vanilla extract",
+      "kind": "ingredient",
+      "category": "Flavorings",
+      "baseUnit": "ml",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": 0.88,
+      "aliases": [
+        "clear vanilla extract",
+        "clear vanilla",
+        "watkins clear vanilla extract",
+        "clear vanilla extract (watkins)",
+        "watkins vanilla extract",
+        "watkins vanila extract"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "amazon-watkins",
+          "brand": "Watkins",
+          "store": "Amazon",
+          "packageQty": 11,
+          "packageUnit": "floz",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 10.99,
+              "date": "2025-01-12",
+              "method": "import",
+              "note": "11 fl oz bottle at $10.99 from the ingredient list tab. Matches the white cake and buttercream tabs exactly."
+            }
+          ]
+        },
+        {
+          "id": "walmart-watkins",
+          "brand": "Watkins",
+          "store": "Walmart",
+          "packageQty": 2,
+          "packageUnit": "floz",
+          "productUrl": "",
+          "preferred": false,
+          "needsPackage": true,
+          "notes": "The sheet notes smaller bottles are available at Walmart; no price.",
+          "prices": []
+        }
+      ],
+      "reviewFlags": []
+    },
+    {
+      "id": "vanilla",
+      "name": "Vanilla extract",
+      "kind": "ingredient",
+      "category": "Flavorings",
+      "baseUnit": "ml",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": 0.88,
+      "aliases": [
+        "vanilla extract",
+        "vanilla",
+        "pure vanilla extract"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "costco-vanilla",
+          "brand": "Kirkland",
+          "store": "Costco",
+          "packageQty": 16,
+          "packageUnit": "floz",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 13.99,
+              "date": "2025-01-30",
+              "method": "import",
+              "note": "16 fl oz bottle at $13.99 from the ingredient list tab (brand listed as 'Kirkland?')."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Confirm the brand; the sheet had a question mark next to Kirkland."
+      ]
+    },
+    {
+      "id": "choc-chips",
+      "name": "Semisweet chocolate chips",
+      "kind": "ingredient",
+      "category": "Chocolate",
+      "baseUnit": "g",
+      "gramsPerCup": 170,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "chocolate chips",
+        "semisweet chocolate chips",
+        "semi-sweet chocolate chips",
+        "semisweet chocolate",
+        "chocolate chips (72 oz bag)",
+        "semisweet chocolate, chopped"
+      ],
+      "notes": "Nut-free friendly brands from the ganache tab: Nestle Toll House Allergen Free, Enjoy Life.",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "costco-nestle",
+          "brand": "Nestle Toll House",
+          "store": "Costco",
+          "packageQty": 72,
+          "packageUnit": "oz",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 16.99,
+              "date": "2026-02-01",
+              "method": "import",
+              "note": "72 oz bag. Worked back from $5.66 for 24 oz (2/1/26)."
+            }
+          ]
+        },
+        {
+          "id": "walmart-semisweet",
+          "brand": "",
+          "store": "Walmart",
+          "packageQty": 8,
+          "packageUnit": "oz",
+          "productUrl": "",
+          "preferred": false,
+          "needsPackage": false,
+          "notes": "The ganache tab lists 8 oz semisweet chocolate from Walmart at $1.99 (1/18/25).",
+          "prices": [
+            {
+              "price": 1.99,
+              "date": "2025-01-18",
+              "method": "import",
+              "note": "8 oz at $1.99 from the ganache tab."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": []
+    },
+    {
+      "id": "white-choc-chips",
+      "name": "White chocolate chips",
+      "kind": "ingredient",
+      "category": "Chocolate",
+      "baseUnit": "g",
+      "gramsPerCup": 170,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "white chocolate chips",
+        "white chocolate chips (11 oz bag)"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "walmart-gv",
+          "brand": "Great Value",
+          "store": "Walmart",
+          "packageQty": 11,
+          "packageUnit": "oz",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 2.23,
+              "date": "2026-03-23",
+              "method": "import",
+              "note": "11 oz bag. The sheet says $0.23 for 2 cups, which cannot be right (2 cups is more than the bag); $2.23 assumed."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Sheet price ($0.23 for 2 cups) looks like a typo; confirm the 11 oz bag price."
+      ]
+    },
+    {
+      "id": "toffee-bits",
+      "name": "Toffee bits",
+      "kind": "ingredient",
+      "category": "Chocolate",
+      "baseUnit": "g",
+      "gramsPerCup": 160,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "toffee bits",
+        "heath toffee bits",
+        "toffee bits (8 oz bag)"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "walmart-heath",
+          "brand": "Heath",
+          "store": "Walmart",
+          "packageQty": 8,
+          "packageUnit": "oz",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 3.98,
+              "date": "2026-03-23",
+              "method": "import",
+              "note": "8 oz bag. The sheet's $2.31 for 1/2 cup would make the bag about $6.50, which seems high; $3.98 is a placeholder."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Confirm the 8 oz bag price; the sheet figure looked high."
+      ]
+    },
+    {
+      "id": "strawberries",
+      "name": "Strawberries",
+      "kind": "ingredient",
+      "category": "Produce",
+      "baseUnit": "g",
+      "gramsPerCup": 150,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "strawberries",
+        "fresh strawberries"
+      ],
+      "notes": "",
+      "staleDays": 30,
+      "sources": [
+        {
+          "id": "petes-berries",
+          "brand": "",
+          "store": "Pete's Fresh Market",
+          "packageQty": 1,
+          "packageUnit": "lb",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": false,
+          "notes": "",
+          "prices": [
+            {
+              "price": 3.37,
+              "date": "2025-01-30",
+              "method": "import",
+              "note": "The coulis tab says 14 oz for $2.95 (no date); entered per lb."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Price date was not in the sheet."
+      ]
+    },
+    {
+      "id": "lemon-juice",
+      "name": "Lemon juice",
+      "kind": "ingredient",
+      "category": "Produce",
+      "baseUnit": "ml",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": 1.03,
+      "aliases": [
+        "lemon juice",
+        "fresh lemon juice"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "walmart-lemon",
+          "brand": "",
+          "store": "Walmart",
+          "packageQty": 32,
+          "packageUnit": "floz",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": [
+            {
+              "price": 2.56,
+              "date": "2025-01-30",
+              "method": "import",
+              "note": "Worked back from $0.04 for 1 TBS. Bottle assumed 32 fl oz."
+            }
+          ]
+        }
+      ],
+      "reviewFlags": [
+        "Confirm package size and price on the next shopping trip (size was not in the sheet; price is worked back from the per-recipe costs Kristen entered)."
+      ]
+    },
+    {
+      "id": "lemons",
+      "name": "Lemons",
+      "kind": "ingredient",
+      "category": "Produce",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": 100,
+      "gramsPerMl": null,
+      "aliases": [
+        "lemon",
+        "lemons",
+        "lemon zest"
+      ],
+      "notes": "",
+      "staleDays": 30,
+      "sources": [
+        {
+          "id": "lemons-any",
+          "brand": "",
+          "store": "Walmart",
+          "packageQty": 1,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "Needed for the lemon cupcakes; no price in the sheet."
+      ]
+    },
+    {
+      "id": "milk",
+      "name": "Milk",
+      "kind": "ingredient",
+      "category": "Dairy & eggs",
+      "baseUnit": "ml",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": 1.03,
+      "aliases": [
+        "milk",
+        "whole milk",
+        "buttermilk"
+      ],
+      "notes": "",
+      "staleDays": 30,
+      "sources": [
+        {
+          "id": "milk-any",
+          "brand": "",
+          "store": "Walmart",
+          "packageQty": 1,
+          "packageUnit": "gallon",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "Needed for the lemon cupcakes; no price in the sheet."
+      ]
+    },
+    {
+      "id": "canned-pumpkin",
+      "name": "Canned pumpkin",
+      "kind": "ingredient",
+      "category": "Other",
+      "baseUnit": "g",
+      "gramsPerCup": 245,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "pumpkin puree",
+        "canned pumpkin",
+        "pumpkin"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "pumpkin-any",
+          "brand": "",
+          "store": "Walmart",
+          "packageQty": 15,
+          "packageUnit": "oz",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "Needed for the pumpkin cookies; no price in the sheet."
+      ]
+    },
+    {
+      "id": "spices",
+      "name": "Pumpkin pie spices (cinnamon, nutmeg, cloves)",
+      "kind": "ingredient",
+      "category": "Flavorings",
+      "baseUnit": "g",
+      "gramsPerCup": 130,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [
+        "cinnamon",
+        "nutmeg",
+        "ground cloves",
+        "pumpkin pie spice",
+        "ground cinnamon",
+        "ground nutmeg"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "spices-any",
+          "brand": "",
+          "store": "Walmart",
+          "packageQty": 2,
+          "packageUnit": "oz",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "Needed for the pumpkin cookies; no price in the sheet. Split into separate spices if you want them costed individually."
+      ]
+    },
+    {
+      "id": "lemon-extract",
+      "name": "Lemon extract",
+      "kind": "ingredient",
+      "category": "Flavorings",
+      "baseUnit": "ml",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": 0.88,
+      "aliases": [
+        "lemon extract"
+      ],
+      "notes": "",
+      "staleDays": null,
+      "sources": [
+        {
+          "id": "lemon-extract-any",
+          "brand": "",
+          "store": "Walmart",
+          "packageQty": 2,
+          "packageUnit": "floz",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "From the note on the lemon cupcakes ('a little lemon extract'); no price in the sheet."
+      ]
+    },
+    {
+      "id": "board-6",
+      "name": "Cake board, 6 inch",
+      "kind": "supply",
+      "category": "Boards & drums",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "supply-any",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 1,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "Placeholder supply for Phase 2. Enter the pack size and price."
+      ]
+    },
+    {
+      "id": "board-8",
+      "name": "Cake board, 8 inch",
+      "kind": "supply",
+      "category": "Boards & drums",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "supply-any",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 1,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "Placeholder supply for Phase 2. Enter the pack size and price."
+      ]
+    },
+    {
+      "id": "board-10",
+      "name": "Cake board, 10 inch",
+      "kind": "supply",
+      "category": "Boards & drums",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "supply-any",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 1,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "Placeholder supply for Phase 2. Enter the pack size and price."
+      ]
+    },
+    {
+      "id": "board-12",
+      "name": "Cake board, 12 inch",
+      "kind": "supply",
+      "category": "Boards & drums",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "supply-any",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 1,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "Placeholder supply for Phase 2. Enter the pack size and price."
+      ]
+    },
+    {
+      "id": "box-8",
+      "name": "Cake box, 8x8x5",
+      "kind": "supply",
+      "category": "Boxes & bags",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "supply-any",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 1,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "Placeholder supply for Phase 2. Enter the pack size and price."
+      ]
+    },
+    {
+      "id": "box-10",
+      "name": "Cake box, 10x10x5",
+      "kind": "supply",
+      "category": "Boxes & bags",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "supply-any",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 1,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "Placeholder supply for Phase 2. Enter the pack size and price."
+      ]
+    },
+    {
+      "id": "box-12",
+      "name": "Cake box, 12x12x6",
+      "kind": "supply",
+      "category": "Boxes & bags",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "supply-any",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 1,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "Placeholder supply for Phase 2. Enter the pack size and price."
+      ]
+    },
+    {
+      "id": "box-14",
+      "name": "Cake box, 14x14x6",
+      "kind": "supply",
+      "category": "Boxes & bags",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "supply-any",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 1,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "Placeholder supply for Phase 2. Enter the pack size and price."
+      ]
+    },
+    {
+      "id": "cupcake-liners",
+      "name": "Cupcake liners",
+      "kind": "supply",
+      "category": "Boxes & bags",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "supply-any",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 1,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "Placeholder supply for Phase 2. Enter the pack size and price."
+      ]
+    },
+    {
+      "id": "cupcake-box-12",
+      "name": "Cupcake box, 12 count",
+      "kind": "supply",
+      "category": "Boxes & bags",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "supply-any",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 1,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "Placeholder supply for Phase 2. Enter the pack size and price."
+      ]
+    },
+    {
+      "id": "cookie-bags",
+      "name": "Cookie bags",
+      "kind": "supply",
+      "category": "Boxes & bags",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "supply-any",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 1,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "Placeholder supply for Phase 2. Enter the pack size and price."
+      ]
+    },
+    {
+      "id": "cookie-box",
+      "name": "Cookie box",
+      "kind": "supply",
+      "category": "Boxes & bags",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "supply-any",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 1,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "Placeholder supply for Phase 2. Enter the pack size and price."
+      ]
+    },
+    {
+      "id": "dowels",
+      "name": "Dowels",
+      "kind": "supply",
+      "category": "Boards & drums",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "supply-any",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 1,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "Placeholder supply for Phase 2. Enter the pack size and price."
+      ]
+    },
+    {
+      "id": "cake-drum-12",
+      "name": "Cake drum, 12 inch",
+      "kind": "supply",
+      "category": "Boards & drums",
+      "baseUnit": "each",
+      "gramsPerCup": null,
+      "gramsPerEach": null,
+      "gramsPerMl": null,
+      "aliases": [],
+      "notes": "",
+      "staleDays": 180,
+      "sources": [
+        {
+          "id": "supply-any",
+          "brand": "",
+          "store": "Amazon",
+          "packageQty": 1,
+          "packageUnit": "each",
+          "productUrl": "",
+          "preferred": true,
+          "needsPackage": true,
+          "notes": "",
+          "prices": []
+        }
+      ],
+      "reviewFlags": [
+        "Placeholder supply for Phase 2. Enter the pack size and price."
+      ]
+    }
+  ],
+  "recipes": [
+    {
+      "id": "white-cake",
+      "name": "White Cake",
+      "category": "cake",
+      "creator": "Liv For Cake (Olivia Bogacki)",
+      "sourceUrl": "https://livforcake.com/white-cake-recipe/",
+      "notes": "",
+      "yield": {
+        "type": "batter",
+        "label": "Two 8-inch rounds (12 servings)"
+      },
+      "lines": [
+        {
+          "text": "2.25 cups King Arthur all-purpose flour",
+          "qty": 2.25,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "ap-flour"
+        },
+        {
+          "text": "2.25 tsp baking powder",
+          "qty": 2.25,
+          "unit": "tsp",
+          "note": "",
+          "ingredientId": "baking-powder"
+        },
+        {
+          "text": "0.75 tsp salt",
+          "qty": 0.75,
+          "unit": "tsp",
+          "note": "",
+          "ingredientId": "salt"
+        },
+        {
+          "text": "0.5 cup unsalted butter",
+          "qty": 0.5,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "butter"
+        },
+        {
+          "text": "1.5 cups granulated sugar",
+          "qty": 1.5,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "sugar"
+        },
+        {
+          "text": "0.25 cup vegetable oil",
+          "qty": 0.25,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "vegetable-oil"
+        },
+        {
+          "text": "5 egg whites",
+          "qty": 5,
+          "unit": "each",
+          "note": "Egg whites only; costed as whole eggs.",
+          "ingredientId": "eggs"
+        },
+        {
+          "text": "1.5 tsp clear vanilla extract",
+          "qty": 1.5,
+          "unit": "tsp",
+          "note": "",
+          "ingredientId": "clear-vanilla"
+        },
+        {
+          "text": "1 cup almond milk",
+          "qty": 1,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "almond-milk"
+        }
+      ],
+      "reviewFlags": []
+    },
+    {
+      "id": "chocolate-cake",
+      "name": "Chocolate Cake",
+      "category": "cake",
+      "creator": "Add A Pinch (Robyn Stone)",
+      "sourceUrl": "https://addapinch.com/the-best-chocolate-cake-recipe-ever/",
+      "notes": "",
+      "yield": {
+        "type": "batter",
+        "label": "Two 9-inch rounds (24 servings)"
+      },
+      "lines": [
+        {
+          "text": "2 cups (240 g) all-purpose flour",
+          "qty": 240,
+          "unit": "g",
+          "note": "",
+          "ingredientId": "ap-flour"
+        },
+        {
+          "text": "2 cups (396 g) sugar",
+          "qty": 396,
+          "unit": "g",
+          "note": "",
+          "ingredientId": "sugar"
+        },
+        {
+          "text": "3/4 cup (63 g) unsweetened cocoa powder",
+          "qty": 63,
+          "unit": "g",
+          "note": "The cost tab said 3/4 tsp; the recipe is 3/4 cup.",
+          "ingredientId": "cocoa"
+        },
+        {
+          "text": "2 tsp (8 g) baking powder",
+          "qty": 8,
+          "unit": "g",
+          "note": "",
+          "ingredientId": "baking-powder"
+        },
+        {
+          "text": "1.5 tsp (9 g) baking soda",
+          "qty": 9,
+          "unit": "g",
+          "note": "",
+          "ingredientId": "baking-soda"
+        },
+        {
+          "text": "1 tsp (2.8 g) salt",
+          "qty": 2.8,
+          "unit": "g",
+          "note": "",
+          "ingredientId": "salt"
+        },
+        {
+          "text": "1 tsp (2.3 g) espresso powder",
+          "qty": 2.3,
+          "unit": "g",
+          "note": "",
+          "ingredientId": "espresso-powder"
+        },
+        {
+          "text": "1 cup (227 g) almond milk",
+          "qty": 1,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "almond-milk"
+        },
+        {
+          "text": "1/2 cup (99 g) vegetable oil",
+          "qty": 0.5,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "vegetable-oil"
+        },
+        {
+          "text": "2 large eggs",
+          "qty": 2,
+          "unit": "each",
+          "note": "",
+          "ingredientId": "eggs"
+        },
+        {
+          "text": "2 tsp (9.4 g) vanilla extract",
+          "qty": 2,
+          "unit": "tsp",
+          "note": "The cost tab said 1 cup; the recipe is 2 tsp.",
+          "ingredientId": "vanilla"
+        },
+        {
+          "text": "1 cup (227 g) water",
+          "qty": 1,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "water"
+        }
+      ],
+      "reviewFlags": [
+        "Quantities taken from the newer chocolate cake tab (with grams). Two lines in the older cost tab were off (cocoa, vanilla) and were corrected; confirm."
+      ]
+    },
+    {
+      "id": "confetti-cake",
+      "name": "Confetti Cake",
+      "category": "cake",
+      "creator": "Liv For Cake (Olivia Bogacki)",
+      "sourceUrl": "https://livforcake.com/white-cake-recipe/",
+      "notes": "White cake plus 1/4 cup sprinkles.",
+      "yield": {
+        "type": "batter",
+        "label": "Two 8-inch rounds (12 servings)"
+      },
+      "lines": [
+        {
+          "text": "1 batch White Cake",
+          "qty": 1,
+          "unit": "batch",
+          "note": "",
+          "recipeId": "white-cake"
+        },
+        {
+          "text": "0.25 cup Great Value rainbow sprinkles",
+          "qty": 0.25,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "sprinkles"
+        }
+      ],
+      "reviewFlags": []
+    },
+    {
+      "id": "vanilla-buttercream",
+      "name": "Vanilla American Buttercream",
+      "category": "frosting",
+      "creator": "Liv For Cake (Olivia Bogacki)",
+      "sourceUrl": "https://livforcake.com/simple-vanilla-buttercream/",
+      "notes": "",
+      "yield": {
+        "type": "volume",
+        "value": 5,
+        "unit": "cup",
+        "label": "5 cups"
+      },
+      "lines": [
+        {
+          "text": "2 cups unsalted butter",
+          "qty": 2,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "butter"
+        },
+        {
+          "text": "2 tsp clear vanilla extract (Watkins)",
+          "qty": 2,
+          "unit": "tsp",
+          "note": "",
+          "ingredientId": "clear-vanilla"
+        },
+        {
+          "text": "4 TBS heavy whipping cream",
+          "qty": 4,
+          "unit": "tbsp",
+          "note": "",
+          "ingredientId": "heavy-cream"
+        },
+        {
+          "text": "6 cups powdered sugar",
+          "qty": 6,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "powdered-sugar"
+        }
+      ],
+      "reviewFlags": []
+    },
+    {
+      "id": "ganache",
+      "name": "Chocolate Ganache",
+      "category": "frosting",
+      "creator": "That Skinny Chick Can Bake (Liz Berg)",
+      "sourceUrl": "https://www.thatskinnychickcanbake.com/chocolate-fudge-layer-cake-sundaysupper/",
+      "notes": "Do not use the chocolate buttercream recipe from the same page. Nut-free friendly brands: Dutch Farms cream, Kirkland butter, Costco white sugar, Nestle Toll House Allergen Free or Enjoy Life chocolate, Medaglia D'Oro espresso powder.",
+      "yield": {
+        "type": "volume",
+        "value": 2,
+        "unit": "cup",
+        "label": "About 2 cups"
+      },
+      "lines": [
+        {
+          "text": "1 cup heavy cream",
+          "qty": 1,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "heavy-cream"
+        },
+        {
+          "text": "2 tablespoons butter",
+          "qty": 2,
+          "unit": "tbsp",
+          "note": "",
+          "ingredientId": "butter"
+        },
+        {
+          "text": "2 tablespoons sugar",
+          "qty": 2,
+          "unit": "tbsp",
+          "note": "",
+          "ingredientId": "sugar"
+        },
+        {
+          "text": "8 ounces semisweet chocolate, chopped",
+          "qty": 8,
+          "unit": "oz",
+          "note": "",
+          "ingredientId": "choc-chips"
+        },
+        {
+          "text": "1 teaspoon instant coffee powder",
+          "qty": 1,
+          "unit": "tsp",
+          "note": "",
+          "ingredientId": "espresso-powder"
+        }
+      ],
+      "reviewFlags": [
+        "Yield (about 2 cups) is an estimate from the ingredient weights; the sheet had none."
+      ]
+    },
+    {
+      "id": "cream-cheese-frosting",
+      "name": "Cream Cheese Frosting",
+      "category": "frosting",
+      "creator": "Family recipe (Frosted Banana Bar recipe from Mom)",
+      "sourceUrl": "",
+      "notes": "",
+      "yield": {
+        "type": "volume",
+        "value": 3,
+        "unit": "cup",
+        "label": "About 3 cups"
+      },
+      "lines": [
+        {
+          "text": "8 oz cream cheese",
+          "qty": 8,
+          "unit": "oz",
+          "note": "",
+          "ingredientId": "cream-cheese"
+        },
+        {
+          "text": "0.5 cup unsalted butter",
+          "qty": 0.5,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "butter"
+        },
+        {
+          "text": "2 tsp Watkins vanilla extract",
+          "qty": 2,
+          "unit": "tsp",
+          "note": "",
+          "ingredientId": "clear-vanilla"
+        },
+        {
+          "text": "4 cups powdered sugar",
+          "qty": 4,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "powdered-sugar"
+        }
+      ],
+      "reviewFlags": [
+        "Yield (about 3 cups) is an estimate; the sheet had none."
+      ]
+    },
+    {
+      "id": "royal-icing",
+      "name": "Royal Icing",
+      "category": "frosting",
+      "creator": "",
+      "sourceUrl": "",
+      "notes": "",
+      "yield": {
+        "type": "volume",
+        "value": 3,
+        "unit": "cup",
+        "label": "About 3 cups"
+      },
+      "lines": [
+        {
+          "text": "5 TBS Wilton meringue powder",
+          "qty": 5,
+          "unit": "tbsp",
+          "note": "",
+          "ingredientId": "meringue-powder"
+        },
+        {
+          "text": "4.5 cups powdered sugar",
+          "qty": 4.5,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "powdered-sugar"
+        },
+        {
+          "text": "0.25 cup water",
+          "qty": 0.25,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "water"
+        }
+      ],
+      "reviewFlags": [
+        "Yield (about 3 cups) is an estimate; the sheet had none."
+      ]
+    },
+    {
+      "id": "stabilized-whipped-cream",
+      "name": "Stabilized Whipped Cream",
+      "category": "frosting",
+      "creator": "Epicuricloud (Tina Verrelli)",
+      "sourceUrl": "https://www.epicuricloud.com/recipe/make-ahead-whipped-cream-stabilized/",
+      "notes": "",
+      "yield": {
+        "type": "volume",
+        "value": 2,
+        "unit": "cup",
+        "label": "2 cups"
+      },
+      "lines": [
+        {
+          "text": "1 cup heavy whipping cream",
+          "qty": 1,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "heavy-cream"
+        },
+        {
+          "text": "1 TBS Jell-O instant vanilla pudding",
+          "qty": 1,
+          "unit": "tbsp",
+          "note": "",
+          "ingredientId": "instant-pudding"
+        },
+        {
+          "text": "3 TBS powdered sugar",
+          "qty": 3,
+          "unit": "tbsp",
+          "note": "",
+          "ingredientId": "powdered-sugar"
+        },
+        {
+          "text": "0.25 tsp Watkins clear vanilla extract",
+          "qty": 0.25,
+          "unit": "tsp",
+          "note": "",
+          "ingredientId": "clear-vanilla"
+        }
+      ],
+      "reviewFlags": []
+    },
+    {
+      "id": "strawberry-coulis",
+      "name": "Strawberry Coulis",
+      "category": "filling",
+      "creator": "End of The Fork",
+      "sourceUrl": "https://www.endofthefork.com/easy-strawberry-coulis/",
+      "notes": "",
+      "yield": {
+        "type": "volume",
+        "value": 1.75,
+        "unit": "cup",
+        "label": "1.5 to 2 cups (6 servings)"
+      },
+      "lines": [
+        {
+          "text": "14 oz strawberries",
+          "qty": 14,
+          "unit": "oz",
+          "note": "",
+          "ingredientId": "strawberries"
+        },
+        {
+          "text": "1/2 cup white sugar",
+          "qty": 0.5,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "sugar"
+        },
+        {
+          "text": "1 TBS lemon juice",
+          "qty": 1,
+          "unit": "tbsp",
+          "note": "",
+          "ingredientId": "lemon-juice"
+        }
+      ],
+      "reviewFlags": []
+    },
+    {
+      "id": "sugar-cookie",
+      "name": "Standard Sugar Cookie",
+      "category": "cookie",
+      "creator": "Sweet Sugarbelle (modified)",
+      "sourceUrl": "https://www.sweetsugarbelle.com/2011/06/basic-sugar-cookie-recipe-2/",
+      "notes": "",
+      "yield": {
+        "type": "count",
+        "value": 24,
+        "unit": "cookie",
+        "label": "About 24 cookies (confirm)"
+      },
+      "lines": [
+        {
+          "text": "1 cup unsalted butter",
+          "qty": 1,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "butter"
+        },
+        {
+          "text": "1.5 cups powdered sugar",
+          "qty": 1.5,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "powdered-sugar"
+        },
+        {
+          "text": "1 egg",
+          "qty": 1,
+          "unit": "each",
+          "note": "",
+          "ingredientId": "eggs"
+        },
+        {
+          "text": "3 tsp / 1 TBS vanilla extract",
+          "qty": 1,
+          "unit": "tbsp",
+          "note": "",
+          "ingredientId": "vanilla"
+        },
+        {
+          "text": "2.5 to 2.75 cups King Arthur all-purpose flour",
+          "qty": 2.625,
+          "unit": "cup",
+          "note": "Midpoint of the 2.5 to 2.75 cup range.",
+          "ingredientId": "ap-flour"
+        },
+        {
+          "text": "1 tsp salt",
+          "qty": 1,
+          "unit": "tsp",
+          "note": "",
+          "ingredientId": "salt"
+        }
+      ],
+      "reviewFlags": [
+        "Batch yield (number of cookies) was not in the sheet; 24 is a placeholder. It depends on cutter size, so enter what a typical batch gives you.",
+        "The cost tab had flour at $0.01 and salt at $0.31; those looked swapped and are now computed from package prices."
+      ]
+    },
+    {
+      "id": "pumpkin-cookie",
+      "name": "Pumpkin Cookie with Cream Cheese Frosting",
+      "category": "cookie",
+      "creator": "Ali Martin of Gimme Some Oven",
+      "sourceUrl": "https://www.gimmesomeoven.com/iced-pumpkin-cookies/",
+      "notes": "",
+      "yield": {
+        "type": "count",
+        "value": 36,
+        "unit": "cookie",
+        "label": "About 36 cookies"
+      },
+      "lines": [
+        {
+          "text": "1 batch Cream Cheese Frosting",
+          "qty": 1,
+          "unit": "batch",
+          "note": "Amount of frosting per batch of cookies is a guess; adjust.",
+          "recipeId": "cream-cheese-frosting"
+        }
+      ],
+      "reviewFlags": [
+        "The sheet only linked to this recipe. Add the cookie ingredient lines from the linked page (paste them into the recipe editor), and adjust how much cream cheese frosting a batch uses."
+      ]
+    },
+    {
+      "id": "choc-chip-cookie",
+      "name": "Soft & Chewy Chocolate Chip Cookies",
+      "category": "cookie",
+      "creator": "Linda Loro (family recipe)",
+      "sourceUrl": "",
+      "notes": "",
+      "yield": {
+        "type": "count",
+        "value": 73,
+        "unit": "cookie",
+        "label": "73 cookies with a #60 scoop",
+        "scoopTable": [
+          {
+            "scoop": "100 (XS)",
+            "count": 122,
+            "estimated": true
+          },
+          {
+            "scoop": "60 (S)",
+            "count": 73,
+            "estimated": false
+          },
+          {
+            "scoop": "50 (M)",
+            "count": 61,
+            "estimated": true
+          },
+          {
+            "scoop": "40 (L)",
+            "count": 44,
+            "estimated": false
+          },
+          {
+            "scoop": "20 (XL)",
+            "count": 24,
+            "estimated": true
+          }
+        ]
+      },
+      "lines": [
+        {
+          "text": "1.25 cups (250 g) sugar",
+          "qty": 250,
+          "unit": "g",
+          "note": "",
+          "ingredientId": "sugar"
+        },
+        {
+          "text": "1.25 cups (250 g) brown sugar",
+          "qty": 250,
+          "unit": "g",
+          "note": "",
+          "ingredientId": "brown-sugar"
+        },
+        {
+          "text": "1.5 cups (3 sticks) butter",
+          "qty": 3,
+          "unit": "stick",
+          "note": "",
+          "ingredientId": "butter"
+        },
+        {
+          "text": "2 tsp vanilla extract",
+          "qty": 2,
+          "unit": "tsp",
+          "note": "",
+          "ingredientId": "vanilla"
+        },
+        {
+          "text": "3 eggs",
+          "qty": 3,
+          "unit": "each",
+          "note": "",
+          "ingredientId": "eggs"
+        },
+        {
+          "text": "4.25 cups (510 g) flour",
+          "qty": 510,
+          "unit": "g",
+          "note": "",
+          "ingredientId": "ap-flour"
+        },
+        {
+          "text": "2 tsp baking soda",
+          "qty": 2,
+          "unit": "tsp",
+          "note": "",
+          "ingredientId": "baking-soda"
+        },
+        {
+          "text": "0.5 tsp salt",
+          "qty": 0.5,
+          "unit": "tsp",
+          "note": "",
+          "ingredientId": "salt"
+        },
+        {
+          "text": "3 cups (24 oz) chocolate chips",
+          "qty": 24,
+          "unit": "oz",
+          "note": "",
+          "ingredientId": "choc-chips"
+        }
+      ],
+      "reviewFlags": [
+        "The sheet has three versions of this recipe (Jan 2025, Feb 2026 with 3 cups of chips, and a toffee variant). The Feb 2026 version is used here.",
+        "Scoop table: 73 (#60) and 44 (#40) are from the sheet; the other counts are estimated from scoop size, so correct them when you count a batch."
+      ]
+    },
+    {
+      "id": "choc-chip-cookie-toffee",
+      "name": "Chocolate Chip Cookies, White Chocolate Toffee",
+      "category": "cookie",
+      "creator": "Linda Loro (family recipe), variant",
+      "sourceUrl": "",
+      "notes": "",
+      "yield": {
+        "type": "count",
+        "value": 73,
+        "unit": "cookie",
+        "label": "73 cookies with a #60 scoop",
+        "scoopTable": [
+          {
+            "scoop": "100 (XS)",
+            "count": 122,
+            "estimated": true
+          },
+          {
+            "scoop": "60 (S)",
+            "count": 73,
+            "estimated": false
+          },
+          {
+            "scoop": "50 (M)",
+            "count": 61,
+            "estimated": true
+          },
+          {
+            "scoop": "40 (L)",
+            "count": 44,
+            "estimated": false
+          },
+          {
+            "scoop": "20 (XL)",
+            "count": 24,
+            "estimated": true
+          }
+        ]
+      },
+      "lines": [
+        {
+          "text": "1.25 cups (250 g) sugar",
+          "qty": 250,
+          "unit": "g",
+          "note": "",
+          "ingredientId": "sugar"
+        },
+        {
+          "text": "1.25 cups (250 g) brown sugar",
+          "qty": 250,
+          "unit": "g",
+          "note": "",
+          "ingredientId": "brown-sugar"
+        },
+        {
+          "text": "1.5 cups (3 sticks) butter",
+          "qty": 3,
+          "unit": "stick",
+          "note": "",
+          "ingredientId": "butter"
+        },
+        {
+          "text": "2 tsp vanilla extract",
+          "qty": 2,
+          "unit": "tsp",
+          "note": "",
+          "ingredientId": "vanilla"
+        },
+        {
+          "text": "3 eggs",
+          "qty": 3,
+          "unit": "each",
+          "note": "",
+          "ingredientId": "eggs"
+        },
+        {
+          "text": "4.25 cups (510 g) flour",
+          "qty": 510,
+          "unit": "g",
+          "note": "",
+          "ingredientId": "ap-flour"
+        },
+        {
+          "text": "2 tsp baking soda",
+          "qty": 2,
+          "unit": "tsp",
+          "note": "",
+          "ingredientId": "baking-soda"
+        },
+        {
+          "text": "0.5 tsp salt",
+          "qty": 0.5,
+          "unit": "tsp",
+          "note": "",
+          "ingredientId": "salt"
+        },
+        {
+          "text": "1 cup chocolate chips",
+          "qty": 1,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "choc-chips"
+        },
+        {
+          "text": "2 cups white chocolate chips",
+          "qty": 2,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "white-choc-chips"
+        },
+        {
+          "text": "0.5 cup toffee bits",
+          "qty": 0.5,
+          "unit": "cup",
+          "note": "",
+          "ingredientId": "toffee-bits"
+        }
+      ],
+      "reviewFlags": [
+        "Variant from the sheet dated 3/23/2026. Yield assumed the same as the base recipe."
+      ]
+    },
+    {
+      "id": "lemon-cupcakes",
+      "name": "Lemon Cupcakes",
+      "category": "cupcake",
+      "creator": "Preppy Kitchen (John Kanell)",
+      "sourceUrl": "https://preppykitchen.com/lemon-cupcakes/",
+      "notes": "Kristen's note: add more zest and a little lemon extract.",
+      "yield": {
+        "type": "count",
+        "value": 12,
+        "unit": "cupcake",
+        "label": "12 cupcakes"
+      },
+      "lines": [],
+      "reviewFlags": [
+        "The sheet only linked to this recipe. Paste the ingredient lines from the linked page into the recipe editor (it reads lines like '1 1/2 cups all-purpose flour' on its own)."
+      ]
+    }
+  ]
+}

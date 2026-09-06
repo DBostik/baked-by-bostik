@@ -9,6 +9,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="/admin/admin.css?v=3">
+    <link rel="stylesheet" href="/admin/costing.css?v=1">
     <!-- Chart.js via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Using similar color scheme as public site if possible, but keeping it clean admin style -->
@@ -148,7 +149,49 @@
                             🍎 Seasonal Orders <span id="seasonal-badge" class="seasonal-badge"></span>
                         </a>
                     </li>
-                    <!-- Future: Settings -->
+                    <!-- COSTING (Milestone 24) -->
+                    <li class="nav-group-label">Costing</li>
+                    <li>
+                        <a href="#" data-page="costing-home">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:0.75rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                            </svg>
+                            Costing Home
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-page="costing-ingredients">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:0.75rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+                            </svg>
+                            Ingredients
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-page="costing-log">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:0.75rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            Log Prices
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-page="costing-recipes">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:0.75rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                            Recipes
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-page="costing-settings">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:0.75rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Costing Settings
+                        </a>
+                    </li>
 
                 </ul>
                 <div class="user-info">
@@ -702,6 +745,38 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- COSTING PAGES (Milestone 24). Rendered by /admin/costing.js -->
+                <div id="page-costing-home" class="page-section costing-page hidden">
+                    <header class="page-header">
+                        <h1>Costing Home</h1>
+                    </header>
+                    <div class="costing-body"></div>
+                </div>
+                <div id="page-costing-ingredients" class="page-section costing-page hidden">
+                    <header class="page-header">
+                        <h1>Ingredients &amp; Supplies</h1>
+                    </header>
+                    <div class="costing-body"></div>
+                </div>
+                <div id="page-costing-log" class="page-section costing-page hidden">
+                    <header class="page-header">
+                        <h1>Log Prices</h1>
+                    </header>
+                    <div class="costing-body"></div>
+                </div>
+                <div id="page-costing-recipes" class="page-section costing-page hidden">
+                    <header class="page-header">
+                        <h1>Recipes</h1>
+                    </header>
+                    <div class="costing-body"></div>
+                </div>
+                <div id="page-costing-settings" class="page-section costing-page hidden">
+                    <header class="page-header">
+                        <h1>Costing Settings</h1>
+                    </header>
+                    <div class="costing-body"></div>
+                </div>
             </main>
 
         </div>
@@ -1238,6 +1313,8 @@
     <!-- SortableJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script type="module" src="/admin/admin.js?v=2"></script>
+    <!-- Costing module (Milestone 24) -->
+    <script type="module" src="/admin/costing.js?v=1"></script>
 </body>
 
 </html>

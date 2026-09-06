@@ -142,11 +142,15 @@
 - [ ] **Dashboard**: View past orders, current status, and download Quotes/Invoices.
 - [ ] **Online Payments**: Integration with Stripe/Square to pay deposits directly from the invoice page.
 
-### 🟡 Milestone 7: Inventory & Costing
+### 🟡 Milestone 7: Inventory & Costing (in progress as Milestone 24, "Costing")
 **Goal**: Track profitability and supplies.
-- [ ] **Ingredient Tracker**: Database of supplies (Flour, Sugar, Eggs).
-- [ ] **Recipe Costing**: Calculate exact cost-per-item to automate pricing suggestions.
-- [ ] **Stock Alerts**: Low-stock notifications based on upcoming orders.
+- [x] **Ingredient Tracker**: Database of ingredients and supplies with sources and dated price history (Milestone 24, Phase 1, Sep 2026).
+- [x] **Recipe Costing**: Live batch and per-unit costs from current prices; unit conversion; sub-recipes (Milestone 24, Phase 1).
+- [ ] **Products & Estimator**: cake configurator (size, flavor, filling, frosting, add-ons, tiers), cost-plus pricing, saved estimates linked to requests (Phase 2).
+- [ ] **Reports & Alerts**: price history charts, cost over time, margin alerts, Analytics tile (Phase 3).
+- [ ] **Price Bot & Receipts**: monthly price check and receipt scanning via Claude Routines into a review inbox (Phase 4).
+- [ ] **Add to Quote**: push estimate lines into the quote modal (Phase 5).
+- [ ] **Stock Alerts**: Low-stock notifications based on upcoming orders (not planned yet).
 
 ### 🟡 Milestone 8: Marketing Automation
 **Goal**: Retain customers and increase lifetime value.

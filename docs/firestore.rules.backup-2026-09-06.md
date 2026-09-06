@@ -1,0 +1,89 @@
+# Firestore rules backup, 2026-09-06 (before Milestone 24 Costing changes)
+
+Restore by copying the block below into `firestore.rules` and pushing to `main`.
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Customers Collection
+    match /customers/{customerId} {
+      // Admin: full access
+      allow read, delete: if request.auth != null;
+      // Public: can create new customer records
+      allow create: if true;
+      // Public: can only update the 4 fields the order form writes
+      // Admin: can update anything
+      allow update: if request.auth != null
+          || request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['name', 'email', 'phone', 'last_updated']);
+    }
+    
+    // Requests Collection
+    match /requests/{requestId} {
+      // Admin: full access
+      allow read, delete: if request.auth != null;
+      // Public: can create new requests
+      allow create: if true;
+      // Public: can only update step2_data, status, and updated_at (Step 2 form)
+      // Admin: can update anything
+      allow update: if request.auth != null
+          || (request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['status', 'step2_data', 'updated_at'])
+              && request.resource.data.status == 'AWAITING_DETAILS');
+    }
+
+    // Seasonal Orders
+    match /seasonal_orders/{orderId} {
+      allow create: if true;
+      allow read, write: if request.auth != null;
+    }
+
+    // Seasonal Waitlist
+    match /seasonal_waitlist/{entryId} {
+      allow create: if true;
+      allow read, write: if request.auth != null;
+    }
+
+    // Orders Collection
+    match /orders/{orderId} {
+      allow read, write: if request.auth != null;
+      match /payments/{paymentId} {
+        allow read, write: if request.auth != null;
+      }
+    }
+
+    // Gallery Items - Public read, Admin write
+    match /gallery_items/{itemId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Gallery Categories - Public read, Admin write
+    match /gallery_categories/{catId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Site Content - Public read, Admin write
+    match /site_content/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Pending Reviews - Public create, Admin read/write
+    match /pending_reviews/{reviewId} {
+      allow create: if true;
+      allow read, write: if request.auth != null;
+    }
+
+    // Approved Reviews - Public read, Admin write
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}
+
+```
