@@ -20,9 +20,12 @@ export function explodeRecipe(recipeId, batches, ctx, out = new Map(), problems 
             if (r.baseQty != null) add(out, l.ingredientId, r.baseQty * batches);
             else problems.push(`${rec.name}: ${l.text || 'line ' + (idx + 1)} has no usable quantity`);
         } else if (l.recipeId) {
-            const unit = l.unit || 'batch'; const qty = U.num(l.qty) || 0;
-            if (unit === 'batch') explodeRecipe(l.recipeId, qty * batches, ctx, out, problems, depth + 1);
-            else explodeRecipeGrams(l.recipeId, (r.grams || 0) * batches, ctx, out, problems, depth + 1);
+            const unit = l.unit || 'batch'; const qty = U.num(l.qty);
+            const sub = get(ctx.recipes, l.recipeId);
+            if (qty == null) problems.push(`${rec.name}: ${l.text || 'line ' + (idx + 1)} has no quantity, so ${sub?.name || 'its sub-recipe'} was not taken from stock`);
+            else if (unit === 'batch') explodeRecipe(l.recipeId, qty * batches, ctx, out, problems, depth + 1);
+            else if (r.grams > 0) explodeRecipeGrams(l.recipeId, r.grams * batches, ctx, out, problems, depth + 1);
+            else problems.push(`${rec.name}: ${l.text || 'line ' + (idx + 1)} could not be converted to a weight, so ${sub?.name || 'its sub-recipe'} was not taken from stock`);
         }
     });
     return out;

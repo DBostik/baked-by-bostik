@@ -1,6 +1,6 @@
 // costing-estimator.js
 // Phase 2: the Estimator (build an order, see cost, suggested price and margin) and saved Estimates.
-import { state, $, $$, esc, toast, registerPage, registerAction, byName, uid, fmtDate, todayISO, pricingCtx, pricingSettings, showCostingPage, rerender, db } from './costing.js';
+import { state, $, $$, esc, toast, registerPage, registerAction, registerExtension, byName, uid, fmtDate, todayISO, pricingCtx, pricingSettings, showCostingPage, rerender, db } from './costing.js';
 import { collection, doc, getDocs, setDoc, deleteDoc, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import * as U from './costing-units.js';
 import * as P from './costing-pricing.js';
@@ -212,19 +212,26 @@ function renderEstimates(body) {
 }
 
 // ------------------------------------------------------------------ request modal hook: show estimates for the open request
+function refreshRequestStrip() {
+    const mb = document.getElementById('modal-body'); if (!mb) return;
+    const hero = $('.hero-id', mb); if (!hero) return;
+    const reqId = hero.textContent.replace(/^#/, '').trim(); if (!reqId) return;
+    const ests = [...state.estimates.values()].filter(e => e.requestId === reqId);
+    const key = reqId + ':' + ests.map(e => e.id + '@' + (e.snapshot?.totals?.suggested ?? '') + (e.stockOut ? 's' : '')).join(',');
+    const existing = $('.c-req-estimates', mb);
+    if (existing && existing.dataset.key === key) return; // nothing changed
+    if (existing) existing.remove();
+    {
+        const strip = document.createElement('div');
+        strip.className = 'c-req-estimates'; strip.dataset.key = key;
+        strip.innerHTML = `<span><strong>Costing:</strong> ${ests.length ? ests.map(e => `${esc(e.name)} (${U.fmtMoney(e.snapshot?.totals?.suggested)})`).join(', ') : 'no estimate yet'}</span> <button class="btn-secondary btn-sm" data-action="est-for-request" data-req="${esc(reqId)}">${ests.length ? 'Open estimate' : 'New estimate'}</button>`;
+        const heroBox = hero.closest('.modal-hero'); if (heroBox) heroBox.after(strip); else mb.prepend(strip);
+    }
+}
 function installRequestHook() {
     const mb = document.getElementById('modal-body'); if (!mb) return;
-    const obs = new MutationObserver(() => {
-        if ($('.c-req-estimates', mb)) return;
-        const hero = $('.hero-id', mb); if (!hero) return;
-        const reqId = hero.textContent.replace(/^#/, '').trim(); if (!reqId) return;
-        const ests = [...state.estimates.values()].filter(e => e.requestId === reqId);
-        const strip = document.createElement('div');
-        strip.className = 'c-req-estimates';
-        strip.innerHTML = `<span><strong>Costing:</strong> ${ests.length ? ests.map(e => `${esc(e.name)} (${U.fmtMoney(e.snapshot?.totals?.suggested)})`).join(', ') : 'no estimate yet'}</span> <button class="btn-secondary btn-sm" data-action="est-for-request" data-req="${esc(reqId)}">${ests.length ? 'Open estimate' : 'New estimate'}</button>`;
-        hero.closest('.modal-hero')?.after(strip) || mb.prepend(strip);
-    });
-    obs.observe(mb, { childList: true, subtree: false });
+    new MutationObserver(() => refreshRequestStrip()).observe(mb, { childList: true, subtree: false });
+    registerExtension('dataChanged', refreshRequestStrip); // estimates that load after the modal opened
 }
 
 // ------------------------------------------------------------------ actions

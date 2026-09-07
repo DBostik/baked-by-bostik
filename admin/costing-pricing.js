@@ -336,6 +336,7 @@ export function quoteLines(estimate, ctx, settings, basis = 'suggested') {
     const s = { ...DEFAULT_PRICING, ...(settings || {}) };
     const est = priceEstimate(estimate, ctx, s);
     const src = estimate.items || [];
+    if (!est.items.length) return { lines: [], total: 0, basis, estimateTotals: est.totals };
     const waste = (num(s.wasteAllowancePct) || 0) / 100, rate = num(s.hourlyRate) || 0;
     const bases = est.items.map(i => i.ingredients * (1 + waste) + i.supplies + i.hours * rate);
     const sumBase = bases.reduce((a, b) => a + b, 0);

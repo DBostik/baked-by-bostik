@@ -98,5 +98,7 @@ eq('confetti grams complete', cc.gramsComplete, true);
 // a sub-recipe line without a quantity must be a problem, not a free $0 line
 const noQty = costRecipe({ id: 'x', name: 'X', lines: [{ text: 'buttercream', unit: 'batch', recipeId: 'vanilla-buttercream' }] }, ingredients, recipes);
 eq('sub-recipe without qty is flagged', [noQty.ok, noQty.problems.length], [false, 1]);
+const empty = costRecipe({ id: 'e', name: 'E', lines: [] }, ingredients, recipes);
+eq('recipe with no lines is not complete', [empty.ok, empty.total, empty.problems[0]], [false, 0, 'No ingredient lines yet']);
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

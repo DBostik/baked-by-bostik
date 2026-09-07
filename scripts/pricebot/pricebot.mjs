@@ -40,7 +40,7 @@ function readPassword() {
 }
 function args(argv) {
     const out = { _: [] };
-    for (let i = 0; i < argv.length; i++) { const a = argv[i]; if (a.startsWith('--')) { const k = a.slice(2); const v = argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[++i] : true; out[k] = v; } else out._.push(a); }
+    for (let i = 0; i < argv.length; i++) { const a = argv[i]; if (a.startsWith('--')) { const k = a.slice(2); const v = argv[i + 1] !== undefined && !String(argv[i + 1]).startsWith('--') ? argv[++i] : true; out[k] = v; } else out._.push(a); }
     return out;
 }
 
@@ -210,7 +210,7 @@ async function main() {
         const file = a._[1]; if (!file) throw new Error('propose needs a JSON file');
         const list = JSON.parse(fs.readFileSync(file, 'utf8'));
         if (!Array.isArray(list)) throw new Error('the file must hold a JSON array of proposals');
-        const r = await createProposals(c, list, { run: a.run });
+        const r = await createProposals(c, list, { run: typeof a.run === 'string' && a.run ? a.run : null });
         console.log(JSON.stringify({ created: r.created.length, skipped: r.skipped.length, failed: r.failed.length, details: r }, null, 2));
         return;
     }
@@ -237,7 +237,7 @@ async function main() {
             const queue = await c.query('receipt_queue', 'status', 'EQUAL', 'pending');
             const rec = queue.find(r => r.id === id);
             list.forEach(p => { p.method = 'receipt'; p.receiptId = id; p.receiptPath = p.receiptPath || rec?.path || null; if (!p.foundAt && rec?.date) p.foundAt = rec.date; });
-            result = await createProposals(c, list, { run: a.run });
+            result = await createProposals(c, list, { run: typeof a.run === 'string' && a.run ? a.run : null });
         }
         const unmatched = a.unmatched ? String(a.unmatched).split(';').map(s => s.trim()).filter(Boolean) : [];
         await c.patch('receipt_queue', id, { status: result.created.length || status !== 'done' ? status : 'nothing', scannedAt: new Date(), proposalsCount: result.created.length, unmatched, botNote: a.note ? String(a.note) : '' });

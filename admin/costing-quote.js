@@ -99,5 +99,5 @@ registerAction('quote-push', el => {
     const q = P.quoteLines(e, pricingCtx(), pricingSettings(), basis);
     closeModal();
     const n = pushLines(e.requestId, q.lines);
-    toast(`${n} line${n === 1 ? '' : 's'} added to the quote at ${basis === 'menu' ? 'menu' : 'suggested'} prices`);
+    if (n) toast(`${n} line${n === 1 ? '' : 's'} added to the quote at ${basis === 'menu' ? 'menu' : 'suggested'} prices`);
 });

@@ -58,6 +58,14 @@ const kpd = products.get('cupcakes').kitPerDozen || [];
 if (kpd.length) eq('cupcake kit x2 dozen', xc.needs.get(kpd[0].supplyId), 2 * U.num(kpd[0].qty), 1e-9);
 eq('cupcakes use eggs', xc.needs.get('eggs') > 0, true);
 
+// a sub-recipe line measured by count cannot be weighed: it must be reported, never silently skipped
+const probs = [];
+I.explodeRecipe('x-count', 1, { ...ctx, recipes: new Map([...recipes, ['x-count', { id: 'x-count', name: 'X', lines: [{ text: '6 cookies', qty: 6, unit: 'each', recipeId: 'sugar-cookie' }] }]]) }, new Map(), probs);
+eq('count-unit sub-recipe reports a problem', probs.length, 1);
+const probs2 = [];
+I.explodeRecipe('x-noqty', 1, { ...ctx, recipes: new Map([...recipes, ['x-noqty', { id: 'x-noqty', name: 'X', lines: [{ text: 'buttercream', unit: 'batch', recipeId: 'vanilla-buttercream' }] }]]) }, new Map(), probs2);
+eq('sub-recipe without qty reports a problem', probs2.length, 1);
+
 // stock helpers
 const box = { ...ingredients.get('board-round-6'), stock: { track: true, onHand: 7, reorderPoint: 5, countedAt: '2026-09-07' } };
 eq('status ok', I.stockStatus(box).code, 'ok');

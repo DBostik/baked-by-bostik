@@ -137,6 +137,18 @@ suggested = cost basis x (1 + profit) rounded up to `roundTo`; margin = (menu - 
   render ran twice); Add to quote reports when the request cannot be opened; two tables wrapped for phones;
   pricebot Storage download sends `Authorization: Firebase <token>` (falls back to Bearer). Kristen's guide for
   daily use is `docs/costing-guide-for-kristen.md`.
+* **Second review pass** (two independent reviewers, same day) fixed: stock explosion now reports a sub-recipe
+  line it cannot weigh (count units, missing weight, blank qty) instead of silently deducting nothing; a recipe
+  with no lines costs "not complete" instead of $0; `inventory.startedAt` is a client Date (a server timestamp
+  read as null until the ack, so "Turn on" looked like it did nothing); movement before/after are right when one
+  save touches an item twice; undo of an order fetches its moves by groupId (not only from the 250-move window);
+  the Costing strip in Request Details lands under the hero and refreshes when estimates load late; the margin
+  table on Home marks incomplete costs; the trip toast says when a backdated price only went to history; the
+  Made-this toast spells out what was not taken; Add to quote no longer toasts "0 lines added"; price-jump
+  threshold means "more than" on the raw value; the two scheduled-task prompts prefix every command with `cd`
+  and keep the run id in a file (each device_bash call is a fresh shell); the bot's arg parser treats an empty
+  string as a value. Known config note: the celebration cake's tier kit and size kit both include dowels, so a
+  two-tier cake counts dowels twice (fix in Products & Sizes, not code).
 * **Phase 6** (inventory) was built Sep 7, 2026: `costing-inventory.js`, `costing-inventory-math.js`, `ref` data
   on priced lines in `costing-pricing.js`, rules for `inventory_moves`, unit tests `test-inventory.mjs`, harness
   `run-phase6.js`. Kristen's first steps: Inventory, "Turn on for all supplies", then Count each supply once and set

@@ -8,7 +8,7 @@ import {
     state, $, $$, esc, toast, registerPage, registerAction, registerExtension, byName, fmtDate, todayISO, uid,
     openModal, closeModal, getModalCtx, rerender, db, saveSettings, pricingCtx, pricingSettings
 } from './costing.js';
-import { collection, doc, setDoc, updateDoc, query, where, orderBy, limit, onSnapshot, serverTimestamp, writeBatch, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { collection, doc, setDoc, updateDoc, getDocs, query, where, orderBy, limit, onSnapshot, serverTimestamp, writeBatch, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import * as U from './costing-units.js';
 import * as I from './costing-inventory-math.js';
 
@@ -45,9 +45,12 @@ function unsubscribe() { V.unsubs.forEach(u => { try { u(); } catch (e) { } }); 
 async function recordMoves(moves, extra = {}) {
     const batch = writeBatch(db);
     const at = serverTimestamp(); const by = state.user?.email || null; const ids = [];
+    const running = new Map(); // itemId -> on hand after the moves already in this batch (one save can touch an item twice)
     for (const m of moves) {
         const s = I.stockOf(m.item);
-        const before = s.onHand; const after = m.setTo != null ? m.setTo : before + m.delta; const delta = after - before;
+        const before = running.has(m.item.id) ? running.get(m.item.id) : s.onHand;
+        const after = m.setTo != null ? m.setTo : before + m.delta; const delta = after - before;
+        running.set(m.item.id, after);
         const id = m.id || `${m.type}-${todayISO()}-${uid(6)}`; ids.push(id);
         batch.set(doc(db, 'inventory_moves', id), { itemId: m.item.id, itemName: m.item.name || '', baseUnit: m.item.baseUnit || 'each', delta: U.round2(delta), before: U.round2(before), after: U.round2(after), type: m.type, note: m.note || '', refType: m.refType || null, refId: m.refId || null, groupId: m.groupId || null, at, by, date: todayISO() });
         const patch = { 'stock.onHand': m.setTo != null ? U.round2(after) : increment(U.round2(delta)), 'stock.updatedAt': at, 'stock.track': true };
@@ -106,12 +109,14 @@ export async function takeFromStock(estimate, opts = {}) {
     const stamp = { at: serverTimestamp(), groupId, items: moves.length, auto: !!opts.auto, problems: x.problems };
     if (moves.length) await recordMoves(moves, { [`estimates/${fresh.id}`]: { stockOut: stamp } });
     else await setDoc(doc(db, 'estimates', fresh.id), { stockOut: stamp }, { merge: true });
-    const msg = `${fresh.name || 'Estimate'}: ${moves.length} item${moves.length === 1 ? '' : 's'} taken from stock${skipped ? `, ${skipped} not tracked` : ''}${x.problems.length ? ' (some quantities unknown; see Inventory)' : ''}`;
+    const msg = `${fresh.name || 'Estimate'}: ${moves.length} item${moves.length === 1 ? '' : 's'} taken from stock${skipped ? `, ${skipped} not tracked` : ''}${x.problems.length ? '. Not taken: ' + x.problems.join('; ') : ''}`;
     toast(msg, x.problems.length ? 'err' : 'ok');
     return { taken: moves.length, skipped, problems: x.problems };
 }
 async function undoGroup(groupId) {
-    const moves = V.moves.filter(m => m.groupId === groupId && !m.undone && m.type !== 'undo');
+    let all = V.moves.filter(m => m.groupId === groupId);
+    if (!all.length) { try { const snap = await getDocs(query(collection(db, 'inventory_moves'), where('groupId', '==', groupId))); all = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(m => m.groupId === groupId); } catch (e) { console.error(e); } }
+    const moves = all.filter(m => !m.undone && m.type !== 'undo');
     if (!moves.length) { toast('Nothing to undo', 'err'); return; }
     const reversals = moves.map(m => { const item = state.ingredients.get(m.itemId); return item ? { item, delta: -m.delta, type: 'undo', note: `Undo: ${m.note || m.type}`, refType: 'move', refId: m.id, groupId: `undo-${groupId}` } : null; }).filter(Boolean);
     const extra = {};
@@ -259,7 +264,7 @@ function decorateEstimates() {
         if (btn.parentElement.querySelector('[data-action="inv-take"],[data-action="inv-undo-group"]')) return;
         const e = state.estimates.get(btn.dataset.id); if (!e) return;
         const b = document.createElement('button');
-        if (e.stockOut) { b.className = 'btn-text'; b.dataset.action = 'inv-undo-group'; b.dataset.group = e.stockOut.groupId || `out-${e.id}`; b.textContent = 'Taken from stock (undo)'; b.title = e.stockOut.at ? 'Taken ' + fmtDate(e.stockOut.at) : ''; }
+        if (e.stockOut) { b.className = 'btn-text'; b.dataset.action = 'inv-undo-group'; b.dataset.group = e.stockOut.groupId || `out-${e.id}`; const probs = e.stockOut.problems || []; b.textContent = probs.length ? 'Taken from stock, partly (undo)' : 'Taken from stock (undo)'; b.title = [e.stockOut.at ? 'Taken ' + fmtDate(e.stockOut.at) : '', ...probs].filter(Boolean).join('. '); }
         else { b.className = 'btn-secondary btn-sm'; b.dataset.action = 'inv-take'; b.dataset.id = e.id; b.textContent = 'Made this'; b.title = 'Take its packaging and tracked ingredients off the counts'; }
         btn.parentElement.appendChild(document.createTextNode(' ')); btn.parentElement.appendChild(b);
     });
@@ -280,7 +285,7 @@ registerAction('inv-start', async el => {
     const batch = writeBatch(db);
     supplies.forEach(i => batch.update(doc(db, 'ingredients', i.id), { 'stock.track': true, 'stock.onHand': U.num(i.stock?.onHand) ?? 0, 'stock.updatedAt': serverTimestamp() }));
     await batch.commit();
-    await saveSettings({ inventory: { ...invSettings(), startedAt: serverTimestamp() } });
+    await saveSettings({ inventory: { ...invSettings(), startedAt: new Date() } }); // a client Date is readable at once; a server timestamp reads as null until the server acks
     toast('Inventory is on. Count each item once to start.');
 });
 registerAction('inv-track', async el => {

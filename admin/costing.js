@@ -158,6 +158,7 @@ export async function saveSettings(patch) {
 export async function recordPrices(entries) {
     const batch = writeBatch(db);
     const touched = new Map();
+    let olderThanCurrent = 0;
     for (const e of entries) {
         const ing = state.ingredients.get(e.ingredientId);
         if (!ing) continue;
@@ -169,7 +170,7 @@ export async function recordPrices(entries) {
         const date = e.date || todayISO();
         const last = U.toDate(src.currentPriceDate);
         const isNewer = !last || U.toDate(date) >= last;
-        if (isNewer) { src.currentPrice = price; src.currentPriceDate = date; src.currentMethod = e.method || 'edit'; }
+        if (isNewer) { src.currentPrice = price; src.currentPriceDate = date; src.currentMethod = e.method || 'edit'; } else olderThanCurrent++;
         touched.set(ing.id, sources);
         const pref = doc(collection(db, 'ingredients', ing.id, 'prices'));
         batch.set(pref, {
@@ -182,6 +183,7 @@ export async function recordPrices(entries) {
     for (const [id, sources] of touched) batch.update(doc(db, 'ingredients', id), { sources, updatedAt: serverTimestamp() });
     await batch.commit();
     runExtensions('afterPrices', entries, [...touched.keys()]);
+    recordPrices.lastOlderThanCurrent = olderThanCurrent; // entries dated before the source's current price: history only
     return touched.size;
 }
 
@@ -307,7 +309,7 @@ function marginAlertsHtml() {
         <div class="c-card-head"><h3>Margin at menu price</h3><span class="c-muted">${bad.length} of ${rows.length} below ${esc(ps.marginAlertPct)}%</span></div>
         <p class="c-small c-muted">Standard version of each product (default flavor and frosting, no add-ons) at today's prices, with labor at ${U.fmtMoney(ps.hourlyRate)} per hour. Open the Estimator for the full breakdown.</p>
         <div class="c-table-wrap"><table class="c-table c-table-sm"><thead><tr><th>Product</th><th class="num">Cost basis</th><th class="num">Suggested</th><th class="num">Menu</th><th class="num">Margin</th></tr></thead><tbody>
-        ${rows.map(r => `<tr><td>${esc(r.p.name)} · ${esc(r.o.label)}</td><td class="num">${U.fmtMoney(r.est.totals.costBasis)}</td><td class="num">${U.fmtMoney(r.est.totals.suggested)}</td><td class="num">${U.fmtMoney(r.est.totals.menu)}</td><td class="num"><span class="c-badge ${r.est.totals.belowAlert ? 'c-badge-warn' : 'c-badge-ok'}">${r.est.totals.marginPct == null ? '—' : r.est.totals.marginPct + '%'}</span></td></tr>`).join('')}
+        ${rows.map(r => `<tr><td>${esc(r.p.name)} · ${esc(r.o.label)}</td><td class="num">${U.fmtMoney(r.est.totals.costBasis)}${r.est.problems.length ? ` <span class="c-badge c-badge-warn" title="${esc(r.est.problems.join('; '))}">incomplete</span>` : ''}</td><td class="num">${U.fmtMoney(r.est.totals.suggested)}</td><td class="num">${U.fmtMoney(r.est.totals.menu)}</td><td class="num"><span class="c-badge ${r.est.totals.belowAlert ? 'c-badge-warn' : 'c-badge-ok'}">${r.est.totals.marginPct == null ? '—' : r.est.totals.marginPct + '%'}</span></td></tr>`).join('')}
         </tbody></table></div>
         <p class="c-small c-muted">Margin = (menu price minus cost basis) / menu price. Cost basis includes labor at her rate, so a negative margin means the menu price does not cover her time plus materials.</p>
     </div>`;
@@ -534,8 +536,9 @@ async function saveTrip() {
     }).filter(e => e.price != null);
     if (!entries.length) return;
     const n = await recordPrices(entries);
+    const older = recordPrices.lastOlderThanCurrent || 0;
     d.prices = {}; d.qty = {};
-    toast(`Saved ${entries.length} price${entries.length === 1 ? '' : 's'} across ${n} item${n === 1 ? '' : 's'}`);
+    toast(`Saved ${entries.length} price${entries.length === 1 ? '' : 's'} across ${n} item${n === 1 ? '' : 's'}${older ? ` (${older} dated before the price on file: kept in history, current price unchanged)` : ''}`);
 }
 
 // ------------------------------------------------------------------ RECIPES

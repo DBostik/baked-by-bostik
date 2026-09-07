@@ -191,8 +191,9 @@ export function priceJumps(ingredients, historyMap, opts = {}) {
                 if (e.date < since) continue;
                 const p0 = U.num(prev.price), p1 = U.num(e.price);
                 if (!(p0 > 0)) continue;
-                const pct = Math.round((p1 - p0) / p0 * 1000) / 10;
-                if (Math.abs(pct) < threshold) continue;
+                const pctRaw = (p1 - p0) / p0 * 100;
+                if (Math.abs(pctRaw) <= threshold) continue; // "more than the threshold"
+                const pct = Math.round(pctRaw * 10) / 10;
                 const key = jumpKey(i.id, e);
                 out.push({ key, ingredientId: i.id, name: i.name, kind: i.kind || 'ingredient', sourceId: s.id, source: sourceLabel(s), preferred: isPreferred(i, s), prev: p0, price: p1, prevDate: prev.date, date: e.date, method: e.method || '', pct, dismissed: dismissed.has(key) });
             }

@@ -290,6 +290,7 @@ export function costRecipe(recipe, ingredientsById, recipesById, opts = {}) {
     const overrides = opts.sourceOverrides || {}; // {ingredientId: sourceId}
     const out = { ok: true, total: 0, lines: [], grams: 0, gramsComplete: true, oldestPriceDate: null, problems: [] };
     if (depth > 4) { out.ok = false; out.problems.push('Recipe nesting too deep'); return out; }
+    if (!(recipe?.lines || []).length) { out.ok = false; out.problems.push('No ingredient lines yet'); return out; }
     (recipe?.lines || []).forEach((line, idx) => {
         const res = { idx, text: line.text, cost: 0, baseQty: null, baseUnit: null, unitCost: null, ok: true, reason: '', grams: null, priceDate: null };
         const qty = num(line.qty);
