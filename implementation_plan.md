@@ -150,7 +150,7 @@
 - [x] **Reports & Alerts**: price history charts, cost over time, price-jump and margin alerts, Analytics tile (Milestone 24, Phase 3, Sep 2026).
 - [x] **Price Bot & Receipts**: monthly price check and receipt scanning via scheduled Claude tasks into a review inbox (Milestone 24, Phase 4, Sep 2026).
 - [x] **Add to Quote**: push estimate lines into the quote modal (Milestone 24, Phase 5, Sep 2026).
-- [ ] **Inventory**: on-hand counts, reorder points and low-stock alerts; stock in from shopping trips and receipts, stock out when an order completes (Phase 6).
+- [x] **Inventory**: on-hand counts, reorder points and low-stock alerts; stock in from shopping trips and receipts, stock out when an order completes (Milestone 24, Phase 6, Sep 2026).
 
 ### 🟡 Milestone 8: Marketing Automation
 **Goal**: Retain customers and increase lifetime value.

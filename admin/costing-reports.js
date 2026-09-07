@@ -10,6 +10,7 @@ import {
 import { collection, doc, setDoc, query, orderBy, limit, onSnapshot, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import * as U from './costing-units.js';
 import * as H from './costing-history.js';
+import * as I from './costing-inventory-math.js';
 
 const MOVER_DAYS = 30;          // "biggest movers" and price-jump alerts look back this far
 const DISMISS_KEEP_DAYS = 90;   // dismissed alert keys older than this are dropped from settings
@@ -332,6 +333,7 @@ function analyticsTile(loadHistory = false) {
           ${pill('Stale prices', stale, 'costing-ingredients', 'stale')}
           ${pill('Under margin', rows.length ? `${under} of ${rows.length}` : '—', 'costing-home')}
           ${pill('Price jumps', jumps == null ? '…' : jumps, 'costing-reports')}
+          ${state.settings.inventory?.startedAt ? pill('Low stock', ings.filter(i => ['low', 'out'].includes(I.stockStatus(i).code)).length, 'costing-inventory') : ''}
         </div>
         <p class="c-muted c-small" style="margin:.75rem 0 0">Click a number to open that screen.</p>`;
 }

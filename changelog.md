@@ -15,6 +15,12 @@
 
 ## 📅 September 2026
 
+### 🟢 Milestone 24, Phase 6: Inventory - Sep 7, 2026
+- **Inventory** (`admin/costing-inventory.js`): on-hand counts and reorder points per item. "Turn on for all supplies" starts it; any ingredient can be tracked too. Per item: Count (in the item's unit or in packs of the preferred package), Adjust with a reason, History, Track on or off, reorder point inline. Status badges: needs a count, OK, low, out.
+- **Stock in** on its own from Log Prices (Packages x package size) and from approved receipt proposals. **Stock out** on its own when a request is moved to Completed and has a saved estimate: its packaging kit and, for tracked ingredients, its recipe quantities come off the counts (whole batches when the settings round). "Made this" on an estimate does the same by hand. Each estimate can only be taken once; every movement has Undo for 30 days and lives in `inventory_moves`. Orders completed before inventory was turned on are ignored; anything completed while the admin was closed shows on Costing Home and Inventory as not yet taken.
+- **Alerts**: a Stock card on Costing Home (low or out items, never-counted count, orders not yet taken) and a Low stock number on the Analytics tile.
+- Math in `admin/costing-inventory-math.js` (pure, unit tested); priced lines in `costing-pricing.js` now carry a `ref` saying what they physically are. Harness `run-phase6.js`.
+
 ### 🟢 Milestone 24, Phase 5: Add to Quote - Sep 7, 2026
 - **Add to quote** (`admin/costing-quote.js`): a button on every saved estimate (Estimates list, and the Costing strip inside Request Details) opens a preview of customer-facing lines, one per cake and per dozen for cupcakes and cookies, priced at the estimate's suggested price (split so the lines add up) or at menu prices. "Add N lines to quote" opens the existing Create Quote / Invoice screen for that request, drops the $0 placeholder line, and fills the lines in, editable as always. `admin.js` is unchanged; the lines go in through its own Add Item button and inputs.
 - Line math `quoteLines` and `quoteItemName` in `admin/costing-pricing.js` (pure, unit tested); harness `run-phase5.js`.

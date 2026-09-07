@@ -154,6 +154,11 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys()
               .hasOnly(['status', 'scannedAt', 'proposalsCount', 'unmatched', 'botNote']);
     }
+    // Phase 6: every stock movement (count, adjustment, shopping trip in, order out, undo). On-hand lives on
+    // the item document (`stock` map). Admin only.
+    match /inventory_moves/{moveId} {
+      allow read, write: if isAdmin();
+    }
     // One document per scheduled-task run (price check or receipt scan), so Costing Settings can show the last runs.
     match /bot_runs/{runId} {
       allow read, delete: if isAdmin();

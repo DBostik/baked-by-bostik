@@ -7,6 +7,7 @@ Offline checks for the admin Costing module. Nothing here touches Firebase or th
     node tools/costing-tests/test-units.mjs      # unit conversion, recipe line parser, recipe costing on the seed
     node tools/costing-tests/test-pricing.mjs    # geometry scaling, whole batches, cost-plus estimate math
     node tools/costing-tests/test-reports.mjs    # Phase 3: price-as-of, snapshots, series/change table, movers, jump alerts
+    node tools/costing-tests/test-inventory.mjs  # Phase 6: recipe and estimate explosion, stock status and formatting
 
 ## Browser harness (renders every Costing screen with the seed data)
 
@@ -24,6 +25,7 @@ run Chromium (no root for its system libraries); run the harness in the cloud co
     node tools/costing-tests/harness/run-phase3.js     # reports, home alerts + dismiss, log prices qty, rebuild history, analytics tile
     node tools/costing-tests/harness/run-phase4.js     # price reviews inbox (approve/dismiss/filters), receipt upload + queue, home card, settings card
     node tools/costing-tests/harness/run-phase5.js     # add to quote: preview (suggested/menu), push into the quote modal stand-in, request strip button
+    node tools/costing-tests/harness/run-phase6.js     # inventory: turn on, count, reorder, trip stock-in, adjust, completed-order stock-out + undo, Made this, home card, tile
 
 Each run prints a JSON summary (row counts, totals, matched lines, page errors) and writes
 screenshots next to the runner. `errors` must be empty apart from blocked font/CDN loads. `run-phase3.js` also

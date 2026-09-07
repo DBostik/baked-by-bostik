@@ -78,15 +78,16 @@ function supplyUnitCost(ctx, supplyId) {
 }
 
 // One line of an item breakdown
-function line(kind, label, cost, detail = '', minutes = 0, ok = true, reason = '') {
-    return { kind, label, cost: cost || 0, detail, minutes: minutes || 0, ok, reason };
+// `ref` (Phase 6) says what the line physically is, for inventory: {recipeId, batches} | {recipeId, grams} | {itemId, qty}
+function line(kind, label, cost, detail = '', minutes = 0, ok = true, reason = '', ref = null) {
+    return { kind, label, cost: cost || 0, detail, minutes: minutes || 0, ok, reason, ref };
 }
 
 function addRecipeByBatches(lines, ctx, recipeId, batches, label) {
     const info = recipeInfo(ctx, recipeId);
     if (!info) { lines.push(line('ingredient', label, 0, 'recipe missing', 0, false, `Recipe ${recipeId} not found`)); return; }
     const cost = info.cost.total * batches;
-    lines.push(line('ingredient', `${label}: ${info.recipe.name}`, cost, `${U.fmtQty(Math.round(batches * 100) / 100)} batch${batches === 1 ? '' : 'es'} at ${U.fmtMoney(info.cost.total)}`, 0, info.cost.ok, info.cost.ok ? '' : info.cost.problems.join('; ')));
+    lines.push(line('ingredient', `${label}: ${info.recipe.name}`, cost, `${U.fmtQty(Math.round(batches * 100) / 100)} batch${batches === 1 ? '' : 'es'} at ${U.fmtMoney(info.cost.total)}`, 0, info.cost.ok, info.cost.ok ? '' : info.cost.problems.join('; '), { recipeId, batches }));
 }
 function addRecipeByGrams(lines, ctx, recipeId, grams, label, roundBatches) {
     const info = recipeInfo(ctx, recipeId);
@@ -96,22 +97,24 @@ function addRecipeByGrams(lines, ctx, recipeId, grams, label, roundBatches) {
         return;
     }
     const batchGrams = info.cost.grams;
-    let cost, detail;
+    let cost, detail, ref;
     if (roundBatches && batchGrams) {
         const batches = Math.ceil(grams / batchGrams - 1e-9);
         cost = batches * info.cost.total;
         detail = `${Math.round(grams)} g needed, ${batches} whole batch${batches === 1 ? '' : 'es'}`;
+        ref = { recipeId, batches };
     } else {
         cost = grams * info.per.perGram;
         detail = `${Math.round(grams)} g at ${U.fmtMoney(info.per.perGram * 100)} per 100 g`;
+        ref = { recipeId, grams };
     }
-    lines.push(line('ingredient', `${label}: ${info.recipe.name}`, cost, detail, 0, info.cost.ok, info.cost.ok ? '' : info.cost.problems.join('; ')));
+    lines.push(line('ingredient', `${label}: ${info.recipe.name}`, cost, detail, 0, info.cost.ok, info.cost.ok ? '' : info.cost.problems.join('; '), ref));
 }
 function addSupply(lines, ctx, supplyId, qty, label) {
     if (!qty) return;
     const s = supplyUnitCost(ctx, supplyId);
     const cost = s.unitCost * qty;
-    lines.push(line('supply', label || s.name, cost, `${U.fmtQty(qty)} x ${U.fmtMoney(s.unitCost)}`, 0, s.ok, s.ok ? '' : `${s.name}: ${s.reason}`));
+    lines.push(line('supply', label || s.name, cost, `${U.fmtQty(qty)} x ${U.fmtMoney(s.unitCost)}`, 0, s.ok, s.ok ? '' : `${s.name}: ${s.reason}`, { itemId: supplyId, qty }));
 }
 function addKit(lines, ctx, kit, times = 1) {
     (kit || []).forEach(k => addSupply(lines, ctx, k.supplyId, (num(k.qty) || 0) * times));
@@ -124,7 +127,7 @@ function addDecor(lines, ctx, decor) {
         const uc = U.ingredientUnitCost(item);
         const ok = conv.ok && uc.ok;
         const cost = ok ? conv.baseQty * uc.unitCost : 0;
-        lines.push(line(item.kind === 'supply' ? 'supply' : 'ingredient', item.name, cost, `${U.fmtQty(d.qty)} ${U.UNIT_LABELS[d.unit || item.baseUnit] || ''}`, num(d.minutes) || 0, ok, ok ? '' : `${item.name}: ${conv.reason || uc.reason}`));
+        lines.push(line(item.kind === 'supply' ? 'supply' : 'ingredient', item.name, cost, `${U.fmtQty(d.qty)} ${U.UNIT_LABELS[d.unit || item.baseUnit] || ''}`, num(d.minutes) || 0, ok, ok ? '' : `${item.name}: ${conv.reason || uc.reason}`, conv.ok ? { itemId: d.itemId, qty: conv.baseQty } : null));
     });
 }
 function addCustom(lines, custom) {

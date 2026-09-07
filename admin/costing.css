@@ -224,3 +224,11 @@ body.c-modal-open { overflow: hidden; }
 .c-quote-basis { gap: 1.25rem; margin: 0.5rem 0 0.9rem; }
 .c-req-quote { display: inline-flex; gap: 0.4rem; flex-wrap: wrap; }
 .c-req-quote .btn-primary { width: auto; }
+
+/* ---------------- Phase 6: inventory ---------------- */
+.c-inv-reorder { width: 6rem; text-align: right; padding: 0.4rem 0.5rem; }
+.c-inv-actions { white-space: nowrap; }
+.c-inv-actions .btn-text { padding: 0 0.3rem; }
+.c-move-undone td { opacity: 0.55; text-decoration: line-through; }
+.c-move-undone td:last-child { text-decoration: none; }
+#c-home-stock .c-list-row { cursor: pointer; }

@@ -1,7 +1,7 @@
 // Minimal in-memory Firestore stub fed by the seed file, enough to render every Costing screen.
 const seed = await (await fetch('/admin/costing-seed.json')).json();
 const seed2 = await (await fetch('/admin/costing-seed-phase2.json')).json();
-const store = { ingredients: new Map(), recipes: new Map(), costing_settings: new Map(), prices: new Map(), products: new Map(), estimates: new Map(), requests: new Map(), cost_snapshots: new Map(), price_proposals: new Map(), receipt_queue: new Map(), bot_runs: new Map() };
+const store = { ingredients: new Map(), recipes: new Map(), costing_settings: new Map(), prices: new Map(), products: new Map(), estimates: new Map(), requests: new Map(), cost_snapshots: new Map(), price_proposals: new Map(), receipt_queue: new Map(), bot_runs: new Map(), inventory_moves: new Map() };
 // Phase 4 fixtures: two bot proposals, one receipt proposal, one dismissed, two receipts, one bot run
 store.price_proposals.set('prop-butter', { ingredientId: 'butter', sourceId: 'costco-kirkland', price: 26.49, foundAt: '2026-09-01', status: 'pending', method: 'bot', currentPrice: 23.59, currentPriceDate: '2026-02-01', packageQty: 4, packageUnit: 'lb', foundUrl: 'https://www.costco.com/kirkland-signature-unsalted-butter.html', note: 'Costco.com lists the 4 lb pack; warehouse price may differ', confidence: 'medium', createdAt: new Date('2026-09-01T12:00:00'), createdBy: 'pricebot' });
 store.price_proposals.set('prop-sugar', { ingredientId: 'sugar', sourceId: 'costco-pioneer', price: 8.99, foundAt: '2026-09-01', status: 'pending', method: 'bot', currentPrice: 7.44, packageQty: 25, packageUnit: 'lb', foundUrl: 'https://example.com/sugar', note: 'Only a 25 lb bag found online', confidence: 'low', createdAt: new Date('2026-09-01T12:01:00'), createdBy: 'pricebot' });
@@ -39,7 +39,8 @@ export async function getDoc(ref){ const m=store[ref.path[0]]; const d=m&&m.get(
 export async function setDoc(ref, data){
   window.__writes=(window.__writes||0)+1;
   if (ref.path.length===4 && ref.path[2]==='prices') { const list=store.prices.get(ref.path[1])||[]; list.push({id:ref.path[3], ...data}); store.prices.set(ref.path[1], list); return; } // price history entry
-  const m=store[ref.path[0]]; if(m){ m.set(ref.path[1], {...(m.get(ref.path[1])||{}), ...data}); notify(ref.path[0]); } }
+  const m=store[ref.path[0]]; if(m){ const cur={...(m.get(ref.path[1])||{})}; for (const [k,v] of Object.entries(data)) { const parts=k.split('.'); let o=cur; for (let i=0;i<parts.length-1;i++){ o[parts[i]]={...(o[parts[i]]||{})}; o=o[parts[i]]; } const last=parts[parts.length-1]; if (v && typeof v==='object' && '__inc' in v) o[last]=(Number(o[last])||0)+v.__inc; else if (v && typeof v==='object' && !Array.isArray(v) && !(v instanceof Date) && o[last] && typeof o[last]==='object' && !Array.isArray(o[last])) o[last]={...o[last], ...v}; else o[last]=v; } m.set(ref.path[1], cur); notify(ref.path[0]); } }
+export function increment(n){ return { __inc: n }; }
 export async function updateDoc(ref, data){ return setDoc(ref, data); }
 export async function addDoc(ref, data){ window.__writes=(window.__writes||0)+1; return {id:'new'}; }
 export async function deleteDoc(ref){ const m=store[ref.path[0]]; if(m){ m.delete(ref.path[1]); notify(ref.path[0]); } }
@@ -48,3 +49,5 @@ function notify(name){ for (const l of listeners) if (l.ref.path[0]===name) { if
 // debug hooks for the harness runners
 window.__stubPrices = (id) => (store.prices.get(id) || []).map(p => ({ sourceId: p.sourceId, price: p.price, date: p.date, method: p.method, qty: p.qty }));
 window.__stubCount = (name) => (store[name] ? store[name].size : null);
+window.__stubSet = (col, id, data) => setDoc({ type: 'doc', path: [col, id] }, data);
+window.__stubGet = (col, id) => store[col] && store[col].get(id);
