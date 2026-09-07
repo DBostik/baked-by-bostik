@@ -9,10 +9,20 @@ service firebase.storage {
           'LYJpCo6DEIO9w9Yurupuw0uyxpJ2'   // shared Baked By Bostik admin login
         ];
     }
+    // Price-check / receipt bot (keep in sync with firestore.rules). It may only read receipt photos.
+    function isPricebot() {
+      return request.auth != null && request.auth.uid == 'USNXR3iZcdVnNUY2VdPdoeYE3BI2';
+    }
 
     // Admin: full access to everything
     match /{allPaths=**} {
       allow read, write: if isAdmin();
+    }
+
+    // Receipts uploaded from the admin's Price Reviews screen (Costing, Phase 4). Admin writes, the bot reads.
+    match /receipts/{fileName} {
+      allow read: if isAdmin() || isPricebot();
+      allow write: if isAdmin();
     }
 
     // Customer inspiration uploads on the public order form (js/order-flow.js).

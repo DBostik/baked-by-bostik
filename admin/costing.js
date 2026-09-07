@@ -17,8 +17,8 @@ const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const COSTING_VERSION = '3.0.0';
-const PAGES = ['costing-home', 'costing-ingredients', 'costing-log', 'costing-recipes', 'costing-products', 'costing-estimator', 'costing-estimates', 'costing-reports', 'costing-settings'];
+const COSTING_VERSION = '4.0.0';
+const PAGES = ['costing-home', 'costing-ingredients', 'costing-log', 'costing-recipes', 'costing-products', 'costing-estimator', 'costing-estimates', 'costing-reports', 'costing-reviews', 'costing-settings'];
 // Other costing modules (products, estimator, reports) plug in here.
 const pageRenderers = {};
 const actionHandlers = {};

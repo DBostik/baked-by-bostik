@@ -9,7 +9,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="/admin/admin.css?v=3">
-    <link rel="stylesheet" href="/admin/costing.css?v=3">
+    <link rel="stylesheet" href="/admin/costing.css">
     <!-- Chart.js via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Using similar color scheme as public site if possible, but keeping it clean admin style -->
@@ -213,6 +213,14 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
                             </svg>
                             Reports
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-page="costing-reviews">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:0.75rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                            </svg>
+                            Price Reviews
                         </a>
                     </li>
                     <li>
@@ -831,6 +839,12 @@
                 <div id="page-costing-reports" class="page-section costing-page hidden">
                     <header class="page-header">
                         <h1>Reports</h1>
+                    </header>
+                    <div class="costing-body"></div>
+                </div>
+                <div id="page-costing-reviews" class="page-section costing-page hidden">
+                    <header class="page-header">
+                        <h1>Price Reviews</h1>
                     </header>
                     <div class="costing-body"></div>
                 </div>

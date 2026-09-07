@@ -1,6 +1,6 @@
 # Costing module: handoff for the next session
 
-Last updated: Sep 6, 2026 (end of Phase 3). Read this first, then `DEPLOY.md` section 5.
+Last updated: Sep 7, 2026 (end of Phase 4). Read this first, then `DEPLOY.md` section 5.
 
 ## What this is
 
@@ -36,6 +36,8 @@ page in Dave's Claude artifacts. This file is the engineering handoff.
 | `admin/costing-estimator.js` | Estimator and Estimates screens, request-modal hook (registers `costing-estimator`, `costing-estimates`). |
 | `admin/costing-history.js` | Pure functions for Phase 3 (run in Node): date helpers, `priceAsOf`, `ingredientsAsOf` (prices as they were on a date), `unitCostSeries`, `buildSnapshot`, `snapshotAsOf`, `series`, `changeTable`, `movers`, `priceJumps`, `jumpKey`, `pruneDismissed`, `recipesUsing`. |
 | `admin/costing-reports.js` | Reports screen (registers `costing-reports`): price history chart per ingredient with one line per source, biggest movers (30 days), price-jump alerts with Dismiss, recipe/product cost over 3/6/12 months from `cost_snapshots` plus a "now vs 3/6/12 months ago" table. Also: the price-jump card on Costing Home (extension `home`), the "Alerts and cost history" card on Costing Settings (extension `settings`, incl. Rebuild cost history), the Costing tile on the Analytics page (`#costing-analytics-tile`), and snapshot writing (`afterPrices` extension, plus a weekly "touch" when Home/Reports opens). Charts via the global `Chart` (Chart.js from the CDN tag in `index.html`). |
+| `admin/costing-reviews.js` | Phase 4: Price Reviews inbox (registers `costing-reviews`): proposals with approve (editable price, goes through `recordPrices`), dismiss, filters; receipt upload to Storage `receipts/` + `receipt_queue`; the "proposals waiting" card on Costing Home (extension `home`) and the "Price bot and receipts" card on Costing Settings (extension `settings`, shows `bot_runs`). Puts `state.proposals`, `state.receipts`, `state.botRuns` on the shared state; the Analytics tile reads `state.proposals`. |
+| `scripts/pricebot/pricebot.mjs` | The bot's deterministic half (plain Node, REST APIs, signs in as the pricebot; see `scripts/pricebot/README.md` for commands and the two task prompts). Runs on Dave's Mac inside the scheduled tasks. |
 | `admin/costing.css` | All Costing styles (prefix `c-`), leans on `admin.css` variables. |
 | `admin/costing-seed.json` | Phase 1 starter data from Kristen's sheet (ingredients, sources, dated prices, 14 recipes, review flags). |
 | `admin/costing-seed-phase2.json` | Phase 2 starter data (real packaging supplies, 4 products, pricing defaults, recipe patches). |
@@ -92,8 +94,18 @@ collection changed, even with no costing page showing). New modules must be impo
   and the newest snapshot is over 7 days old, and by "Rebuild cost history" (month-ends back to the first price entry,
   prices as of each date with the first known price carried back; never replaces a non-reconstructed snapshot).
   Reports read the whole collection (ordered by date, limit 600); with a few writes a month that stays small.
-* Reserved for later phases (rules already in place): `menu_prices`, `price_proposals` (pricebot may create
-  well-formed pending proposals), `receipt_queue`.
+* `price_proposals/{auto}` (Phase 4, written by the pricebot script): ingredientId, ingredientName, sourceId,
+  sourceLabel, price (package price), foundAt (`YYYY-MM-DD`), status (`pending` | `approved` | `dismissed`), method
+  (`bot` | `receipt`), currentPrice, currentPriceDate (on file when found), packageQty, packageUnit (what the bot saw),
+  foundUrl, note, confidence (`high` | `medium` | `low`), receiptId, receiptPath, lineText, qty (receipts), runId,
+  createdBy, createdAt; on review: approvedPrice, reviewedAt, reviewedBy. Pricebot may read and create; admin the rest.
+* `receipt_queue/{date-uid}` (Phase 4, written by the admin upload): path (`receipts/<id>.<ext>` in Storage),
+  contentType, originalName, size, store, note, date, status (`pending` | `done` | `nothing` | `failed`), uploadedAt,
+  uploadedBy; set by the scanner: scannedAt, proposalsCount, unmatched[], botNote (the only fields the pricebot may
+  update). Storage rules: admin read/write, pricebot read on `receipts/`.
+* `bot_runs/{auto}`: kind (`price-check` | `receipt-scan`), startedAt, finishedAt, status, summary. Pricebot creates
+  and updates; Costing Settings lists the last 8.
+* Reserved: `menu_prices`.
 
 Cost math in one line: unit cost = package price / package size in the ingredient's base unit; line cost =
 converted quantity x unit cost; recipe cost = sum of lines (sub-recipes by batch, grams, cups or count);
@@ -106,6 +118,12 @@ suggested = cost basis x (1 + profit) rounded up to `roundTo`; margin = (menu - 
   estimator, pricing, saved estimates, request hook) are built, tested and deployed (Sep 6, 2026).
   PR #1 (security: quote functions require the admin login, storage uploads limited to images under 15 MB) was
   merged the same day with a fix that keeps the order form's `getDownloadURL` working.
+* **Phase 4** (price bot and receipts) was built Sep 7, 2026: Price Reviews inbox, receipt upload and queue,
+  `scripts/pricebot/pricebot.mjs` (tested live as the pricebot: sign-in ok, 47 items / 53 sources / 26 searchable,
+  none with product links yet), rules for the pricebot, and the two scheduled tasks. Dave's password file was
+  first saved as RTF (`pricebot-password.txt.rtf`); the session converted it to the plain `pricebot-password.txt`.
+  Kristen's first steps: open Price Reviews after the first bot run, approve or dismiss each line; upload one real
+  receipt and check it the next morning; add product links on the item pages for things the bot could not find.
 * **Phase 3** (reports and alerts) was built Sep 6, 2026 (evening): Reports screen, price-jump alerts with Dismiss on
   Costing Home, Analytics tile, `cost_snapshots`, "Packages" (qty) on Log Prices, alert threshold setting, Rebuild cost
   history. It also fixed the double-loaded `costing.js` (see `costing-main.js`). Committed locally; pushed once Dave
@@ -128,7 +146,7 @@ suggested = cost basis x (1 + profit) rounded up to `roundTo`; margin = (menu - 
    tile for proposals once Phase 4 lands; the monthly routine could also write a `cost_snapshots` doc (it would need
    read access to recipes and products, which the pricebot does not have today; the admin page's weekly touch covers
    it for now).
-4. **Monthly price bot and receipts** (2 sessions). Design revised Sep 6, 2026 with Dave after Phase 3, because a
+4. **Monthly price bot and receipts**: done Sep 7, 2026 as designed below (design revised Sep 6 with Dave after Phase 3, because a
    Cowork session cannot create a cloud environment, set environment variables, or generate an API trigger token
    (no tools for those), but it CAN create scheduled tasks (Routines) with `create_trigger`, as it did for Dave's SEO
    re-benchmark. So:
@@ -152,10 +170,11 @@ suggested = cost basis x (1 + profit) rounded up to `roundTo`; margin = (menu - 
      documented in Costing Settings. The bot's deterministic parts go in `scripts/pricebot/` (Node, no dependencies)
      so the routine prompt is short: run the script to fetch the watch list, do the looking up, run the script to
      write proposals.
-   * Kickoff for the next session: read this file and `DEPLOY.md` section 5, run the tests, confirm the password file
-     exists (`ls "$HOME/mnt/Desktop/My Info For Claude"` in device_bash; do not print its contents), then build the
-     admin side first (testable with the harness), the script second, and create the two scheduled tasks last, with a
-     "run now" of the price check so Kristen has a first batch to review.
+   * The scheduled tasks are created with `create_trigger` (`requires_local_device: true`, cron in UTC: price check
+     `0 12 1 * *`, receipt scan `0 12 * * *`, both 7 am Chicago during daylight time, an hour later in winter);
+     `list_triggers` shows them, `fire_trigger` runs one by hand. Their prompts are in `scripts/pricebot/README.md`.
+   * Possible second pass after Kristen's feedback: product links on sources (helps the bot most), a "match this line
+     to..." picker on unmatched receipt lines, approving several proposals at once.
 5. **Add to quote** (1 session): button on a saved estimate that pushes items ({name, qty, price}) into the existing
    Create Quote / Invoice modal in `admin.js` (`renderQuoteItems`, items array), suggested price prefilled.
 6. **Inventory** (2 to 3 sessions; Dave asked for it Sep 6): on-hand quantity per supply and later per ingredient,
@@ -169,16 +188,16 @@ suggested = cost basis x (1 + profit) rounded up to `roundTo`; margin = (menu - 
 
 `node tools/costing-tests/test-units.mjs && node tools/costing-tests/test-pricing.mjs && node tools/costing-tests/test-reports.mjs`
 (pure math), then `python3 tools/costing-tests/harness/prepare.py` and `node tools/costing-tests/harness/run-phase1.js`,
-`run-phase2.js`, `run-phase3.js` (each renders screens with the seed data in headless Chromium and prints a JSON
+`run-phase2.js`, `run-phase3.js`, `run-phase4.js` (each renders screens with the seed data in headless Chromium and prints a JSON
 summary; `errors` must be empty apart from blocked font/CDN loads). Add a check for every screen you add. The Playwright
 harness cannot run inside the Cowork VM on the Mac (no root, Chromium's system libraries are missing), so run it in the
 cloud container: tar `admin/`, `js/firebase-config.js` and `tools/costing-tests` from the Mac, stage the tar, extract in
 the container, run there, and copy changed files back with `device_commit_files` (that is how Phase 3 was tested).
 There is no staging site; Kristen tests on the live admin after each approved push.
 
-## Setup still pending for Phase 4 (Dave)
+## Setup for Phase 4 (done)
 
-Only one thing: the file `~/Desktop/My Info For Claude/pricebot-password.txt` containing the pricebot's password
-(plain text, one line). The plan page's steps C2, C3 and D (cloud environment, environment variables, Routines with an
-API trigger) are no longer needed; Claude creates the scheduled tasks. The cloud container already reaches
-`*.googleapis.com` (Identity Toolkit, Firestore REST, Storage).
+`~/Desktop/My Info For Claude/pricebot-password.txt` holds the pricebot's password (plain text, one line; created
+Sep 7, 2026). The plan page's steps C2, C3 and D (cloud environment, environment variables, Routines with an API
+trigger) were not needed; Claude created the scheduled tasks. The Cowork VM on the Mac reaches `*.googleapis.com`
+directly, so the script runs there and the password never leaves the Mac.

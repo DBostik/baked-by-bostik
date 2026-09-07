@@ -15,6 +15,13 @@
 
 ## 📅 September 2026
 
+### 🟢 Milestone 24, Phase 4: Price Bot and Receipts - Sep 7, 2026
+- **Price Reviews** (`admin/costing-reviews.js`): inbox for proposed prices from the monthly price bot and receipt scans. Each row shows the price on file versus the price found with the percent change, where it was found (link), the confidence note, the receipt line and thumbnail for scans, and a warning when the bot saw a different package size. Approve (with an editable price) records a dated history entry through the normal price path; Dismiss hides it. Filters for waiting, approved, dismissed.
+- **Receipt upload**: photo or PDF straight from the admin into Storage `receipts/` and a `receipt_queue` document with store, date and note; the queue shows scan status, proposal count and unmatched lines.
+- **Bot** (`scripts/pricebot/pricebot.mjs`, no packages): signs in as the limited pricebot user through the REST APIs and provides the watch list, proposal creation with validation and duplicate skipping, receipt download and completion, and run records. Runs on Dave's Mac inside two scheduled tasks on his Claude account (monthly price check on the 1st, receipt scan every morning); prompts in `scripts/pricebot/README.md`. Costing Home and the Analytics tile show the real "proposals waiting" count; Costing Settings explains the schedule, the fallback (share the receipt with Claude in the app) and lists the last runs.
+- **Rules**: the pricebot may read and create `price_proposals`, read `receipt_queue` and update only a receipt's result fields, read `receipts/` in Storage, and write `bot_runs`. Admin access unchanged.
+- **Tests**: `harness/run-phase4.js` and a Storage stub for the harness.
+
 ### 🟢 Milestone 24, Phase 3: Reports and Alerts - Sep 6, 2026
 - **Reports** (`admin/costing-reports.js`, math in `admin/costing-history.js`): price history chart per ingredient (cost per unit, one line per source, entries table with packages bought), biggest movers over the last 30 days with the recipes each one touches, price-jump alerts, and recipe / product cost over 3, 6 and 12 months with a "now vs 3/6/12 months ago" table.
 - **Cost snapshots** (`cost_snapshots/{YYYY-MM-DD}`): every recipe, product size and ingredient cost, saved automatically when a price is logged or edited and when Home or Reports opens after a quiet week. "Rebuild cost history" in Costing Settings reconstructs one point per month back to the first price entry (labeled reconstructed, dashed on the chart).

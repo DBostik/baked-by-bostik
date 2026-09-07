@@ -11,7 +11,8 @@ Offline checks for the admin Costing module. Nothing here touches Firebase or th
 ## Browser harness (renders every Costing screen with the seed data)
 
 The harness serves the real `admin/` files with the Firebase SDK swapped for in-memory stubs
-(`harness/stubs/`) fed by `admin/costing-seed.json` and `admin/costing-seed-phase2.json`.
+(`harness/stubs/`: app, auth, firestore, storage) fed by `admin/costing-seed.json` and `admin/costing-seed-phase2.json`,
+plus Phase 4 fixtures (proposals, receipts, a bot run) defined at the top of `stubs/firestore.js`.
 It needs Playwright with Chromium (`npm i -g playwright && npx playwright install chromium`). Chart.js is served
 from `harness/vendor/chart.umd.js` (4.4.4) so the Reports charts render offline. The Cowork VM on Dave's Mac cannot
 run Chromium (no root for its system libraries); run the harness in the cloud container instead (see
@@ -21,6 +22,7 @@ run Chromium (no root for its system libraries); run the harness in the cloud co
     node tools/costing-tests/harness/run-phase1.js     # ingredients, log prices, recipes, settings
     node tools/costing-tests/harness/run-phase2.js     # products, estimator, estimates, margin table
     node tools/costing-tests/harness/run-phase3.js     # reports, home alerts + dismiss, log prices qty, rebuild history, analytics tile
+    node tools/costing-tests/harness/run-phase4.js     # price reviews inbox (approve/dismiss/filters), receipt upload + queue, home card, settings card
 
 Each run prints a JSON summary (row counts, totals, matched lines, page errors) and writes
 screenshots next to the runner. `errors` must be empty apart from blocked font/CDN loads. `run-phase3.js` also

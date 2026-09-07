@@ -21,7 +21,8 @@ s = s.replace('<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15
 im = """<script type="importmap">{"imports":{
  "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js":"/stubs/app.js",
  "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js":"/stubs/auth.js",
- "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js":"/stubs/firestore.js"}}</script>
+ "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js":"/stubs/firestore.js",
+ "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js":"/stubs/storage.js"}}</script>
 <script>window.__HARNESS=true;document.addEventListener('DOMContentLoaded',()=>{document.getElementById('dashboard-view').classList.remove('hidden');document.getElementById('loading-overlay').style.display='none';document.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();document.querySelectorAll('.page-section').forEach(p=>p.classList.add('hidden'));const t=document.getElementById('page-'+a.dataset.page);if(t)t.classList.remove('hidden');}));});</script>"""
 s = s.replace('</head>', im + '\n</head>')
 (site / 'admin' / 'index.html').write_text(s)

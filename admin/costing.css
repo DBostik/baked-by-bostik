@@ -197,3 +197,25 @@ body.c-modal-open { overflow: hidden; }
 .c-pill-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 700; }
 .c-qty-in { width: 5rem; text-align: right; }
 .c-history summary a { margin-left: 0.4rem; font-weight: 400; }
+
+/* ---------------- Phase 4: price reviews, receipts ---------------- */
+.c-proposal { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 0.75rem 1.25rem; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
+.c-proposal:last-child { border-bottom: none; }
+.c-proposal-done { opacity: 0.7; }
+.c-proposal-main { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; font-size: 0.92rem; }
+.c-proposal-main a { color: var(--primary); }
+.c-proposal-nums { display: flex; gap: 1.25rem; font-size: 0.92rem; white-space: nowrap; }
+.c-proposal-nums .c-label { margin-bottom: 0; }
+.c-proposal-actions { display: flex; gap: 0.4rem; align-items: center; }
+.c-proposal-actions .c-price-in { width: 6.5rem; text-align: right; }
+.c-proposal-actions .btn-primary, .c-proposal-actions .btn-secondary { width: auto; white-space: nowrap; }
+@media (max-width: 900px) { .c-proposal { grid-template-columns: 1fr; } .c-proposal-nums { justify-content: flex-start; } }
+.c-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85em; }
+.c-warntext { color: var(--status-wait-text); }
+.c-receipt { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.6rem 0; border-bottom: 1px solid rgba(0, 0, 0, 0.05); font-size: 0.9rem; }
+.c-receipt:last-child { border-bottom: none; }
+.c-receipt-thumb { flex: 0 0 56px; width: 56px; height: 56px; border-radius: var(--radius-sm); background: rgba(26, 42, 58, 0.06); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.c-receipt-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.c-receipt-text { min-width: 0; display: flex; flex-direction: column; gap: 0.15rem; }
+.c-reviews-home .btn-primary { margin-top: 0.25rem; }
+#rv-file { padding: 0.4rem; }

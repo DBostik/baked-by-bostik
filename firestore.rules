@@ -133,9 +133,11 @@ service cloud.firestore {
     }
 
     // Phase 4: proposals from the price bot or a receipt scan, reviewed by an admin.
-    // The bot can only create well-formed proposals; it cannot read, change or delete them.
+    // The bot can create well-formed proposals and read them (so a re-run can skip duplicates);
+    // it cannot change or delete them.
     match /price_proposals/{proposalId} {
-      allow read, update, delete: if isAdmin();
+      allow update, delete: if isAdmin();
+      allow read: if isAdmin() || isPricebot();
       allow create: if isAdmin()
           || (isPricebot()
               && request.resource.data.keys().hasAll(['ingredientId', 'sourceId', 'price', 'foundAt', 'status'])
@@ -143,8 +145,19 @@ service cloud.firestore {
               && request.resource.data.price is number
               && request.resource.data.price >= 0);
     }
+    // Receipts uploaded from Price Reviews. The scanner (pricebot) reads the queue and may only update the
+    // fields that describe its result; it cannot create, delete, or touch the file path.
     match /receipt_queue/{receiptId} {
       allow read, write: if isAdmin();
+      allow read: if isPricebot();
+      allow update: if isPricebot()
+          && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['status', 'scannedAt', 'proposalsCount', 'unmatched', 'botNote']);
+    }
+    // One document per scheduled-task run (price check or receipt scan), so Costing Settings can show the last runs.
+    match /bot_runs/{runId} {
+      allow read, delete: if isAdmin();
+      allow create, update: if isAdmin() || isPricebot();
     }
   }
 }

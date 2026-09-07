@@ -48,6 +48,7 @@ async function reloadHistoryFor(ids) {
 // ------------------------------------------------------------------ data: cost snapshots
 function subscribeSnapshots() {
     if (R.unsub) return;
+    R.unsub = () => { }; // placeholder so a synchronous first callback cannot re-enter
     R.unsub = onSnapshot(query(collection(db, 'cost_snapshots'), orderBy('date', 'asc'), limit(600)), snap => {
         const list = [];
         snap.forEach(d => list.push({ id: d.id, ...d.data() }));
@@ -327,12 +328,12 @@ function analyticsTile(loadHistory = false) {
     const pill = (label, value, page, filter) => `<div class="c-pill" data-action="go" data-page="${page}" ${filter ? `data-filter="${filter}"` : ''}><span class="c-pill-value">${value}</span><span class="c-pill-label">${label}</span></div>`;
     host.innerHTML = `<h3 style="margin-top:0;color:#374151;font-size:1.1rem;">Costing</h3>
         <div class="c-pills">
-          ${pill('Proposals waiting', '0', 'costing-home')}
+          ${pill('Proposals waiting', [...(state.proposals || new Map()).values()].filter(p => p.status === 'pending').length, 'costing-reviews')}
           ${pill('Stale prices', stale, 'costing-ingredients', 'stale')}
           ${pill('Under margin', rows.length ? `${under} of ${rows.length}` : '—', 'costing-home')}
           ${pill('Price jumps', jumps == null ? '…' : jumps, 'costing-reports')}
         </div>
-        <p class="c-muted c-small" style="margin:.75rem 0 0">Proposals arrive with the price bot in Phase 4. Click a number to open that screen.</p>`;
+        <p class="c-muted c-small" style="margin:.75rem 0 0">Click a number to open that screen.</p>`;
 }
 function analyticsVisible() { const p = $('#page-analytics'); return p && !p.classList.contains('hidden'); }
 

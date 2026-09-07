@@ -148,7 +148,7 @@
 - [x] **Recipe Costing**: Live batch and per-unit costs from current prices; unit conversion; sub-recipes (Milestone 24, Phase 1).
 - [x] **Products & Estimator**: cake configurator (size, flavor, filling, frosting, add-ons, tiers), cost-plus pricing, saved estimates linked to requests (Milestone 24, Phase 2, Sep 2026).
 - [x] **Reports & Alerts**: price history charts, cost over time, price-jump and margin alerts, Analytics tile (Milestone 24, Phase 3, Sep 2026).
-- [ ] **Price Bot & Receipts**: monthly price check and receipt scanning via Claude Routines into a review inbox (Phase 4).
+- [x] **Price Bot & Receipts**: monthly price check and receipt scanning via scheduled Claude tasks into a review inbox (Milestone 24, Phase 4, Sep 2026).
 - [ ] **Add to Quote**: push estimate lines into the quote modal (Phase 5).
 - [ ] **Inventory**: on-hand counts, reorder points and low-stock alerts; stock in from shopping trips and receipts, stock out when an order completes (Phase 6).
 
