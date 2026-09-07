@@ -232,9 +232,9 @@ function readProductForm() {
 
 async function saveProduct(p) {
     const id = p.id || (slug(p.name) + '-' + uid(4));
-    const data = { ...p }; delete data.id;
-    data.updatedAt = serverTimestamp(); if (!data.createdAt) data.createdAt = serverTimestamp();
-    await setDoc(doc(db, 'products', id), data, { merge: false });
+    const data = { ...p }; delete data.id; delete data.createdAt; // the editor's copy holds a plain-map timestamp
+    data.updatedAt = serverTimestamp(); if (!p.id) data.createdAt = serverTimestamp();
+    await setDoc(doc(db, 'products', id), data, { merge: true });
     return id;
 }
 

@@ -1,6 +1,6 @@
 # Costing module: handoff for the next session
 
-Last updated: Sep 7, 2026 (end of Phase 6). All six planned phases are built. Read this first, then `DEPLOY.md` section 5.
+Last updated: Sep 7, 2026 (end of Phase 6, after a full review pass). All six planned phases are built. Read this first, then `DEPLOY.md` section 5.
 
 ## What this is
 
@@ -129,6 +129,14 @@ suggested = cost basis x (1 + profit) rounded up to `roundTo`; margin = (menu - 
   estimator, pricing, saved estimates, request hook) are built, tested and deployed (Sep 6, 2026).
   PR #1 (security: quote functions require the admin login, storage uploads limited to images under 15 MB) was
   merged the same day with a fix that keeps the order form's `getDownloadURL` working.
+* **Review pass** (Sep 7, 2026, after Phase 6): a fresh read of every costing file found and fixed: the item,
+  recipe and product editors wrote their stale JSON copy back (`stock` counts and `createdAt` as a plain map;
+  now stripped before save); proposal links limited to http(s); double-click guards on Approve, Made this and
+  Add to quote; sub-recipe lines with no quantity are flagged instead of costing $0; quote lines add up exactly
+  by letting the smallest-quantity line absorb rounding; sidebar and analytics handlers were wired twice (every
+  render ran twice); Add to quote reports when the request cannot be opened; two tables wrapped for phones;
+  pricebot Storage download sends `Authorization: Firebase <token>` (falls back to Bearer). Kristen's guide for
+  daily use is `docs/costing-guide-for-kristen.md`.
 * **Phase 6** (inventory) was built Sep 7, 2026: `costing-inventory.js`, `costing-inventory-math.js`, `ref` data
   on priced lines in `costing-pricing.js`, rules for `inventory_moves`, unit tests `test-inventory.mjs`, harness
   `run-phase6.js`. Kristen's first steps: Inventory, "Turn on for all supplies", then Count each supply once and set

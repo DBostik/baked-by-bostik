@@ -15,6 +15,10 @@
 
 ## 📅 September 2026
 
+### 🟢 Milestone 24: review fixes and Kristen's guide - Sep 7, 2026
+- Fixes from a full review of the Costing module: editors no longer write stale stock counts or timestamps back to items, recipes and products; proposal links limited to web URLs; double-click guards on Approve, Made this and Add to quote; a sub-recipe line without a quantity is flagged instead of costing $0; quote lines add up exactly; sidebar handlers wired once (renders had been running twice); two tables wrapped for phones; the bot's receipt download uses the Firebase token header.
+- `docs/costing-guide-for-kristen.md`: how everything works, how to use it, what to test.
+
 ### 🟢 Milestone 24, Phase 6: Inventory - Sep 7, 2026
 - **Inventory** (`admin/costing-inventory.js`): on-hand counts and reorder points per item. "Turn on for all supplies" starts it; any ingredient can be tracked too. Per item: Count (in the item's unit or in packs of the preferred package), Adjust with a reason, History, Track on or off, reorder point inline. Status badges: needs a count, OK, low, out.
 - **Stock in** on its own from Log Prices (Packages x package size) and from approved receipt proposals. **Stock out** on its own when a request is moved to Completed and has a saved estimate: its packaging kit and, for tracked ingredients, its recipe quantities come off the counts (whole batches when the settings round). "Made this" on an estimate does the same by hand. Each estimate can only be taken once; every movement has Undo for 30 days and lives in `inventory_moves`. Orders completed before inventory was turned on are ignored; anything completed while the admin was closed shows on Costing Home and Inventory as not yet taken.

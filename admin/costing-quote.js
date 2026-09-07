@@ -40,6 +40,8 @@ function openQuotePreview(estimateId, basis = 'suggested') {
 function setInput(el, value) { if (!el) return; el.value = value; el.dispatchEvent(new Event('input', { bubbles: true })); }
 function pushLines(requestId, lines) {
     window.resendQuote(requestId); // closes the request modal, opens the quote modal with the request's placeholder line
+    const qm = document.getElementById('quote-modal');
+    if (!qm || qm.classList.contains('hidden')) { toast('That request could not be opened (was it deleted?)', 'err'); return 0; }
     const body = document.getElementById('quote-items-body');
     const addBtn = document.getElementById('btn-add-item');
     // drop placeholder rows (price 0) so the estimate lines are not stacked on top of an empty line
@@ -91,6 +93,7 @@ if (document.readyState !== 'loading') installRequestStripHook(); else document.
 registerExtension('rendered', name => { if (name === 'costing-estimates') decorateEstimatesList(); });
 registerAction('quote-preview', el => openQuotePreview(el.dataset.id));
 registerAction('quote-push', el => {
+    if (el.disabled) return; el.disabled = true;
     const e = state.estimates.get(el.dataset.id); if (!e) return;
     const basis = $('input[name="q-basis"]:checked')?.value || 'suggested';
     const q = P.quoteLines(e, pricingCtx(), pricingSettings(), basis);

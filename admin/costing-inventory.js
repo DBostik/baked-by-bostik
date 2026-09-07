@@ -312,7 +312,8 @@ registerAction('inv-take', async (el, e) => {
     e.preventDefault();
     const est = state.estimates.get(el.dataset.id); if (!est) return;
     if (est.stockOut) { toast('Already taken from stock', 'err'); return; }
-    await takeFromStock(est, { requestId: el.dataset.req || est.requestId || null });
+    if (el.disabled) return; el.disabled = true; // a double click must not take the order twice
+    try { await takeFromStock(est, { requestId: el.dataset.req || est.requestId || null }); } finally { if (el.isConnected) el.disabled = false; }
 });
 registerAction('inv-undo', el => undoMove(el.dataset.id));
 registerAction('inv-undo-group', async el => { if (!confirm('Put this order\'s materials back on the counts?')) return; await undoGroup(el.dataset.group); });

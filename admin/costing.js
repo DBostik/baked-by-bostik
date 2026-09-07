@@ -126,9 +126,12 @@ async function saveIngredient(ing) {
     const id = ing.id || (slug(ing.name) + '-' + uid(4));
     const data = { ...ing };
     delete data.id;
+    // never write back what the editor did not own: live stock counts (Phase 6) and the original timestamps
+    // (a JSON deep copy turns Firestore Timestamps into plain maps)
+    delete data.stock; delete data.createdAt;
     data.nameLower = String(data.name || '').toLowerCase();
     data.updatedAt = serverTimestamp();
-    if (!data.createdAt) data.createdAt = serverTimestamp();
+    if (!ing.id) data.createdAt = serverTimestamp();
     await setDoc(doc(db, 'ingredients', id), data, { merge: true });
     return id;
 }
@@ -137,10 +140,10 @@ async function deleteIngredient(id) { await deleteDoc(doc(db, 'ingredients', id)
 async function saveRecipe(rec) {
     const id = rec.id || (slug(rec.name) + '-' + uid(4));
     const data = { ...rec };
-    delete data.id;
+    delete data.id; delete data.createdAt;
     data.nameLower = String(data.name || '').toLowerCase();
     data.updatedAt = serverTimestamp();
-    if (!data.createdAt) data.createdAt = serverTimestamp();
+    if (!rec.id) data.createdAt = serverTimestamp();
     await setDoc(doc(db, 'recipes', id), data, { merge: true });
     return id;
 }
@@ -445,8 +448,8 @@ function sourceCard(s, idx, ing, stores, history) {
             <input class="c-input" data-f="newDate" type="date" value="${todayISO()}">
             <input class="c-input" data-f="newNote" placeholder="note (optional)">
         </div>
-        ${hist.length ? `<details class="c-history"><summary>Price history (${hist.length}) <a href="#" class="c-small" data-action="report-ingredient" data-id="${esc(ing.id || '')}">chart</a></summary><table class="c-table c-table-sm"><thead><tr><th>Date</th><th class="num">Price</th><th class="num">Bought</th><th>How</th><th>Note</th></tr></thead><tbody>
-            ${hist.map(h => `<tr><td>${fmtDate(h.date)}</td><td class="num">${U.fmtMoney(h.price)}</td><td class="num">${U.num(h.qty) != null ? esc(U.fmtQty(h.qty)) : ''}</td><td>${esc(h.method || '')}</td><td class="c-muted">${esc(h.note || '')}</td></tr>`).join('')}</tbody></table></details>` : ''}
+        ${hist.length ? `<details class="c-history"><summary>Price history (${hist.length}) <a href="#" class="c-small" data-action="report-ingredient" data-id="${esc(ing.id || '')}">chart</a></summary><div class="c-table-wrap"><table class="c-table c-table-sm"><thead><tr><th>Date</th><th class="num">Price</th><th class="num">Bought</th><th>How</th><th>Note</th></tr></thead><tbody>
+            ${hist.map(h => `<tr><td>${fmtDate(h.date)}</td><td class="num">${U.fmtMoney(h.price)}</td><td class="num">${U.num(h.qty) != null ? esc(U.fmtQty(h.qty)) : ''}</td><td>${esc(h.method || '')}</td><td class="c-muted">${esc(h.note || '')}</td></tr>`).join('')}</tbody></table></div></details>` : ''}
     </div>`;
 }
 function readIngredientForm(ctx) {
@@ -1051,12 +1054,8 @@ document.addEventListener('click', e => {
 });
 
 // Sidebar links for costing pages (admin.js handles show/hide; we render)
-document.addEventListener('DOMContentLoaded', () => {
-    $$('.nav-links a[data-page^="costing-"]').forEach(a => a.addEventListener('click', () => showCostingPage(a.dataset.page)));
-});
-if (document.readyState !== 'loading') {
-    $$('.nav-links a[data-page^="costing-"]').forEach(a => a.addEventListener('click', () => showCostingPage(a.dataset.page)));
-}
+function wireNav() { $$('.nav-links a[data-page^="costing-"]').forEach(a => a.addEventListener('click', () => showCostingPage(a.dataset.page))); }
+if (document.readyState !== 'loading') wireNav(); else document.addEventListener('DOMContentLoaded', wireNav);
 
 onAuthStateChanged(auth, user => {
     state.user = user;

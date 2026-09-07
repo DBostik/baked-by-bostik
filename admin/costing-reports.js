@@ -358,8 +358,8 @@ registerExtension('dataChanged', () => {
     if (!state.user && R.unsub) { unsubscribeSnapshots(); R.history = new Map(); R.historyLoaded = false; R.touchedThisSession = false; }
     analyticsTile(analyticsVisible());
 });
-document.addEventListener('DOMContentLoaded', () => { const a = $('.nav-links a[data-page="analytics"]'); if (a) a.addEventListener('click', () => setTimeout(() => analyticsTile(true), 50)); });
-if (document.readyState !== 'loading') { const a = $('.nav-links a[data-page="analytics"]'); if (a) a.addEventListener('click', () => setTimeout(() => analyticsTile(true), 50)); }
+function wireAnalytics() { const a = $('.nav-links a[data-page="analytics"]'); if (a) a.addEventListener('click', () => setTimeout(() => analyticsTile(true), 50)); }
+if (document.readyState !== 'loading') wireAnalytics(); else document.addEventListener('DOMContentLoaded', wireAnalytics);
 
 registerAction('report-range', el => { R.view.months = Number(el.dataset.months) || 6; $$('#rp-cost .c-range button').forEach(b => b.classList.toggle('active', b === el)); fillCost(); });
 registerAction('report-pick', el => { R.view.key = el.dataset.key; const sel = $('#rp-key'); if (sel) sel.value = R.view.key; fillCost(); });

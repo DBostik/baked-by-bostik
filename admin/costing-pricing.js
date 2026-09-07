@@ -340,18 +340,18 @@ export function quoteLines(estimate, ctx, settings, basis = 'suggested') {
     const bases = est.items.map(i => i.ingredients * (1 + waste) + i.supplies + i.hours * rate);
     const sumBase = bases.reduce((a, b) => a + b, 0);
     const target = basis === 'menu' ? est.totals.menu : est.totals.suggested;
-    let acc = 0;
-    const lines = est.items.map((it, k) => {
-        const product = getFrom(ctx.products, src[k]?.productId);
-        const isCake = product?.family === 'cake';
-        const qty = isCake ? Math.max(1, num(src[k]?.qty) || 1) : Math.max(0.5, num(src[k]?.qty) || 1);
-        let share;
-        if (basis === 'menu') share = U.round2(it.menu);
-        else if (k === est.items.length - 1) share = U.round2(target - acc);
-        else share = U.round2(sumBase ? target * bases[k] / sumBase : target / est.items.length);
-        acc += share;
-        const price = U.round2(share / qty);
-        return { name: quoteItemName(src[k] || {}, product, ctx).replace(/"/g, ''), qty, price, total: U.round2(price * qty), menu: U.round2(it.menu), suggestedShare: share, label: it.label };
-    });
+    const qtys = est.items.map((it, k) => { const product = getFrom(ctx.products, src[k]?.productId); return product?.family === 'cake' ? Math.max(1, num(src[k]?.qty) || 1) : Math.max(0.5, num(src[k]?.qty) || 1); });
+    // one line absorbs the per-unit rounding of the others so the quote adds up: the one with the smallest quantity
+    // (exact when it is a single cake); ties go to the last line
+    let absorber = 0; qtys.forEach((q, k) => { if (q <= qtys[absorber]) absorber = k; });
+    const lines = new Array(est.items.length);
+    let accTotal = 0;
+    const build = (k, share) => {
+        const it = est.items[k]; const product = getFrom(ctx.products, src[k]?.productId); const qty = qtys[k];
+        const price = U.round2(share / qty); const total = U.round2(price * qty); accTotal += total;
+        lines[k] = { name: quoteItemName(src[k] || {}, product, ctx).replace(/"/g, ''), qty, price, total, menu: U.round2(it.menu), suggestedShare: share, label: it.label };
+    };
+    est.items.forEach((it, k) => { if (k === absorber && basis !== 'menu') return; build(k, basis === 'menu' ? U.round2(it.menu) : U.round2(sumBase ? target * bases[k] / sumBase : target / est.items.length)); });
+    if (basis !== 'menu') build(absorber, U.round2(target - accTotal));
     return { lines, total: U.round2(lines.reduce((a, l) => a + l.total, 0)), basis, estimateTotals: est.totals };
 }

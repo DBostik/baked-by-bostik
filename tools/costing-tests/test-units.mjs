@@ -94,5 +94,9 @@ eq('white cake batter grams ~1250 (whites counted as whole eggs)', wc.grams, 125
 const cc = costRecipe(recipes['confetti-cake'], ingredients, recipes);
 eq('confetti = white cake + sprinkles', cc.total > wc.total, true);
 eq('confetti grams complete', cc.gramsComplete, true);
+
+// a sub-recipe line without a quantity must be a problem, not a free $0 line
+const noQty = costRecipe({ id: 'x', name: 'X', lines: [{ text: 'buttercream', unit: 'batch', recipeId: 'vanilla-buttercream' }] }, ingredients, recipes);
+eq('sub-recipe without qty is flagged', [noQty.ok, noQty.problems.length], [false, 1]);
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

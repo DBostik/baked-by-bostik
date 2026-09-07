@@ -295,7 +295,8 @@ export function costRecipe(recipe, ingredientsById, recipesById, opts = {}) {
         const qty = num(line.qty);
         if (line.recipeId) {
             const sub = get(recipesById, line.recipeId);
-            if (!sub) { res.ok = false; res.reason = 'Sub-recipe not found'; }
+            if (qty == null) { res.ok = false; res.reason = 'No quantity'; }
+            else if (!sub) { res.ok = false; res.reason = 'Sub-recipe not found'; }
             else if (sub.id === recipe.id) { res.ok = false; res.reason = 'A recipe cannot include itself'; }
             else {
                 const subCost = costRecipe(sub, ingredientsById, recipesById, { ...opts, depth: depth + 1 });

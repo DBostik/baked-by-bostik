@@ -106,7 +106,9 @@ class Client {
     }
     async download(storagePath, toFile) {
         const url = `https://firebasestorage.googleapis.com/v0/b/${this.cfg.storageBucket}/o/${encodeURIComponent(storagePath)}?alt=media`;
-        const res = await fetch(url, { headers: { Authorization: 'Bearer ' + this.token } });
+        // Firebase Storage takes a Firebase ID token as "Authorization: Firebase <token>"; try that first, then Bearer
+        let res = await fetch(url, { headers: { Authorization: 'Firebase ' + this.token } });
+        if (res.status === 401 || res.status === 403) res = await fetch(url, { headers: { Authorization: 'Bearer ' + this.token } });
         if (!res.ok) throw new Error(`download ${storagePath} -> ${res.status}`);
         fs.writeFileSync(toFile, Buffer.from(await res.arrayBuffer()));
         return toFile;

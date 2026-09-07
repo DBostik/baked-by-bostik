@@ -104,7 +104,8 @@ function proposalRow(p) {
     const pkgSeen = (U.num(p.packageQty) != null && p.packageUnit) ? `${U.fmtQty(p.packageQty)} ${U.UNIT_LABELS[p.packageUnit] || p.packageUnit}` : '';
     const pkgOnFile = src ? `${U.fmtQty(src.packageQty)} ${U.UNIT_LABELS[src.packageUnit] || src.packageUnit || ''}`.trim() : '';
     const pkgMismatch = pkgSeen && pkgOnFile && pkgSeen !== pkgOnFile;
-    const link = p.foundUrl || src?.productUrl || '';
+    const rawLink = p.foundUrl || src?.productUrl || '';
+    const link = /^https?:\/\//i.test(rawLink) ? rawLink : ''; // only web links; never javascript: or data:
     const pending = p.status === 'pending';
     return `<div class="c-proposal ${pending ? '' : 'c-proposal-done'}" data-id="${esc(p.id)}">
       <div class="c-proposal-main">
@@ -203,7 +204,7 @@ function settingsHtml() {
         <p class="c-small"><strong>If a receipt cannot wait, or the upload misbehaves:</strong> share the photo with Claude in the Claude app and say "Log this receipt for Baked By Bostik". It ends up in the same inbox.</p>
         <p class="c-small"><strong>What the bot searches:</strong> the product link on each source first; without a link it searches the web for the brand, item and package size at that store. Costco warehouse prices are often not published, Walmart prices vary by store and Amazon changes hourly, so expect "not found" on some staples and good catches on the big movers (butter, eggs, chocolate, sugar). Add product links on the item page to help it.</p>
         <div class="c-section-head"><h3>Last runs</h3></div>
-        ${runs.length ? `<table class="c-table c-table-sm"><thead><tr><th>When</th><th>Task</th><th>Result</th></tr></thead><tbody>${runs.map(r => `<tr><td>${esc(fmtTs(r.startedAt))}</td><td>${esc(r.kind || '')}</td><td>${esc(r.summary || r.status || '')}</td></tr>`).join('')}</tbody></table>` : '<p class="c-muted c-small">No runs yet.</p>'}
+        ${runs.length ? `<div class="c-table-wrap"><table class="c-table c-table-sm"><thead><tr><th>When</th><th>Task</th><th>Result</th></tr></thead><tbody>${runs.map(r => `<tr><td>${esc(fmtTs(r.startedAt))}</td><td>${esc(r.kind || '')}</td><td>${esc(r.summary || r.status || '')}</td></tr>`).join('')}</tbody></table></div>` : '<p class="c-muted c-small">No runs yet.</p>'}
     </div>`;
 }
 
@@ -215,7 +216,7 @@ registerExtension('dataChanged', () => {
     if (state.user && !V.subscribed) subscribe();
     if (!state.user && V.subscribed) unsubscribe();
 });
-registerAction('rv-approve', (el) => approve(el.dataset.id, el));
+registerAction('rv-approve', async (el) => { el.disabled = true; try { await approve(el.dataset.id, el); } finally { if (el.isConnected) el.disabled = false; } });
 registerAction('rv-dismiss', (el) => dismiss(el.dataset.id));
 registerAction('rv-dismiss-all', async () => {
     const list = pendingProposals();
