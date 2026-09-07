@@ -23,6 +23,7 @@ run Chromium (no root for its system libraries); run the harness in the cloud co
     node tools/costing-tests/harness/run-phase2.js     # products, estimator, estimates, margin table
     node tools/costing-tests/harness/run-phase3.js     # reports, home alerts + dismiss, log prices qty, rebuild history, analytics tile
     node tools/costing-tests/harness/run-phase4.js     # price reviews inbox (approve/dismiss/filters), receipt upload + queue, home card, settings card
+    node tools/costing-tests/harness/run-phase5.js     # add to quote: preview (suggested/menu), push into the quote modal stand-in, request strip button
 
 Each run prints a JSON summary (row counts, totals, matched lines, page errors) and writes
 screenshots next to the runner. `errors` must be empty apart from blocked font/CDN loads. `run-phase3.js` also

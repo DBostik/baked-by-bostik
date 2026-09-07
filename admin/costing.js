@@ -17,7 +17,7 @@ const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const COSTING_VERSION = '4.0.0';
+const COSTING_VERSION = '5.0.0';
 const PAGES = ['costing-home', 'costing-ingredients', 'costing-log', 'costing-recipes', 'costing-products', 'costing-estimator', 'costing-estimates', 'costing-reports', 'costing-reviews', 'costing-settings'];
 // Other costing modules (products, estimator, reports) plug in here.
 const pageRenderers = {};
@@ -27,8 +27,9 @@ export function registerAction(name, fn) { actionHandlers[name] = fn; }
 // Extension points so other modules can add to Phase 1 screens without growing this file:
 //   home(body) / settings(body) -> HTML string appended to that screen;
 //   afterPrices(entries, touchedIds) -> called after recordPrices commits;
-//   dataChanged() -> called on every rerender (any collection changed), even when no costing page is showing.
-export const extensions = { home: [], settings: [], afterPrices: [], dataChanged: [] };
+//   dataChanged() -> called on every rerender (any collection changed), even when no costing page is showing;
+//   rendered(name, body) -> called after any costing page renders (add buttons to another module's screen).
+export const extensions = { home: [], settings: [], afterPrices: [], dataChanged: [], rendered: [] };
 export function registerExtension(point, fn) { (extensions[point] || (extensions[point] = [])).push(fn); }
 function runExtensions(point, ...args) { return (extensions[point] || []).map(fn => { try { return fn(...args); } catch (e) { console.error(point, e); return ''; } }); }
 const RECIPE_CATEGORIES = ['cake', 'cupcake', 'cookie', 'frosting', 'filling', 'other'];
@@ -219,6 +220,7 @@ function render(name) {
         case 'costing-settings': renderSettings(body); break;
         default: if (pageRenderers[name]) pageRenderers[name](body); else body.innerHTML = '<p class="c-muted">This screen is not loaded.</p>';
     }
+    runExtensions('rendered', name, body);
 }
 
 // ------------------------------------------------------------------ HOME

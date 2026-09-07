@@ -290,3 +290,65 @@ export function standardItemFor(product, sizeOrTierId) {
     if (product.family === 'cake') return { productId: product.id, qty: 1, tiers: [{ sizeId: sizeOrTierId }] };
     return { productId: product.id, qty: 1, tierId: sizeOrTierId };
 }
+
+// Phase 5: customer-facing quote lines for the Create Quote / Invoice modal ------------------------------
+// One line per estimate item. basis 'suggested' splits the order's suggested price across items in
+// proportion to each item's materials plus labor (so the lines add up to the estimate); 'menu' uses each
+// item's menu price. Cakes are 1 line per cake (qty = cakes); cupcakes and cookies are priced per dozen.
+function getFrom(map, id) { return map instanceof Map ? map.get(id) : map?.[id]; }
+function recipeName(ctx, id) { return id ? (getFrom(ctx.recipes, id)?.name || '') : ''; }
+function short(name) { return String(name || '').replace(/\s*\(.*?\)\s*/g, ' ').replace(/\s+/g, ' ').trim(); }
+export function quoteItemName(item, product, ctx) {
+    if (!product) return 'Item';
+    const bits = [];
+    if (product.family === 'cake') {
+        const tiers = (item.tiers && item.tiers.length) ? item.tiers : [{ sizeId: product.refSizeId }];
+        const sizes = tiers.map(t => ((product.sizes || []).find(s => s.id === t.sizeId) || {}).label || '?');
+        const flavors = [...new Set(tiers.map(t => short(recipeName(ctx, t.flavorRecipeId || product.defaultFlavorRecipeId))).filter(Boolean))];
+        const fillings = [...new Set(tiers.map(t => short(recipeName(ctx, t.fillingRecipeId || product.defaultFillingRecipeId))).filter(Boolean))];
+        const outers = [...new Set(tiers.map(t => short(recipeName(ctx, t.outerRecipeId || product.defaultOuterRecipeId))).filter(Boolean))];
+        if (flavors.length) bits.push(flavors.join(' and '));
+        if (fillings.length) bits.push(fillings.join(' and ') + ' filling');
+        if (outers.length) bits.push(outers.join(' and '));
+        const extra = tiers.reduce((a, t) => a + (num(t.extraLayers) || 0), 0);
+        if (extra) bits.push(`${extra} extra layer${extra > 1 ? 's' : ''}`);
+        if (item.drip) bits.push('ganache drip');
+        if (num(item.fondantFigures)) bits.push(`${item.fondantFigures} fondant figure${item.fondantFigures > 1 ? 's' : ''}`);
+        if (item.topper) bits.push(item.topper.name ? `topper: ${item.topper.name}` : 'topper');
+        (item.decor || []).forEach(d => { const it = getFrom(ctx.ingredients, d.itemId); bits.push(short(it?.name || d.label || 'decor')); });
+        (item.custom || []).forEach(c => { if (c.name) bits.push(c.name); });
+        return `${product.name}: ${sizes.join(' + ')}${bits.length ? ' (' + bits.join(', ') + ')' : ''}`;
+    }
+    const tier = (product.tiers || []).find(t => t.id === item.tierId) || {};
+    if (product.family === 'cupcake') {
+        const f = short(recipeName(ctx, item.flavorRecipeId || product.defaultFlavorRecipeId)); const fr = short(recipeName(ctx, item.frostingRecipeId || product.defaultFrostingRecipeId));
+        if (f) bits.push(f); if (fr) bits.push(fr);
+    }
+    if (num(item.characters)) bits.push(`${item.characters} character${item.characters > 1 ? 's' : ''}`);
+    (item.decor || []).forEach(d => { const it = getFrom(ctx.ingredients, d.itemId); bits.push(short(it?.name || d.label || 'decor')); });
+    (item.custom || []).forEach(c => { if (c.name) bits.push(c.name); });
+    return `${product.name}${tier.label ? ': ' + tier.label : ''}${bits.length ? ' (' + bits.join(', ') + ')' : ''}, per dozen`;
+}
+export function quoteLines(estimate, ctx, settings, basis = 'suggested') {
+    const s = { ...DEFAULT_PRICING, ...(settings || {}) };
+    const est = priceEstimate(estimate, ctx, s);
+    const src = estimate.items || [];
+    const waste = (num(s.wasteAllowancePct) || 0) / 100, rate = num(s.hourlyRate) || 0;
+    const bases = est.items.map(i => i.ingredients * (1 + waste) + i.supplies + i.hours * rate);
+    const sumBase = bases.reduce((a, b) => a + b, 0);
+    const target = basis === 'menu' ? est.totals.menu : est.totals.suggested;
+    let acc = 0;
+    const lines = est.items.map((it, k) => {
+        const product = getFrom(ctx.products, src[k]?.productId);
+        const isCake = product?.family === 'cake';
+        const qty = isCake ? Math.max(1, num(src[k]?.qty) || 1) : Math.max(0.5, num(src[k]?.qty) || 1);
+        let share;
+        if (basis === 'menu') share = U.round2(it.menu);
+        else if (k === est.items.length - 1) share = U.round2(target - acc);
+        else share = U.round2(sumBase ? target * bases[k] / sumBase : target / est.items.length);
+        acc += share;
+        const price = U.round2(share / qty);
+        return { name: quoteItemName(src[k] || {}, product, ctx).replace(/"/g, ''), qty, price, total: U.round2(price * qty), menu: U.round2(it.menu), suggestedShare: share, label: it.label };
+    });
+    return { lines, total: U.round2(lines.reduce((a, l) => a + l.total, 0)), basis, estimateTotals: est.totals };
+}

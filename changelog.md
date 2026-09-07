@@ -15,6 +15,10 @@
 
 ## 📅 September 2026
 
+### 🟢 Milestone 24, Phase 5: Add to Quote - Sep 7, 2026
+- **Add to quote** (`admin/costing-quote.js`): a button on every saved estimate (Estimates list, and the Costing strip inside Request Details) opens a preview of customer-facing lines, one per cake and per dozen for cupcakes and cookies, priced at the estimate's suggested price (split so the lines add up) or at menu prices. "Add N lines to quote" opens the existing Create Quote / Invoice screen for that request, drops the $0 placeholder line, and fills the lines in, editable as always. `admin.js` is unchanged; the lines go in through its own Add Item button and inputs.
+- Line math `quoteLines` and `quoteItemName` in `admin/costing-pricing.js` (pure, unit tested); harness `run-phase5.js`.
+
 ### 🟢 Milestone 24, Phase 4: Price Bot and Receipts - Sep 7, 2026
 - **Price Reviews** (`admin/costing-reviews.js`): inbox for proposed prices from the monthly price bot and receipt scans. Each row shows the price on file versus the price found with the percent change, where it was found (link), the confidence note, the receipt line and thumbnail for scans, and a warning when the bot saw a different package size. Approve (with an editable price) records a dated history entry through the normal price path; Dismiss hides it. Filters for waiting, approved, dismissed.
 - **Receipt upload**: photo or PDF straight from the admin into Storage `receipts/` and a `receipt_queue` document with store, date and note; the queue shows scan status, proposal count and unmatched lines.

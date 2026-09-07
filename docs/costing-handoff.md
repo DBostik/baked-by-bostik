@@ -1,6 +1,6 @@
 # Costing module: handoff for the next session
 
-Last updated: Sep 7, 2026 (end of Phase 4). Read this first, then `DEPLOY.md` section 5.
+Last updated: Sep 7, 2026 (end of Phase 5). Read this first, then `DEPLOY.md` section 5.
 
 ## What this is
 
@@ -37,6 +37,7 @@ page in Dave's Claude artifacts. This file is the engineering handoff.
 | `admin/costing-history.js` | Pure functions for Phase 3 (run in Node): date helpers, `priceAsOf`, `ingredientsAsOf` (prices as they were on a date), `unitCostSeries`, `buildSnapshot`, `snapshotAsOf`, `series`, `changeTable`, `movers`, `priceJumps`, `jumpKey`, `pruneDismissed`, `recipesUsing`. |
 | `admin/costing-reports.js` | Reports screen (registers `costing-reports`): price history chart per ingredient with one line per source, biggest movers (30 days), price-jump alerts with Dismiss, recipe/product cost over 3/6/12 months from `cost_snapshots` plus a "now vs 3/6/12 months ago" table. Also: the price-jump card on Costing Home (extension `home`), the "Alerts and cost history" card on Costing Settings (extension `settings`, incl. Rebuild cost history), the Costing tile on the Analytics page (`#costing-analytics-tile`), and snapshot writing (`afterPrices` extension, plus a weekly "touch" when Home/Reports opens). Charts via the global `Chart` (Chart.js from the CDN tag in `index.html`). |
 | `admin/costing-reviews.js` | Phase 4: Price Reviews inbox (registers `costing-reviews`): proposals with approve (editable price, goes through `recordPrices`), dismiss, filters; receipt upload to Storage `receipts/` + `receipt_queue`; the "proposals waiting" card on Costing Home (extension `home`) and the "Price bot and receipts" card on Costing Settings (extension `settings`, shows `bot_runs`). Puts `state.proposals`, `state.receipts`, `state.botRuns` on the shared state; the Analytics tile reads `state.proposals`. |
+| `admin/costing-quote.js` | Phase 5: "Add to quote". Buttons on the Estimates list (extension `rendered`) and on the Costing strip in the Request Details modal (MutationObserver on `#modal-body`). Preview modal with suggested vs menu basis, then pushes lines into admin.js's Create Quote / Invoice modal through its own UI: `window.resendQuote(requestId)` opens it, `#btn-add-item` adds rows, input events on `.q-name/.q-qty/.q-price` update admin.js's private items array. Placeholder rows (price 0) are removed first. Line math is `quoteLines` / `quoteItemName` in `costing-pricing.js` (pure, tested). |
 | `scripts/pricebot/pricebot.mjs` | The bot's deterministic half (plain Node, REST APIs, signs in as the pricebot; see `scripts/pricebot/README.md` for commands and the two task prompts). Runs on Dave's Mac inside the scheduled tasks. |
 | `admin/costing.css` | All Costing styles (prefix `c-`), leans on `admin.css` variables. |
 | `admin/costing-seed.json` | Phase 1 starter data from Kristen's sheet (ingredients, sources, dated prices, 14 recipes, review flags). |
@@ -53,7 +54,8 @@ in `costing.js` (Phase 1 actions are in its `switch`; other modules use `registe
 Keep new work in new files that register pages/actions; do not grow `admin.js`. To add to a Phase 1 screen from a new
 file use `registerExtension(point, fn)`: `home(body)` and `settings(body)` return HTML appended to that screen,
 `afterPrices(entries, touchedIds)` runs after `recordPrices` commits, `dataChanged()` runs on every rerender (any
-collection changed, even with no costing page showing). New modules must be imported from `costing-main.js`.
+collection changed, even with no costing page showing), `rendered(name, body)` runs after any costing page renders
+(used to add buttons to another module's screen). New modules must be imported from `costing-main.js`.
 
 ## Firestore data (all admin-only unless noted)
 
@@ -118,6 +120,10 @@ suggested = cost basis x (1 + profit) rounded up to `roundTo`; margin = (menu - 
   estimator, pricing, saved estimates, request hook) are built, tested and deployed (Sep 6, 2026).
   PR #1 (security: quote functions require the admin login, storage uploads limited to images under 15 MB) was
   merged the same day with a fix that keeps the order form's `getDownloadURL` working.
+* **Phase 5** (add to quote) was built Sep 7, 2026: `costing-quote.js`, `quoteLines` in `costing-pricing.js`, harness
+  `run-phase5.js` (with a stand-in for admin.js's quote modal in `prepare.py`). Kristen's test: open a request that has
+  a saved estimate, press Add to quote on the Costing strip, check the lines and prices in the quote screen, generate
+  the PDF as usual.
 * **Phase 4** (price bot and receipts) was built Sep 7, 2026: Price Reviews inbox, receipt upload and queue,
   `scripts/pricebot/pricebot.mjs` (tested live as the pricebot: sign-in ok, 47 items / 53 sources / 26 searchable,
   none with product links yet), rules for the pricebot, and the two scheduled tasks. Dave's password file was
@@ -175,8 +181,10 @@ suggested = cost basis x (1 + profit) rounded up to `roundTo`; margin = (menu - 
      `list_triggers` shows them, `fire_trigger` runs one by hand. Their prompts are in `scripts/pricebot/README.md`.
    * Possible second pass after Kristen's feedback: product links on sources (helps the bot most), a "match this line
      to..." picker on unmatched receipt lines, approving several proposals at once.
-5. **Add to quote** (1 session): button on a saved estimate that pushes items ({name, qty, price}) into the existing
-   Create Quote / Invoice modal in `admin.js` (`renderQuoteItems`, items array), suggested price prefilled.
+5. **Add to quote**: done Sep 7, 2026 (see `admin/costing-quote.js`). Lines: one per cake (qty = cakes), cupcakes and
+   cookies per dozen; suggested price split across items in proportion to materials plus labor so the lines add up to
+   the estimate's suggested price, or menu prices per item. Names are customer-facing (product, sizes, flavors, add-ons)
+   and editable in the quote screen.
 6. **Inventory** (2 to 3 sessions; Dave asked for it Sep 6): on-hand quantity per supply and later per ingredient,
    reorder point and custom low-stock alerts on Costing Home and the Analytics tile; stock in from Log Prices
    quantities and approved receipt scans; stock out automatically when an order is completed (hook the existing
@@ -188,7 +196,7 @@ suggested = cost basis x (1 + profit) rounded up to `roundTo`; margin = (menu - 
 
 `node tools/costing-tests/test-units.mjs && node tools/costing-tests/test-pricing.mjs && node tools/costing-tests/test-reports.mjs`
 (pure math), then `python3 tools/costing-tests/harness/prepare.py` and `node tools/costing-tests/harness/run-phase1.js`,
-`run-phase2.js`, `run-phase3.js`, `run-phase4.js` (each renders screens with the seed data in headless Chromium and prints a JSON
+`run-phase2.js`, `run-phase3.js`, `run-phase4.js`, `run-phase5.js` (each renders screens with the seed data in headless Chromium and prints a JSON
 summary; `errors` must be empty apart from blocked font/CDN loads). Add a check for every screen you add. The Playwright
 harness cannot run inside the Cowork VM on the Mac (no root, Chromium's system libraries are missing), so run it in the
 cloud container: tar `admin/`, `js/firebase-config.js` and `tools/costing-tests` from the Mac, stage the tar, extract in

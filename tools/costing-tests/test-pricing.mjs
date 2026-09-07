@@ -53,4 +53,21 @@ eq('2 large boxes for 24 cookies', boxes.length ? boxes[0].detail.startsWith('2 
 const dd = P.priceEstimate({ items: [{ productId: 'daily-drop-cookies', qty: 1, tierId: 'mini' }] }, ctx, settings);
 console.log('1 dozen mini CC:', JSON.stringify(dd.totals), dd.problems);
 eq('cc cookies ok', dd.ok, true);
-console.log(`\n${pass} passed, ${fail} failed`); process.exit(fail?1:0);
+
+// Phase 5: quote lines
+const q1 = P.quoteLines({ items: [{ productId: 'celebration-cake', qty: 1, tiers: [{ sizeId: '8', flavorRecipeId: 'chocolate-cake', fillingRecipeId: 'ganache' }, { sizeId: '6' }], drip: true, fondantFigures: 2, topper: { name: 'Number 5' } }, { productId: 'cupcakes', qty: 2, tierId: products.get('cupcakes').tiers[0].id }] }, ctx, settings);
+console.log('quote lines:', JSON.stringify(q1.lines.map(l => [l.name, l.qty, l.price]), null, 0), 'total', q1.total, 'suggested', q1.estimateTotals.suggested);
+eq('two quote lines', q1.lines.length, 2);
+eq('quote lines add up to the suggested price (within cents from per-unit rounding)', Math.abs(q1.total - q1.estimateTotals.suggested) < 0.05, true);
+eq('cake line qty 1', q1.lines[0].qty, 1);
+eq('cupcake line qty = dozens', q1.lines[1].qty, 2);
+eq('cake name lists sizes and options', /Custom Celebration Cake: 8-inch round \+ 6-inch round \(.*[Cc]hocolate.*ganache drip.*2 fondant figures.*topper: Number 5\)/.test(q1.lines[0].name), true);
+eq('cupcake name says per dozen', /per dozen$/.test(q1.lines[1].name), true);
+eq('no double quotes in names', q1.lines.every(l => !l.name.includes('"')), true);
+const q2 = P.quoteLines({ items: [{ productId: 'celebration-cake', qty: 1, tiers: [{ sizeId: '6' }] }] }, ctx, settings, 'menu');
+eq('menu basis uses the menu price', q2.lines[0].price, 95);
+eq('menu basis total', q2.total, 95);
+const q3 = P.quoteLines({ items: [{ productId: 'celebration-cake', qty: 2, tiers: [{ sizeId: '6' }] }] }, ctx, settings);
+eq('two cakes: qty 2, per-cake price is half', [q3.lines[0].qty, Math.abs(q3.lines[0].price * 2 - q3.estimateTotals.suggested) < 0.05], [2, true]);
+console.log(`\n${pass} passed, ${fail} failed`);
+process.exit(fail ? 1 : 0);

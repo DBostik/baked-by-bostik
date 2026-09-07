@@ -8,3 +8,4 @@ import './costing-products.js';
 import './costing-estimator.js';
 import './costing-reports.js';
 import './costing-reviews.js';
+import './costing-quote.js';
