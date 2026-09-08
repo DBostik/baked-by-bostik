@@ -14,7 +14,7 @@ service firebase.storage {
       return request.auth != null && request.auth.uid == 'USNXR3iZcdVnNUY2VdPdoeYE3BI2';
     }
 
-    // Admin: full access to everything
+    // Admin: full access to everything (including listing folders)
     match /{allPaths=**} {
       allow read, write: if isAdmin();
     }
@@ -26,19 +26,25 @@ service firebase.storage {
     }
 
     // Customer inspiration uploads on the public order form (js/order-flow.js).
-    // Anonymous customers may only CREATE image files under 15 MB; no anonymous update or delete.
-    // Read stays public for this path on purpose: the form calls getDownloadURL() right after
-    // uploadBytes(), which needs read permission, and paths are not guessable (request id + timestamp + name).
+    // Anonymous customers may only CREATE photo files under 15 MB in a folder named after a
+    // well-formed request id, at a path nothing exists at yet; no anonymous overwrite, update or delete.
+    // `get` (not `read`) stays public on purpose: the form calls getDownloadURL() right after
+    // uploadBytes(), which needs to fetch that one object. Listing a request's folder is admin only,
+    // so nobody can enumerate customer photos by guessing request ids (audit fix, Sep 2026).
     match /requests/{requestId}/{fileName} {
-      allow create: if request.resource.size < 15 * 1024 * 1024
-                    && request.resource.contentType.matches('image/.*');
-      allow read: if true;
+      allow create: if resource == null
+                    && request.resource.size < 15 * 1024 * 1024
+                    && request.resource.contentType.matches('image/(jpeg|jpg|png|webp|gif|heic|heif|avif)')
+                    && requestId.matches('[0-9]{8}-[0-9]{4}')
+                    && fileName.size() <= 500;
+      allow get: if true;
       allow update, delete: if isAdmin();
     }
 
-    // Quotes (generated PDFs): customers open them from the emailed link
+    // Quotes (generated PDFs): customers open them from the emailed link. One file at a time,
+    // never a listing of every quote (audit fix, Sep 2026).
     match /quotes/{fileName} {
-      allow read: if true;
+      allow get: if true;
     }
 
     // Gallery images: public read, admin write

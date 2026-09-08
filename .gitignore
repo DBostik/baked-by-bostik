@@ -25,3 +25,12 @@ tools/costing-tests/harness/shot*.png
 
 # Price bot scratch (downloaded receipts)
 scripts/pricebot/tmp/
+
+# Files the Claude desktop app drops into this folder (never deploy or commit)
+Claude outputs/
+
+# Rules test harness copies the rules files here on each run
+tools/rules-tests/*.rules
+
+# Removed from the repo Sep 2026 (never a Firebase feature); ignore a stray local copy
+.firebaseignore

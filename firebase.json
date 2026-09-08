@@ -27,31 +27,49 @@
             {
                 "source": "/admin/**",
                 "headers": [
-                    { "key": "Cache-Control", "value": "no-cache" }
+                    { "key": "Cache-Control", "value": "no-cache" },
+                    { "key": "X-Frame-Options", "value": "DENY" },
+                    { "key": "X-Content-Type-Options", "value": "nosniff" },
+                    { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+                ]
+            },
+            {
+                "source": "**",
+                "headers": [
+                    { "key": "X-Content-Type-Options", "value": "nosniff" },
+                    { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
                 ]
             }
         ],
         "ignore": [
             "firebase.json",
             "**/.*",
+            ".agent/**",
+            ".github/**",
             "**/node_modules/**",
             "functions/**",
             "src/**",
             "tools/**",
-            "*.md",
-            "package.json",
-            "package-lock.json",
-            "*.py",
+            "docs/**",
+            "scripts/**",
+            "Claude outputs/**",
+            "assets/images/Gallery/**",
+            "**/*.md",
+            "**/*.rules",
+            "**/*.mjs",
+            "**/*.py",
             "*.sh",
             "*.command",
-            "*.mjs",
+            "package.json",
+            "package-lock.json",
             "seed-reviews.html",
             "gallery_items.html",
             "verify_deploy.txt",
+            "test-db.mjs",
             "firestore.indexes.json",
-            "NEXT_ENGINEER_PROMPT.md",
-            "DEPLOY.md",
-            "DOMAIN_SETUP.md"
+            "admin/*_part",
+            "admin/*_snippet",
+            "admin/*_calendar"
         ]
     }
 }

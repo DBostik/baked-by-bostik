@@ -15,6 +15,13 @@
 
 ## 📅 September 2026
 
+### 🟢 Audit Phase 1: rules and hosting lockdown - Sep 8, 2026
+- `firestore.rules`: anonymous writes limited to the exact shapes the public forms send (customers, requests Step 1 and Step 2, pending reviews, seasonal). A customer's email can no longer be changed from outside; a request the admin has moved past AWAITING_DETAILS can no longer be reset or overwritten; request ids must match `MMDDYYYY-1234`; inspiration photos must be Storage download URLs from this project.
+- `storage.rules`: `get` instead of `read` on `requests/` and `quotes/` (no more listing every quote PDF or a request's photos); uploads limited to real photo types at new paths under a well-formed request id.
+- `firebase.json`: hosting no longer publishes docs, scripts, tools, workflow files, rules files, leftover admin fragments or the unused 400 MB gallery folder (deploy is ~370 files instead of ~1,300); security headers on `/admin/**` and site-wide; custom `404.html`, `robots.txt`, `sitemap.xml`.
+- `tools/rules-tests`: 81 emulator checks that replay the real form payloads and the audit's attack cases against both rules files.
+- `.firebaseignore` removed (not a Firebase feature); `Claude outputs/` gitignored.
+
 ### 🟢 Milestone 24: review fixes and Kristen's guide - Sep 7, 2026
 - Fixes from a full review of the Costing module: editors no longer write stale stock counts or timestamps back to items, recipes and products; proposal links limited to web URLs; double-click guards on Approve, Made this and Add to quote; a sub-recipe line without a quantity is flagged instead of costing $0; quote lines add up exactly; sidebar handlers wired once (renders had been running twice); two tables wrapped for phones; the bot's receipt download uses the Firebase token header.
 - `docs/costing-guide-for-kristen.md`: how everything works, how to use it, what to test.

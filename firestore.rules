@@ -17,42 +17,144 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == 'USNXR3iZcdVnNUY2VdPdoeYE3BI2';
     }
 
-    // Customers Collection
+    // ------------------------------------------------------------------
+    // Shapes the PUBLIC site may write (audit fix, Sep 2026). Anonymous
+    // visitors can only create the documents the order form, the review
+    // form and the seasonal form actually produce, with the exact keys those
+    // forms send (js/firebase-handler.js, js/order-flow.js, js/leave-review.js,
+    // js/seasonal.js). Everything else is admin only.
+    // ------------------------------------------------------------------
+    function str(v, max) { return v is string && v.size() <= max; }
+    // a key that may be absent or null, otherwise a string up to max characters
+    function optStr(m, k, max) { return m.get(k, null) == null || str(m[k], max); }
+    // a serverTimestamp() written by the client
+    function stampNow(v) { return v == request.time; }
+    // the public order form's request ids look like MMDDYYYY-1234
+    function requestIdOk(id) { return id.matches('[0-9]{8}-[0-9]{4}'); }
+    // Inspiration photos must be download URLs of files the order form uploaded to Storage
+    // (requests/<id>/...). The list is joined with spaces and checked with one expression, so the
+    // check costs the same for one photo or ten; a URL from getDownloadURL() never contains a space.
+    // The form says "up to 3 photos"; ten is the hard ceiling.
+    function imagesOk(l) {
+      return l is list && l.size() <= 10
+        && l.join(' ').matches('( ?https://firebasestorage[.]googleapis[.]com/v0/b/bakedbybostik-5eb55[.]firebasestorage[.]app/o/requests%2F[^ ]*)*');
+    }
+    // add-ons: at most the three the form offers, each a small {type, qty} map
+    function addOnOk(l, i) { return l.size() <= i || (l[i] is map && l[i].keys().hasOnly(['type', 'qty'])); }
+    function addOnsOk(l) { return l is list && l.size() <= 3 && addOnOk(l, 0) && addOnOk(l, 1) && addOnOk(l, 2); }
+
+    // Step 1 of the order form (js/firebase-handler.js). Every value is a short string from a form
+    // control except rush_flag (bool) and delivery_zip (string or null).
+    function step1Ok(s) {
+      return s is map
+        && s.keys().hasOnly(['category', 'event_date', 'quantity_value', 'phone', 'fulfillment', 'delivery_zip', 'rush_flag', 'pickup_window'])
+        && str(s.category, 60)
+        && str(s.event_date, 40)
+        && str(s.quantity_value, 200)
+        && optStr(s, 'phone', 60)
+        && optStr(s, 'delivery_zip', 40)
+        && (s.get('rush_flag', false) is bool);
+    }
+    // Step 2 of the order form (js/order-flow.js). Only the keys the form sends; the free-text fields
+    // are capped; select values, add-ons and photos are shape-checked. (Firestore rules count every
+    // evaluated expression against a hard limit of 1000 per request, so this stays deliberately lean.)
+    function step2Ok(s) {
+      return s is map
+        && s.keys().hasOnly(['occasion', 'occasion_other', 'theme_keywords', 'colors', 'complexity', 'budget_range', 'add_ons', 'allergies', 'allergy_details', 'hear_about_us', 'notes', 'inspiration_images', 'email_opt_in', 'cake_flavor', 'filling_flavor'])
+        && optStr(s, 'theme_keywords', 2000)
+        && optStr(s, 'colors', 2000)
+        && optStr(s, 'allergy_details', 2000)
+        && optStr(s, 'hear_about_us', 1000)
+        && optStr(s, 'notes', 10000)
+        && (s.get('email_opt_in', false) is bool)
+        && addOnsOk(s.get('add_ons', []))
+        && imagesOk(s.get('inspiration_images', []));
+    }
+
+    // Customers Collection (document id = the customer's email, lower-cased, written by the order form)
     match /customers/{customerId} {
       // Admin: full access
       allow read, delete: if isAdmin();
-      // Public: can create new customer records
-      allow create: if true;
-      // Public: can only update the 4 fields the order form writes
+      // Public: the order form may create a customer record with its four fields, under its own email
+      allow create: if isAdmin()
+          || (customerId.size() <= 254
+              && request.resource.data.keys().hasOnly(['name', 'email', 'phone', 'last_updated'])
+              && request.resource.data.keys().hasAll(['name', 'email'])
+              && str(request.resource.data.name, 200)
+              && str(request.resource.data.email, 254)
+              && request.resource.data.email.lower().trim() == customerId
+              && optStr(request.resource.data, 'phone', 60)
+              && (!('last_updated' in request.resource.data) || stampNow(request.resource.data.last_updated)));
+      // Public: a returning customer may refresh name and phone; the email can never be changed to
+      // another address (the record's id is the address, so quotes always go to the right inbox)
       // Admin: can update anything
       allow update: if isAdmin()
-          || request.resource.data.diff(resource.data).affectedKeys()
-              .hasOnly(['name', 'email', 'phone', 'last_updated']);
+          || (request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['name', 'email', 'phone', 'last_updated'])
+              && str(request.resource.data.name, 200)
+              && request.resource.data.email is string
+              && request.resource.data.email.lower().trim() == customerId
+              && optStr(request.resource.data, 'phone', 60)
+              && (!('last_updated' in request.resource.data) || stampNow(request.resource.data.last_updated)));
     }
 
     // Requests Collection
     match /requests/{requestId} {
       // Admin: full access
       allow read, delete: if isAdmin();
-      // Public: can create new requests
-      allow create: if true;
-      // Public: can only update step2_data, status, and updated_at (Step 2 form)
+      // Public: Step 1 creates a NEW request with the Step 1 fields only, under a well-formed id
+      allow create: if isAdmin()
+          || (requestIdOk(requestId)
+              && request.resource.data.keys().hasOnly(['customer_id', 'status', 'step1_data', 'created_at', 'updated_at'])
+              && request.resource.data.keys().hasAll(['customer_id', 'status', 'step1_data'])
+              && str(request.resource.data.customer_id, 254)
+              && request.resource.data.status == 'NEW'
+              && step1Ok(request.resource.data.step1_data)
+              && (!('created_at' in request.resource.data) || stampNow(request.resource.data.created_at))
+              && (!('updated_at' in request.resource.data) || stampNow(request.resource.data.updated_at)));
+      // Public: Step 2 adds step2_data and moves NEW (or a re-submitted AWAITING_DETAILS) to AWAITING_DETAILS.
+      // A request the admin has already moved on (QUOTING, BOOKED, COMPLETED, DEAD) can no longer be
+      // changed from the public site.
       // Admin: can update anything
       allow update: if isAdmin()
-          || (request.resource.data.diff(resource.data).affectedKeys()
-              .hasOnly(['status', 'step2_data', 'updated_at'])
-              && request.resource.data.status == 'AWAITING_DETAILS');
+          || (resource.data.status in ['NEW', 'AWAITING_DETAILS']
+              && request.resource.data.diff(resource.data).affectedKeys()
+                  .hasOnly(['status', 'step2_data', 'updated_at'])
+              && request.resource.data.status == 'AWAITING_DETAILS'
+              && step2Ok(request.resource.data.step2_data)
+              && (!('updated_at' in request.resource.data) || stampNow(request.resource.data.updated_at)));
     }
 
-    // Seasonal Orders
+    // Seasonal Orders (js/seasonal.js; the campaign page is a placeholder right now, shape kept for the next one)
     match /seasonal_orders/{orderId} {
-      allow create: if true;
+      allow create: if isAdmin()
+          || (request.resource.data.keys().hasOnly(['parent_name', 'parent_email', 'parent_phone', 'pickup_date', 'num_sets', 'teacher_names', 'total_price', 'free_crayon_box', 'campaign', 'campaign_id', 'status', 'created_at', 'updated_at'])
+              && str(request.resource.data.parent_name, 200)
+              && str(request.resource.data.parent_email, 254)
+              && optStr(request.resource.data, 'parent_phone', 60)
+              && str(request.resource.data.pickup_date, 40)
+              && request.resource.data.num_sets is number
+              && request.resource.data.num_sets >= 1 && request.resource.data.num_sets <= 100
+              && request.resource.data.teacher_names is list
+              && request.resource.data.teacher_names.size() <= 100
+              && request.resource.data.total_price is number
+              && request.resource.data.free_crayon_box is bool
+              && str(request.resource.data.campaign, 100)
+              && str(request.resource.data.campaign_id, 100)
+              && request.resource.data.status == 'PENDING_PAYMENT'
+              && stampNow(request.resource.data.created_at)
+              && stampNow(request.resource.data.updated_at));
       allow read, write: if isAdmin();
     }
 
     // Seasonal Waitlist
     match /seasonal_waitlist/{entryId} {
-      allow create: if true;
+      allow create: if isAdmin()
+          || (request.resource.data.keys().hasOnly(['name', 'email', 'campaign', 'created_at'])
+              && str(request.resource.data.name, 200)
+              && str(request.resource.data.email, 254)
+              && str(request.resource.data.campaign, 100)
+              && stampNow(request.resource.data.created_at));
       allow read, write: if isAdmin();
     }
 
@@ -82,9 +184,15 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Pending Reviews - Public create, Admin read/write
+    // Pending Reviews - Public create (js/leave-review.js shape), Admin read/write
     match /pending_reviews/{reviewId} {
-      allow create: if true;
+      allow create: if isAdmin()
+          || (request.resource.data.keys().hasOnly(['name', 'event_date', 'rating', 'text', 'created_at'])
+              && str(request.resource.data.name, 200)
+              && optStr(request.resource.data, 'event_date', 40)
+              && (!('rating' in request.resource.data) || request.resource.data.rating is number)
+              && str(request.resource.data.text, 5000)
+              && stampNow(request.resource.data.created_at));
       allow read, write: if isAdmin();
     }
 

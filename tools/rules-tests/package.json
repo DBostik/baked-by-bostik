@@ -1,0 +1,14 @@
+{
+  "name": "bbb-rules-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "pretest": "cp ../../firestore.rules ../../storage.rules .",
+    "test": "firebase emulators:exec --only firestore,storage --project bakedbybostik-5eb55 \"node test.mjs\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^3.0.4",
+    "firebase": "^10.7.1",
+    "firebase-tools": "^13.0.0"
+  }
+}

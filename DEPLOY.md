@@ -133,3 +133,30 @@ Added Sep 6, 2026 with Milestone 24 (Costing). Read this before touching git fro
 * Costing scripts: `admin/index.html` has one tag, `costing-main.js`, which imports the other costing modules. Never add
   `?v=` to a costing script tag (it made `costing.js` load twice). `firebase.json` sends `Cache-Control: no-cache` for
   `/admin/**`, so browsers recheck admin files on every load and a deploy shows up right away.
+
+### Update Sep 8, 2026 (audit Phase 1: rules and hosting lockdown)
+
+* **Public writes are shape-checked.** `firestore.rules` now lets anonymous visitors write only the exact
+  documents the public site produces: `customers/{email}` with name, email, phone, last_updated (the email
+  can never be changed to another address), `requests/{MMDDYYYY-1234}` Step 1 with status `NEW`, the Step 2
+  update only while the request is `NEW` or `AWAITING_DETAILS` (a BOOKED or COMPLETED order can no longer be
+  knocked back from outside), `pending_reviews`, `seasonal_orders` and `seasonal_waitlist` with their forms'
+  fields. Inspiration photos must be download URLs under `requests/` in this project's bucket. If a public
+  form gains a field, add it to the matching allowlist in the rules or the form will start failing with
+  "Missing or insufficient permissions". Run `tools/rules-tests` (see its README) after any rules change.
+* **Rules budget.** Firestore evaluates at most 1000 expressions per request and a size check costs ~25;
+  the Step 2 rule uses about half the budget. Keep new checks cheap (see the README in `tools/rules-tests`).
+* **Storage.** `requests/{id}/{file}` and `quotes/{file}` allow `get`, not `read`, so nothing can list
+  customer photos or every quote PDF. Emailed quote links are tokenized download URLs and keep working.
+  Anonymous uploads: jpeg/png/webp/gif/heic/heif/avif under 15 MB, new paths only, under a well-formed id.
+* **Hosting.** `firebase.json` now excludes `docs/`, `scripts/`, `tools/`, `.github/`, `.agent/`, all
+  `*.md`, `*.rules`, `*.mjs`, `*.py`, the leftover `admin/*_part`-style files, `Claude outputs/` and the
+  unused `assets/images/Gallery/` folder (the gallery loads from Storage). The deploy went from ~1,300
+  files to ~370. `.firebaseignore` was removed: it was never a Firebase feature. `/admin/**` is served with
+  `X-Frame-Options: DENY`; everything gets `X-Content-Type-Options: nosniff` and a referrer policy. A custom
+  `404.html`, `robots.txt` and `sitemap.xml` were added.
+* **Still served on purpose:** `admin/costing-seed.json` and `admin/costing-seed-phase2.json`, because the
+  "Load starter data" buttons in Costing Settings fetch them from hosting. Hiding them needs the loader
+  changed to read a local file (planned for Phase 2).
+* The desktop app writes deliverables into `Claude outputs/` inside this folder; it is gitignored and
+  hosting-ignored. Trash it whenever.
