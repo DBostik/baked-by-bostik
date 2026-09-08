@@ -67,6 +67,7 @@
             "verify_deploy.txt",
             "test-db.mjs",
             "firestore.indexes.json",
+            "admin/costing-seed*.json",
             "admin/*_part",
             "admin/*_snippet",
             "admin/*_calendar"

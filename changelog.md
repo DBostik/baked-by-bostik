@@ -15,6 +15,9 @@
 
 ## 📅 September 2026
 
+### 🟢 Hosting: costing seed files no longer published - Sep 8, 2026
+- `firebase.json` ignores `admin/costing-seed*.json` (Kristen's recipes and store prices were downloadable). The two "Load starter data" buttons only work on an empty database, which is already loaded; their failure message now says where the files live.
+
 ### 🟢 Audit K1: an estimate save no longer re-arms the stock deduction - Sep 8, 2026
 - `admin/costing-estimator.js`: saving an existing estimate keeps its "taken from stock" stamp (and its creation time). Before, Save rebuilt the document without the stamp, Home reported the completed order as "not yet taken from stock", and a second "Made this" or re-completion deducted the materials again. The save toast now says when the materials were already taken.
 - `tools/costing-tests/harness/stubs/firestore.js`: the stub now follows real Firestore write semantics (`setDoc` replaces unless `merge: true`; `updateDoc` merges). It used to merge every write, which is why this bug never showed in the harness. `run-phase6.js` gained the regression check (edit, save, re-complete: stock unchanged).

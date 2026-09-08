@@ -784,7 +784,9 @@ function renderSettings(body) {
 
 async function importSeed() {
     const res = await fetch('/admin/costing-seed.json?v=' + Date.now());
-    if (!res.ok) throw new Error('Could not load costing-seed.json');
+    // the starter files are not published on the website any more (they hold Kristen's recipes and prices);
+    // a fresh database needs a session that deploys them briefly or loads them another way
+    if (!res.ok) throw new Error('costing-seed.json is not published on the website (it is in the site folder under admin/). Ask Claude to load the starter data.');
     const seed = await res.json();
     if (state.ingredients.size || state.recipes.size) throw new Error('Costing already has data; import is only for an empty start.');
     // ingredients (chunk batches to stay under 500 writes)
@@ -825,7 +827,7 @@ async function importSeed() {
 
 async function importPhase2() {
     const res = await fetch('/admin/costing-seed-phase2.json?v=' + Date.now());
-    if (!res.ok) throw new Error('Could not load costing-seed-phase2.json');
+    if (!res.ok) throw new Error('costing-seed-phase2.json is not published on the website (it is in the site folder under admin/). Ask Claude to load the Phase 2 starter data.');
     const seed = await res.json();
     let batch = writeBatch(db), n = 0;
     const flush = async () => { if (n) { await batch.commit(); batch = writeBatch(db); n = 0; } };

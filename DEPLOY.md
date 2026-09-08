@@ -155,8 +155,10 @@ Added Sep 6, 2026 with Milestone 24 (Costing). Read this before touching git fro
   files to ~370. `.firebaseignore` was removed: it was never a Firebase feature. `/admin/**` is served with
   `X-Frame-Options: DENY`; everything gets `X-Content-Type-Options: nosniff` and a referrer policy. A custom
   `404.html`, `robots.txt` and `sitemap.xml` were added.
-* **Still served on purpose:** `admin/costing-seed.json` and `admin/costing-seed-phase2.json`, because the
-  "Load starter data" buttons in Costing Settings fetch them from hosting. Hiding them needs the loader
-  changed to read a local file (planned for Phase 2).
+* **Costing seed files are not published** (`admin/costing-seed*.json` is in the hosting ignore list since the
+  K1 follow-up the same day): they hold Kristen's recipes and store prices. The "Load starter data" buttons in
+  Costing Settings only work while Costing is empty and the data is already loaded, so nothing changes day to
+  day. To bootstrap a fresh database, deploy the files briefly (remove that ignore line, push, load, put it back)
+  or load them from a session with admin credentials.
 * The desktop app writes deliverables into `Claude outputs/` inside this folder; it is gitignored and
   hosting-ignored. Trash it whenever.
