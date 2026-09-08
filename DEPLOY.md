@@ -162,3 +162,14 @@ Added Sep 6, 2026 with Milestone 24 (Costing). Read this before touching git fro
   or load them from a session with admin credentials.
 * The desktop app writes deliverables into `Claude outputs/` inside this folder; it is gitignored and
   hosting-ignored. Trash it whenever.
+
+### Update Sep 8, 2026 (audit Phase 2: output encoding in the dashboard)
+
+* `admin/admin.js` escapes everything that came from a document (customer name, Step 1 and Step 2 fields,
+  reviews, seasonal orders, orders, document ids) with `esc()` before placing it in HTML, in text or in an
+  attribute; `safeUrl()` gates every URL from a document (only this project's Storage links pass); no data
+  ever goes inside an inline `onclick` string. Keep it that way when adding screens, and run
+  `tools/admin-tests` (see its README) after changes to admin.js.
+* Homepage testimonials (`js/app.js`) are built with text nodes.
+* `seed-reviews.html` was removed from the repo (it seeded placeholder reviews); the dashboard no longer
+  auto-seeds placeholder reviews when the list is empty.

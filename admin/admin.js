@@ -17,6 +17,23 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
+// --- Output encoding (audit Phase 2, Sep 2026) -------------------------------------------------
+// Anything that came from a customer (order form, review form), from a Firestore document, or from
+// a document id goes through esc() before it is placed inside HTML, in text or in an attribute.
+// URLs that came from those sources go through safeUrl(), which only lets this project's Storage
+// links into src/href (an empty string otherwise). Never put data inside an inline onclick string:
+// use data-* attributes and the delegated handlers below.
+function esc(v) {
+    return String(v ?? '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+function safeUrl(u) {
+    const v = String(u ?? '');
+    return (v.startsWith('https://firebasestorage.googleapis.com/') || v.startsWith('https://storage.googleapis.com/')) ? esc(v) : '';
+}
+const IMG_PLACEHOLDER = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="300" height="300" fill="#f3f4f6"/><text x="150" y="156" font-family="sans-serif" font-size="18" fill="#9ca3af" text-anchor="middle">Empty</text></svg>');
+
 // State
 let currentUser = null;
 let requests = [];
@@ -656,12 +673,12 @@ function renderLedgerTable() {
         tr.style.cursor = 'pointer';
         tr.innerHTML = `
             <td>${dateStr}</td>
-            <td><strong>${displayId}</strong></td>
+            <td><strong>${esc(displayId)}</strong></td>
             <td>$${amountTotal.toFixed(2)}</td>
             <td>$${amountPaid.toFixed(2)}</td>
-            <td><span class="status-badge status-${status}">${status}</span></td>
+            <td><span class="status-badge status-${esc(status)}">${esc(status)}</span></td>
             <td>
-                <button class="btn-sm btn-delete-order" data-id="${o.id}" style="color:#dc2626; background:none; border:none; text-decoration:underline; font-size:0.8rem; cursor:pointer;" title="Permanently delete order and payments">Delete Test Data</button>
+                <button class="btn-sm btn-delete-order" data-id="${esc(o.id)}" style="color:#dc2626; background:none; border:none; text-decoration:underline; font-size:0.8rem; cursor:pointer;" title="Permanently delete this order and its payments">Delete order</button>
             </td>
         `;
 
@@ -710,9 +727,11 @@ function renderTable() {
     const term = els.globalSearch ? els.globalSearch.value.toLowerCase() : '';
     const filtered = requests.filter(req => {
         if (!term) return true;
-        const custName = customers[req.customer_id] ? customers[req.customer_id].name.toLowerCase() : '';
-        const custEmail = customers[req.customer_id] ? customers[req.customer_id].email.toLowerCase() : '';
-        const id = req.id.toLowerCase();
+        // a customer record can be missing or have no email; the search must never throw (audit A4)
+        const c = customers[req.customer_id] || {};
+        const custName = String(c.name || '').toLowerCase();
+        const custEmail = String(c.email || '').toLowerCase();
+        const id = String(req.id || '').toLowerCase();
         return custName.includes(term) || custEmail.includes(term) || id.includes(term);
     });
 
@@ -734,17 +753,17 @@ function renderTable() {
         const hasAllergy = req.step2_data?.allergies === 'yes';
         const allergyDetails = req.step2_data?.allergy_details || 'Allergy noted';
         const allergyIcon = hasAllergy
-            ? ` <span class="allergy-indicator" title="⚠️ ALLERGY: ${allergyDetails}">⚠️</span>`
+            ? ` <span class="allergy-indicator" title="⚠️ ALLERGY: ${esc(allergyDetails)}">⚠️</span>`
             : '';
 
         tr.innerHTML = `
-            <td>${date}</td>
-            <td><strong>${custName}</strong>${allergyIcon}</td>
-            <td>${eventDate}</td>
-            <td>${type}</td>
-            <td><span class="status-badge status-${status}">${status}</span></td>
+            <td>${esc(date)}</td>
+            <td><strong>${esc(custName)}</strong>${allergyIcon}</td>
+            <td>${esc(eventDate)}</td>
+            <td>${esc(type)}</td>
+            <td><span class="status-badge status-${esc(status)}">${esc(status)}</span></td>
             <td>
-                <button class="btn-sm btn-view" data-id="${req.id}">View</button>
+                <button class="btn-sm btn-view" data-id="${esc(req.id)}">View</button>
             </td>
         `;
 
@@ -787,9 +806,11 @@ function renderBoard() {
     const term = els.globalSearch ? els.globalSearch.value.toLowerCase() : '';
     const filtered = requests.filter(req => {
         if (!term) return true;
-        const custName = customers[req.customer_id] ? customers[req.customer_id].name.toLowerCase() : '';
-        const custEmail = customers[req.customer_id] ? customers[req.customer_id].email.toLowerCase() : '';
-        const id = req.id.toLowerCase();
+        // a customer record can be missing or have no email; the search must never throw (audit A4)
+        const c = customers[req.customer_id] || {};
+        const custName = String(c.name || '').toLowerCase();
+        const custEmail = String(c.email || '').toLowerCase();
+        const id = String(req.id || '').toLowerCase();
         return custName.includes(term) || custEmail.includes(term) || id.includes(term);
     });
 
@@ -844,25 +865,25 @@ function renderBoard() {
 
         card.innerHTML = `
             <div class="card-header">
-                <span class="card-date">${date}</span>
-                <div class="card-icon" title="${req.step1_data?.category || 'Order'}">
+                <span class="card-date">${esc(date)}</span>
+                <div class="card-icon" title="${esc(req.step1_data?.category || 'Order')}">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity:0.6;">
                         ${iconPath}
                     </svg>
                 </div>
             </div>
-            <strong class="card-title">${custName}</strong>
+            <strong class="card-title">${esc(custName)}</strong>
             
             <div class="card-body-compact">
                 <div class="card-row">
-                    <span>${req.step1_data?.category || 'General'}</span>
-                    ${req.step1_data?.quantity_value ? `<span>· ${req.step1_data.quantity_value}</span>` : ''}
+                    <span>${esc(req.step1_data?.category || 'General')}</span>
+                    ${req.step1_data?.quantity_value ? `<span>· ${esc(req.step1_data.quantity_value)}</span>` : ''}
                 </div>
-                 ${req.step1_data?.event_date ? `<div class="card-row text-xs">${req.step1_data.event_date}</div>` : ''}
+                 ${req.step1_data?.event_date ? `<div class="card-row text-xs">${esc(req.step1_data.event_date)}</div>` : ''}
             </div>
 
             ${req.step1_data?.rush_flag ? '<span class="card-tag tag-rush">URGENT</span>' : ''}
-            ${req.step2_data?.allergies === 'yes' ? `<span class="card-tag tag-allergy" title="${req.step2_data?.allergy_details || 'Allergy noted'}">⚠️ ALLERGY</span>` : ''}
+            ${req.step2_data?.allergies === 'yes' ? `<span class="card-tag tag-allergy" title="${esc(req.step2_data?.allergy_details || 'Allergy noted')}">⚠️ ALLERGY</span>` : ''}
         `;
 
         // Drag listeners for Card
@@ -956,6 +977,14 @@ function handleDragEnd(e) {
 let isEditMode = false;
 let currentModalRequestId = null;
 
+// Buttons inside the detail modal carry data-action attributes (never inline onclick with data in it)
+if (els.modalBody) {
+    els.modalBody.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action="resend-quote"]');
+        if (btn) { e.preventDefault(); window.resendQuote(btn.dataset.id); }
+    });
+}
+
 function openModal(requestId) {
     currentModalRequestId = requestId;
     isEditMode = false; // Reset to view mode
@@ -984,7 +1013,8 @@ function renderModalBody(req, cust, isEditing) {
     if (imgs.length > 0) {
         imagesHtml = `<div class="gallery-grid">`;
         imgs.forEach(url => {
-            imagesHtml += `<a href="${url}" target="_blank"><img src="${url}" class="gallery-img"></a>`;
+            const u = safeUrl(url); if (!u) return; // only this project's Storage links are rendered
+            imagesHtml += `<a href="${u}" target="_blank" rel="noopener"><img src="${u}" class="gallery-img" alt="Inspiration photo"></a>`;
         });
         imagesHtml += `</div>`;
     } else {
@@ -996,8 +1026,8 @@ function renderModalBody(req, cust, isEditing) {
         return `
         <div class="modal-hero">
             <div class="hero-left">
-                <span class="hero-id">#${req.id}</span>
-                <span class="hero-status status-${req.status}">${req.status}</span>
+                <span class="hero-id">#${esc(req.id)}</span>
+                <span class="hero-status status-${esc(req.status)}">${esc(req.status)}</span>
             </div>
             <div class="hero-right">
                 <span class="hero-date">${req.created_at ? new Date(req.created_at.seconds * 1000).toLocaleDateString() : 'N/A'}</span>
@@ -1014,20 +1044,20 @@ function renderModalBody(req, cust, isEditing) {
                 <div class="modal-card-body">
                     <div class="info-group">
                         <label>Name</label>
-                        <div class="info-value text-lg">${cust.name || 'Unknown'}</div>
+                        <div class="info-value text-lg">${esc(cust.name || 'Unknown')}</div>
                     </div>
                     <div class="info-group">
                         <label>Email</label>
-                        <div class="info-value"><a href="mailto:${cust.email}">${cust.email || '-'}</a></div>
+                        <div class="info-value"><a href="mailto:${esc(cust.email || '')}">${esc(cust.email || '-')}</a></div>
                     </div>
                     <div class="info-group">
                         <label>Phone</label>
-                        <div class="info-value">${phone ? `📞 <a href="tel:${phone}">${phone}</a>` : '-'}</div>
+                        <div class="info-value">${phone ? `📞 <a href="tel:${esc(phone)}">${esc(phone)}</a>` : '-'}</div>
                     </div>
                     ${s2.hear_about_us ? `
                     <div class="info-group" style="margin-top:0.5rem; border-top:1px dashed #eee; padding-top:0.5rem;">
                         <label>Source</label>
-                        <div class="info-value text-sm text-gray-600">${s2.hear_about_us}</div>
+                        <div class="info-value text-sm text-gray-600">${esc(s2.hear_about_us)}</div>
                     </div>` : ''}
                 </div>
             </div>
@@ -1041,32 +1071,32 @@ function renderModalBody(req, cust, isEditing) {
                 <div class="modal-card-body">
                     <div class="info-group">
                         <label>Date & Type</label>
-                        <div class="info-value text-lg">${s1.event_date || 'TBD'} <span class="text-muted">·</span> ${s1.category || 'General'}</div>
+                        <div class="info-value text-lg">${esc(s1.event_date || 'TBD')} <span class="text-muted">·</span> ${esc(s1.category || 'General')}</div>
                     </div>
                     <div class="info-group">
                         <label>Quantity</label>
-                        <div class="info-value">${s1.quantity_value || '-'}</div>
+                        <div class="info-value">${esc(s1.quantity_value || '-')}</div>
                     </div>
-                    ${s2.add_ons && s2.add_ons.length > 0 ? `
+                    ${Array.isArray(s2.add_ons) && s2.add_ons.length > 0 ? `
                     <div class="info-group" style="padding-top:0.5rem; margin-top:0.5rem; border-top:1px dashed #eee;">
                          <label>➕ Add-ons</label>
                          <div class="info-value">
-                            ${s2.add_ons.map(a => `<div>• <strong>${a.type}</strong>: ${a.qty}</div>`).join('')}
+                            ${s2.add_ons.map(a => `<div>• <strong>${esc(a?.type)}</strong>: ${esc(a?.qty)}</div>`).join('')}
                          </div>
                     </div>` : ''}
                     ${s2.allergies === 'yes' ? `
                     <div class="info-group">
                          <label style="color:#dc2626; font-weight:bold;">⚠️ ALLERGIES</label>
-                         <div class="info-value" style="color:#dc2626; font-weight:bold;">${s2.allergy_details || 'Yes'}</div>
+                         <div class="info-value" style="color:#dc2626; font-weight:bold;">${esc(s2.allergy_details || 'Yes')}</div>
                     </div>` : ''}
                     <div class="info-group">
                         <label>Fulfillment</label>
-                        <div class="info-value">${s1.fulfillment || '-'} ${s1.delivery_zip ? '(' + s1.delivery_zip + ')' : ''}</div>
+                        <div class="info-value">${esc(s1.fulfillment || '-')} ${s1.delivery_zip ? '(' + esc(s1.delivery_zip) + ')' : ''}</div>
                     </div>
                     ${s1.pickup_window && s1.pickup_window !== 'Not sure yet' ? `
                     <div class="info-group">
                         <label>⏰ Pickup/Delivery Window</label>
-                        <div class="info-value">${s1.pickup_window}</div>
+                        <div class="info-value">${esc(s1.pickup_window)}</div>
                     </div>` : ''}
                     ${s1.rush_flag ? '<div class="rush-badge">⚠️ RUSH ORDER</div>' : ''}
                     
@@ -1074,13 +1104,13 @@ function renderModalBody(req, cust, isEditing) {
                     <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #eee;">
                         <label>Quote Status</label>
                         <div style="display:flex; flex-direction:column; gap:0.25rem;">
-                            <a href="${req.quote_pdf_url}" target="_blank" class="text-blue-600 hover:underline" style="display:flex; align-items:center; gap:0.25rem;">
+                            <a href="${safeUrl(req.quote_pdf_url) || '#'}" target="_blank" rel="noopener" class="text-blue-600 hover:underline" style="display:flex; align-items:center; gap:0.25rem;">
                                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                 View PDF
                             </a>
                             <div style="display:flex; justify-content:space-between; align-items:center;">
                                 ${req.quote_last_sent ? `<div class="text-xs text-gray-500">Sent: ${new Date(req.quote_last_sent.seconds * 1000).toLocaleDateString()}</div>` : '<div class="text-xs text-orange-500">Not sent yet</div>'}
-                                <button onclick="window.resendQuote('${req.id}')" class="text-xs text-blue-600 hover:underline border border-blue-200 rounded px-2 py-0.5 bg-blue-50">Resend</button>
+                                <button type="button" data-action="resend-quote" data-id="${esc(req.id)}" class="text-xs text-blue-600 hover:underline border border-blue-200 rounded px-2 py-0.5 bg-blue-50">Resend</button>
                             </div>
                             ${req.quote_total ? `<div class="text-xs font-semibold">Total: $${parseFloat(req.quote_total).toFixed(2)}</div>` : ''}
                         </div>
@@ -1100,36 +1130,36 @@ function renderModalBody(req, cust, isEditing) {
                         <div class="design-grid" style="margin-bottom: 1rem;">
                             <div class="info-group">
                                 <label>Theme</label>
-                                <div class="info-value">${s2.theme_keywords || '-'}</div>
+                                <div class="info-value">${esc(s2.theme_keywords || '-')}</div>
                             </div>
                             <div class="info-group">
                                 <label>Colors</label>
-                                <div class="info-value">${s2.colors || '-'}</div>
+                                <div class="info-value">${esc(s2.colors || '-')}</div>
                             </div>
                             <div class="info-group">
                                 <label>Occasion</label>
-                                <div class="info-value">${s2.occasion || '-'}</div>
+                                <div class="info-value">${esc(s2.occasion || '-')}</div>
                             </div>
                             <div class="info-group">
                                 <label>Budget</label>
-                                <div class="info-value">${s2.budget_range || '-'}</div>
+                                <div class="info-value">${esc(s2.budget_range || '-')}</div>
                             </div>
                             <div class="info-group">
                                 <label>Complexity</label>
-                                <div class="info-value">${s2.complexity || '-'}</div>
+                                <div class="info-value">${esc(s2.complexity || '-')}</div>
                             </div>
                             <div class="info-group">
                                 <label>🎂 Cake Flavor</label>
-                                <div class="info-value">${s2.cake_flavor || '-'}</div>
+                                <div class="info-value">${esc(s2.cake_flavor || '-')}</div>
                             </div>
                             <div class="info-group">
                                 <label>🍰 Filling</label>
-                                <div class="info-value">${s2.filling_flavor || '-'}</div>
+                                <div class="info-value">${esc(s2.filling_flavor || '-')}</div>
                             </div>
                         </div>
                         <div class="info-group">
                             <label>Notes</label>
-                            <div class="notes-box" style="max-height: 80px; overflow-y: auto;">${s2.notes || 'No notes provided.'}</div>
+                            <div class="notes-box" style="max-height: 80px; overflow-y: auto; white-space: pre-wrap;">${esc(s2.notes || 'No notes provided.')}</div>
                         </div>
                     </div>
                     
@@ -1148,16 +1178,17 @@ function renderModalBody(req, cust, isEditing) {
         // --- EDIT VIEW ---
 
         // Parse Add-ons for Edit Form
-        const addons = s2.add_ons || [];
-        const cookies = addons.find(a => a.type === 'Cookies');
-        const cupcakes = addons.find(a => a.type === 'Cupcakes');
-        const cake = addons.find(a => a.type === 'Cake');
+        const addons = Array.isArray(s2.add_ons) ? s2.add_ons : [];
+        const hearAbout = String(s2.hear_about_us || '');
+        const cookies = addons.find(a => a && a.type === 'Cookies');
+        const cupcakes = addons.find(a => a && a.type === 'Cupcakes');
+        const cake = addons.find(a => a && a.type === 'Cake');
 
         return `
         <div class="modal-hero">
             <div class="hero-left">
-                <span class="hero-id">#${req.id}</span>
-                <span class="hero-status status-${req.status}">${req.status}</span>
+                <span class="hero-id">#${esc(req.id)}</span>
+                <span class="hero-status status-${esc(req.status)}">${esc(req.status)}</span>
             </div>
             <div class="hero-right">
                 <span class="text-sm font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded">EDITING MODE</span>
@@ -1169,10 +1200,10 @@ function renderModalBody(req, cust, isEditing) {
             <div class="modal-card">
                  <div class="modal-card-header">CUSTOMER</div>
                  <div class="modal-card-body">
-                      <p><strong>${cust.name || 'Unknown'}</strong></p>
+                      <p><strong>${esc(cust.name || 'Unknown')}</strong></p>
                       <div class="form-group" style="margin-top:0.5rem;">
                          <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Phone</label>
-                         <input type="tel" name="edit_phone" value="${phone}" placeholder="(555) 123-4567" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                         <input type="tel" name="edit_phone" value="${esc(phone)}" placeholder="(555) 123-4567" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
                       </div>
                       <p class="text-sm text-gray-500" style="margin-top:0.25rem;">Edit other customer details via Customers tab.</p>
                  </div>
@@ -1195,12 +1226,12 @@ function renderModalBody(req, cust, isEditing) {
 
                       <div class="form-group">
                          <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Event Date</label>
-                         <input type="date" name="event_date" value="${s1.event_date || ''}" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                         <input type="date" name="event_date" value="${esc(s1.event_date || '')}" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
                       </div>
 
                       <div class="form-group">
                          <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Quantity / Size</label>
-                         <input type="text" name="quantity_value" value="${s1.quantity_value || ''}" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                         <input type="text" name="quantity_value" value="${esc(s1.quantity_value || '')}" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
                       </div>
                       
                       <!-- Add-ons Edit -->
@@ -1210,19 +1241,19 @@ function renderModalBody(req, cust, isEditing) {
                          <div style="display:grid; grid-template-columns: 24px 100px 1fr; gap: 8px; align-items:center; margin-bottom:8px;">
                              <input type="checkbox" name="ao_cookies_check" ${cookies ? 'checked' : ''} style="width:18px; height:18px;">
                              <label style="margin:0;">Cookies</label>
-                             <input type="text" name="ao_cookies_qty" value="${cookies ? cookies.qty : ''}" placeholder="Qty (Dozens)" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                             <input type="text" name="ao_cookies_qty" value="${esc(cookies ? cookies.qty : '')}" placeholder="Qty (Dozens)" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
                          </div>
 
                          <div style="display:grid; grid-template-columns: 24px 100px 1fr; gap: 8px; align-items:center; margin-bottom:8px;">
                              <input type="checkbox" name="ao_cupcakes_check" ${cupcakes ? 'checked' : ''} style="width:18px; height:18px;">
                              <label style="margin:0;">Cupcakes</label>
-                             <input type="text" name="ao_cupcakes_qty" value="${cupcakes ? cupcakes.qty : ''}" placeholder="Qty (Dozens)" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                             <input type="text" name="ao_cupcakes_qty" value="${esc(cupcakes ? cupcakes.qty : '')}" placeholder="Qty (Dozens)" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
                          </div>
 
                          <div style="display:grid; grid-template-columns: 24px 100px 1fr; gap: 8px; align-items:center;">
                              <input type="checkbox" name="ao_cake_check" ${cake ? 'checked' : ''} style="width:18px; height:18px;">
                              <label style="margin:0;">Cake</label>
-                             <input type="text" name="ao_cake_qty" value="${cake ? cake.qty : ''}" placeholder="Size/Details" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                             <input type="text" name="ao_cake_qty" value="${esc(cake ? cake.qty : '')}" placeholder="Size/Details" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
                          </div>
                       </div>
 
@@ -1233,7 +1264,7 @@ function renderModalBody(req, cust, isEditing) {
                                 <option value="Pickup" ${s1.fulfillment === 'Pickup' ? 'selected' : ''}>Pickup</option>
                                 <option value="Delivery" ${s1.fulfillment === 'Delivery' ? 'selected' : ''}>Delivery</option>
                             </select>
-                            <input type="text" name="delivery_zip" value="${s1.delivery_zip || ''}" placeholder="Zip Code" style="width:80px; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                            <input type="text" name="delivery_zip" value="${esc(s1.delivery_zip || '')}" placeholder="Zip Code" style="width:80px; padding:6px; border:1px solid #ccc; border-radius:4px;">
                          </div>
                       </div>
 
@@ -1254,11 +1285,11 @@ function renderModalBody(req, cust, isEditing) {
                       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom:1rem;">
                            <div class="form-group">
                                <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Theme / Keywords</label>
-                               <input type="text" name="theme_keywords" value="${s2.theme_keywords || ''}" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                               <input type="text" name="theme_keywords" value="${esc(s2.theme_keywords || '')}" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
                            </div>
                             <div class="form-group">
                                <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Colors</label>
-                               <input type="text" name="colors" value="${s2.colors || ''}" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                               <input type="text" name="colors" value="${esc(s2.colors || '')}" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
                            </div>
                             <div class="form-group">
                                <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Occasion</label>
@@ -1298,22 +1329,22 @@ function renderModalBody(req, cust, isEditing) {
                                <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Source</label>
                                <select name="hear_about_us" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
                                     <option value="">Select...</option>
-                                    <option value="Google Search" ${s2.hear_about_us?.includes('Google') ? 'selected' : ''}>Google Search</option>
-                                    <option value="Social Media (Instagram/Facebook)" ${s2.hear_about_us?.includes('Social') ? 'selected' : ''}>Social Media</option>
-                                    <option value="Friend/Family Referral" ${s2.hear_about_us?.includes('Referral') ? 'selected' : ''}>Friend/Family Referral</option>
-                                    <option value="Returning Customer" ${s2.hear_about_us?.includes('Returning') ? 'selected' : ''}>Returning Customer</option>
-                                    <option value="Other" ${s2.hear_about_us?.includes('Other') ? 'selected' : ''}>Other</option>
+                                    <option value="Google Search" ${hearAbout.includes('Google') ? 'selected' : ''}>Google Search</option>
+                                    <option value="Social Media (Instagram/Facebook)" ${hearAbout.includes('Social') ? 'selected' : ''}>Social Media</option>
+                                    <option value="Friend/Family Referral" ${hearAbout.includes('Referral') ? 'selected' : ''}>Friend/Family Referral</option>
+                                    <option value="Returning Customer" ${hearAbout.includes('Returning') ? 'selected' : ''}>Returning Customer</option>
+                                    <option value="Other" ${hearAbout.includes('Other') ? 'selected' : ''}>Other</option>
                                </select>
                            </div>
                            <div class="form-group">
                                <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px; color:#dc2626;">Allergies (Details)</label>
-                               <input type="text" name="allergy_details" value="${s2.allergy_details || ''}" placeholder="Leave empty if None" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                               <input type="text" name="allergy_details" value="${esc(s2.allergy_details || '')}" placeholder="Leave empty if None" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
                            </div>
                       </div>
 
                       <div class="form-group">
                            <label style="display:block; font-size:0.85rem; font-weight:500; margin-bottom:4px;">Notes</label>
-                           <textarea name="notes" rows="3" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">${s2.notes || ''}</textarea>
+                           <textarea name="notes" rows="3" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">${esc(s2.notes || '')}</textarea>
                       </div>
                       
                       <div class="form-group" style="margin-top:1rem; padding-top:1rem; border-top:1px solid #eee;">
@@ -1327,7 +1358,7 @@ function renderModalBody(req, cust, isEditing) {
                          <div class="gallery-grid" style="margin-top:0.5rem;">
                             ${(s2.inspiration_images || []).map((url, idx) => `
                                 <div style="position:relative; display:inline-block;">
-                                    <img src="${url}" class="gallery-img" style="max-height:100px; width:auto; border-radius:4px; border:1px solid #ddd;">
+                                    <img src="${safeUrl(url) || IMG_PLACEHOLDER}" class="gallery-img" alt="Inspiration photo" style="max-height:100px; width:auto; border-radius:4px; border:1px solid #ddd;">
                                     <button type="button" class="btn-delete-img" data-idx="${idx}" style="position:absolute; top:-8px; right:-8px; background:red; color:white; border:none; border-radius:50%; width:20px; height:20px; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
                                 </div>
                             `).join('')}
@@ -1764,9 +1795,11 @@ function openQuoteModal(requestId) {
     populateIntakeSummary(req);
 
     // Check if Quote already exists
-    if (req.quote_pdf_url) {
-        els.quotePdfLink.href = req.quote_pdf_url;
-        els.btnSendEmail.dataset.pdfUrl = req.quote_pdf_url;
+    // only a link into this project's Storage is ever used as the quote PDF (audit Phase 2)
+    const storedPdfUrl = safeUrl(req.quote_pdf_url) ? String(req.quote_pdf_url) : '';
+    if (storedPdfUrl) {
+        els.quotePdfLink.href = storedPdfUrl;
+        els.btnSendEmail.dataset.pdfUrl = storedPdfUrl;
         els.quoteResult.classList.remove('hidden');
         els.btnSendEmail.disabled = false;
         els.btnSendEmail.style.opacity = '1';
@@ -1820,9 +1853,9 @@ function renderQuoteItems() {
     currentQuoteItems.forEach((item, index) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td style="padding:0.5rem;"><input type="text" class="q-name" value="${item.name}" placeholder="Item Description" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px;"></td>
-            <td style="padding:0.5rem;"><input type="number" class="q-qty" value="${item.qty}" min="1" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px;"></td>
-            <td style="padding:0.5rem;"><input type="number" class="q-price" value="${item.price}" min="0" step="0.01" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px;"></td>
+            <td style="padding:0.5rem;"><input type="text" class="q-name" value="${esc(item.name)}" placeholder="Item Description" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px;"></td>
+            <td style="padding:0.5rem;"><input type="number" class="q-qty" value="${esc(item.qty)}" min="0.5" step="0.5" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px;"></td>
+            <td style="padding:0.5rem;"><input type="number" class="q-price" value="${esc(item.price)}" min="0" step="0.01" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px;"></td>
             <td style="padding:0.5rem; text-align:right;" class="q-row-total">$${(item.qty * item.price).toFixed(2)}</td>
             <td style="padding:0.5rem; text-align:center;"><button class="btn-text" style="color:red;">&times;</button></td>
         `;
@@ -1892,7 +1925,7 @@ function populateIntakeSummary(req) {
     }
     if (els.quoteIntakeAllergies) {
         if (s2.allergies === 'yes') {
-            els.quoteIntakeAllergies.innerHTML = `<span class="allergy-highlight">${s2.allergy_details || 'Yes'}</span>`;
+            els.quoteIntakeAllergies.innerHTML = `<span class="allergy-highlight">${esc(s2.allergy_details || 'Yes')}</span>`;
         } else {
             els.quoteIntakeAllergies.textContent = 'None';
         }
@@ -1905,7 +1938,8 @@ function populateIntakeSummary(req) {
         if (imgs.length > 0) {
             let html = '<div style="display:flex; flex-wrap:wrap; gap:0.5rem;">';
             imgs.forEach(url => {
-                html += `<a href="${url}" target="_blank"><img src="${url}" style="height:40px; width:auto; border-radius:4px; border:1px solid #e2e8f0; object-fit:cover;"></a>`;
+                const u = safeUrl(url); if (!u) return;
+                html += `<a href="${u}" target="_blank" rel="noopener"><img src="${u}" alt="Inspiration photo" style="height:40px; width:auto; border-radius:4px; border:1px solid #e2e8f0; object-fit:cover;"></a>`;
             });
             html += '</div>';
             els.quoteIntakePhotos.innerHTML = html;
@@ -1942,9 +1976,10 @@ function renderAttachmentPreviews() {
         const container = document.createElement('div');
         container.className = 'preview-container';
         container.innerHTML = `
-            <img src="${url}" alt="${file.name}">
-            <button class="btn-remove-preview" onclick="window.removeQuoteAttachment(${index})">&times;</button>
+            <img src="${esc(url)}" alt="${esc(file.name)}">
+            <button type="button" class="btn-remove-preview" data-action="remove-attachment" data-index="${index}">&times;</button>
         `;
+        container.querySelector('[data-action="remove-attachment"]').addEventListener('click', () => window.removeQuoteAttachment(index));
         els.quoteAttachmentPreviews.appendChild(container);
     });
 }
@@ -2063,7 +2098,9 @@ async function sendEmail() {
 
     try {
         const pdfUrl = btn.dataset.pdfUrl;
-        const cust = customers[currentQuoteRequest.customer_id];
+        const cust = customers[currentQuoteRequest.customer_id] || {};
+        const customerEmail = cust.email || (String(currentQuoteRequest.customer_id || '').includes('@') ? currentQuoteRequest.customer_id : '');
+        if (!customerEmail) throw new Error('This request has no customer email on file. Add one on the Customers tab, then send the quote.');
         const emailMessage = document.getElementById('quote-email-message').value;
 
         const projectId = firebaseConfig.authDomain ? firebaseConfig.authDomain.split('.')[0] : 'baked-by-bostik';
@@ -2079,8 +2116,8 @@ async function sendEmail() {
                 'Authorization': `Bearer ${idToken}`
             },
             body: JSON.stringify({
-                customerEmail: cust.email,
-                customerName: cust.name,
+                customerEmail: customerEmail,
+                customerName: cust.name || 'Valued Customer',
                 pdfUrl: pdfUrl,
                 emailMessage: emailMessage,
                 imageUrls: currentQuoteAttachmentUrls // M18 Support Attachments
@@ -2282,21 +2319,21 @@ function renderCustomersTable(searchTerm = '') {
         }
 
         tr.innerHTML = `
-            <td><input type="checkbox" class="customer-checkbox" data-id="${c.id}" ${selectedCustomerIds.has(c.id) ? 'checked' : ''}></td>
-            <td><strong>${c.name || 'Unknown'}</strong></td>
+            <td><input type="checkbox" class="customer-checkbox" data-id="${esc(c.id)}" ${selectedCustomerIds.has(c.id) ? 'checked' : ''}></td>
+            <td><strong>${esc(c.name || 'Unknown')}</strong></td>
 
-            <td><a href="mailto:${c.email}">${c.email || '-'}</a></td>
-            <td>${c.phone || '-'}</td>
-            <td>${lastOrder}</td>
+            <td><a href="mailto:${esc(c.email || '')}">${esc(c.email || '-')}</a></td>
+            <td>${esc(c.phone || '-')}</td>
+            <td>${esc(lastOrder)}</td>
             <td>
                 <div class="action-buttons">
-                    <button class="btn-icon btn-edit-customer" data-id="${c.id}" title="Edit">
+                    <button class="btn-icon btn-edit-customer" data-id="${esc(c.id)}" title="Edit">
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                     </button>
-                    <button class="btn-icon btn-view-history" data-id="${c.id}" title="History">
+                    <button class="btn-icon btn-view-history" data-id="${esc(c.id)}" title="History">
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </button>
-                    <button class="btn-icon btn-delete-customer delete" data-id="${c.id}" title="Delete">
+                    <button class="btn-icon btn-delete-customer delete" data-id="${esc(c.id)}" title="Delete">
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     </button>
                 </div>
@@ -2318,9 +2355,10 @@ function renderCustomersTable(searchTerm = '') {
             openCustomerModal(c.id);
         });
 
-        // History button placeholder
+        // History: the customer record shows past requests at the bottom
         tr.querySelector('.btn-view-history').addEventListener('click', () => {
-            alert("Customer History coming soon!");
+            openCustomerModal(c.id);
+            setTimeout(() => { els.custHistoryList?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 150);
         });
 
         // Delete Customer Logic
@@ -2394,11 +2432,11 @@ function openCustomerModal(id) {
                 item.style.borderBottom = '1px solid #eee';
                 item.innerHTML = `
                     <div style="display:flex; justify-content:space-between;">
-                        <span><strong>#${req.id.slice(0, 6)}</strong> - ${date}</span>
-                        <span class="status-badge status-${status}" style="font-size:0.75rem; padding:2px 6px;">${status}</span>
+                        <span><strong>#${esc(String(req.id).slice(0, 6))}</strong> - ${esc(date)}</span>
+                        <span class="status-badge status-${esc(status)}" style="font-size:0.75rem; padding:2px 6px;">${esc(status)}</span>
                     </div>
                     <div style="font-size:0.85rem; color:#666;">
-                        ${req.step1_data?.category || 'Order'} · ${req.step1_data?.event_date || 'No Date'}
+                        ${esc(req.step1_data?.category || 'Order')} · ${esc(req.step1_data?.event_date || 'No Date')}
                     </div>
                  `;
                 els.custHistoryList.appendChild(item);
@@ -2646,6 +2684,17 @@ function initRecordDepositLogic() {
             const note = els.depositNote.value;
 
             if (!reqId || !custId) throw new Error("Missing request context.");
+
+            // A request should have one order. If one exists, record this as a payment on it instead (audit M11).
+            const existing = orders.find(o => o.request_id === reqId);
+            if (existing) {
+                els.depositModal.classList.add('hidden');
+                if (confirm(`This request already has an order (${String(existing.id).slice(-8)}). Record this amount as a payment on that order instead?`)) {
+                    openPaymentModal(existing.id);
+                    if (els.paymentAmount) els.paymentAmount.value = isNaN(amount) ? '' : amount;
+                }
+                return;
+            }
 
             // 1. Create Order
             const orderData = {
@@ -2956,9 +3005,9 @@ function updateCharts() {
                     const outstandingClass = item.outstanding > 0 ? 'color: #ef4444; font-weight:bold;' : 'color: #d1d5db;';
 
                     tr.innerHTML = `
-                        <td>${item.dateStr}</td>
-                        <td><strong>${item.custName}</strong></td>
-                        <td>${item.items}</td>
+                        <td>${esc(item.dateStr)}</td>
+                        <td><strong>${esc(item.custName)}</strong></td>
+                        <td>${esc(item.items)}</td>
                         <td style="color: #10b981; font-weight:bold;">$${item.collected.toFixed(2)}</td>
                         <td style="${outstandingClass}">$${item.outstanding.toFixed(2)}</td>
                     `;
@@ -3119,6 +3168,14 @@ function updateCharts() {
 
 }
 
+// One CSV cell: always quoted, quotes doubled, and a leading = + - @ (or tab/CR) neutralised so a
+// spreadsheet never treats a customer's text as a formula (audit M17)
+function csvCell(v) {
+    let s = v == null ? '' : String(v);
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+    return '"' + s.replace(/"/g, '""') + '"';
+}
+
 function exportCSV() {
     if (!orders || orders.length === 0) {
         alert("No orders available to export.");
@@ -3150,18 +3207,9 @@ function exportCSV() {
         } else if (order.step1_data) {
             itemsStr = `${order.step1_data.category}`;
         }
-        itemsStr = itemsStr.replace(/"/g, '""');
-
         const amount = order.amount_paid || order.total_price || 0;
 
-        const row = [
-            dateStr,
-            id,
-            `"${custName}"`,
-            custEmail,
-            `"${itemsStr}"`,
-            amount
-        ].join(",");
+        const row = [dateStr, id, custName, custEmail, itemsStr, amount].map(csvCell).join(",");
 
         csvContent += row + "\n";
     });
@@ -3714,14 +3762,15 @@ function renderCategoriesTable() {
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${cat.label}</td>
-            <td>${cat.slug}</td>
-            <td>${cat.sort_order}</td>
+            <td>${esc(cat.label)}</td>
+            <td>${esc(cat.slug)}</td>
+            <td>${esc(cat.sort_order)}</td>
             <td>${imageCount}</td>
             <td>
-                <button class="btn-text" style="color:#ef4444;" onclick="deleteCategory('${cat.id}', '${cat.slug}')">Delete</button>
+                <button type="button" class="btn-text" style="color:#ef4444;" data-action="delete-category">Delete</button>
             </td>
         `;
+        tr.querySelector('[data-action="delete-category"]').addEventListener('click', () => window.deleteCategory(cat.id, cat.slug));
         tbody.appendChild(tr);
     });
 }
@@ -3866,9 +3915,9 @@ function renderSiteContentForm() {
             const tData = themesData[i] || { title: THEME_CARD_DEFAULTS[i], link: THEME_CARD_LINK_DEFAULTS[i], url: '' };
             const cardHtml = `
                 <div class="content-item-card" style="border: 1px solid #e5e7eb; padding: 1rem; border-radius: 6px; text-align: center;">
-                    <input type="text" id="theme-title-${i}" value="${tData.title || ''}" placeholder="Theme Title" style="width: 100%; border:1px solid #ccc; border-radius:4px; padding:0.4rem; margin-bottom:0.5rem; font-weight:bold; text-align:center;">
-                    <input type="text" id="theme-link-${i}" value="${tData.link || THEME_CARD_LINK_DEFAULTS[i] || ''}" placeholder="Gallery Tags (e.g. princess, fairy)" title="The tag(s) used to filter images in the gallery when this theme is clicked. Separate multiple tags with commas." style="width: 100%; border:1px solid #ccc; border-radius:4px; padding:0.4rem; margin-bottom:0.5rem; font-size:0.85rem; text-align:center; color:#4b5563;">
-                    <img id="theme-preview-${i}" src="${tData.url || 'https://via.placeholder.com/300x300?text=Empty'}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 4px; margin-bottom: 0.5rem;" />
+                    <input type="text" id="theme-title-${i}" value="${esc(tData.title || '')}" placeholder="Theme Title" style="width: 100%; border:1px solid #ccc; border-radius:4px; padding:0.4rem; margin-bottom:0.5rem; font-weight:bold; text-align:center;">
+                    <input type="text" id="theme-link-${i}" value="${esc(tData.link || THEME_CARD_LINK_DEFAULTS[i] || '')}" placeholder="Gallery Tags (e.g. princess, fairy)" title="The tag(s) used to filter images in the gallery when this theme is clicked. Separate multiple tags with commas." style="width: 100%; border:1px solid #ccc; border-radius:4px; padding:0.4rem; margin-bottom:0.5rem; font-size:0.85rem; text-align:center; color:#4b5563;">
+                    <img id="theme-preview-${i}" src="${safeUrl(tData.url) || IMG_PLACEHOLDER}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 4px; margin-bottom: 0.5rem;" />
                     <input type="file" id="theme-file-${i}" accept="image/*" style="width: 100%; font-size: 0.8rem;">
                 </div>
             `;
@@ -4006,33 +4055,14 @@ async function initReviews() {
     const approvedList = document.getElementById('approved-reviews-list');
     const approvedEmpty = document.getElementById('approved-reviews-empty');
     if (approvedList && approvedEmpty) {
-        let hasSeeded = false;
         const qApproved = query(collection(db, "reviews"), orderBy("created_at", "desc"));
         unsubscribeApprovedReviews = onSnapshot(qApproved, async (snapshot) => {
             approvedList.innerHTML = '';
             approvedList.appendChild(approvedEmpty);
             
             if (snapshot.empty) {
+                // an empty list stays empty: placeholder reviews are never written to the live site (audit N12)
                 approvedEmpty.classList.remove('hidden');
-                
-                // Auto seed on empty if we haven't already tried
-                if (!hasSeeded) {
-                    hasSeeded = true;
-                    console.log("No approved reviews found. Migrating default reviews to Firestore...");
-                    const defaultReviews = [
-                        { text: "The unicorn cake was the hit of the party! Not only did it look incredible, but it tasted amazing too.", name: "Sarah M.", rating: 5, created_at: serverTimestamp() },
-                        { text: "The best cookies in Glen Ellyn! Kristen captured our theme perfectly.", name: "Jennifer L.", rating: 5, created_at: serverTimestamp() },
-                        { text: "Beautiful and delicious. The detail on the Spiderman cake was insane.", name: "Mike D.", rating: 5, created_at: serverTimestamp() },
-                        { text: "We order every year for our corporate holiday party. Professional and delicious!", name: "James T.", rating: 5, created_at: serverTimestamp() }
-                    ];
-                    try {
-                        for (const review of defaultReviews) {
-                            await addDoc(collection(db, 'reviews'), review);
-                        }
-                    } catch (err) {
-                        console.error("Migration failed (permission or other):", err);
-                    }
-                }
             } else {
                 approvedEmpty.classList.add('hidden');
                 snapshot.forEach(docSnap => {
@@ -4063,16 +4093,16 @@ function createReviewCard(review, isPending) {
     }
     
     let stars = '';
-    const rating = review.rating || 5;
+    const rating = Math.max(0, Math.min(5, Number(review.rating) || 5));
     for(let i=0; i<5; i++) {
         stars += (i < rating) ? '★' : '☆';
     }
 
     const contentDiv = document.createElement('div');
     contentDiv.innerHTML = `
-        <div style="font-weight: 600; margin-bottom: 0.25rem;">${review.name || 'Anonymous'} <span style="color: #fbbf24; margin-left: 0.5rem;">${stars}</span></div>
-        <div style="font-size: 0.85rem; color: #6b7280; margin-bottom: 0.5rem;">Event: ${review.event_date || 'N/A'} | Submitted: ${dateStr}</div>
-        <div style="color: #374151; font-style: italic;">"${review.text || ''}"</div>
+        <div style="font-weight: 600; margin-bottom: 0.25rem;">${esc(review.name || 'Anonymous')} <span style="color: #fbbf24; margin-left: 0.5rem;">${stars}</span></div>
+        <div style="font-size: 0.85rem; color: #6b7280; margin-bottom: 0.5rem;">Event: ${esc(review.event_date || 'N/A')} | Submitted: ${esc(dateStr)}</div>
+        <div style="color: #374151; font-style: italic; white-space: pre-wrap;">"${esc(review.text || '')}"</div>
     `;
     
     const actionDiv = document.createElement('div');
@@ -4178,6 +4208,22 @@ async function deleteApprovedReview(id) {
 let seasonalOrders = [];
 let unsubscribeSeasonal = null;
 
+// Small toast used by the gallery reorder (it was called without ever being defined: audit A3)
+function showNotification(message, type = 'success') {
+    let host = document.getElementById('admin-toast-host');
+    if (!host) {
+        host = document.createElement('div');
+        host.id = 'admin-toast-host';
+        host.style.cssText = 'position:fixed; bottom:1.25rem; left:50%; transform:translateX(-50%); z-index:5000; display:flex; flex-direction:column; gap:.5rem; pointer-events:none;';
+        document.body.appendChild(host);
+    }
+    const el = document.createElement('div');
+    el.textContent = message;
+    el.style.cssText = `background:${type === 'error' ? '#b91c1c' : '#1f2937'}; color:#fff; padding:.6rem 1rem; border-radius:.5rem; font-size:.9rem; box-shadow:0 8px 24px rgba(0,0,0,.25);`;
+    host.appendChild(el);
+    setTimeout(() => el.remove(), type === 'error' ? 6000 : 3000);
+}
+
 function escapeHtml(unsafe) {
     if (!unsafe) return '';
     return String(unsafe)
@@ -4258,10 +4304,10 @@ function renderSeasonalOrders() {
         tr.innerHTML = `
             <td>${dateStr}</td>
             <td><strong>${escapeHtml(o.parent_name || 'Unknown')}</strong><br><small>${escapeHtml(o.parent_email || '')}</small></td>
-            <td>${o.num_sets}</td>
+            <td>${esc(o.num_sets)}</td>
             <td>${escapeHtml(teacherNames)}</td>
             <td>$${parseFloat(o.total_price || 0).toFixed(2)}</td>
-            <td><span class="seasonal-tag status-${status}">${status}</span></td>
+            <td><span class="seasonal-tag status-${esc(status)}">${esc(status)}</span></td>
             <td><button class="btn-sm btn-view">Edit</button></td>
         `;
         

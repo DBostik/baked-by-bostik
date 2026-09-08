@@ -15,6 +15,12 @@
 
 ## 📅 September 2026
 
+### 🟢 Audit Phase 2: the dashboard no longer renders customer text as HTML - Sep 8, 2026
+- `admin/admin.js`: every customer-, review-, seasonal- and order-supplied string, and every document id, is escaped before it lands in the board, list, detail modal (view and edit), quote modal and intake summary, customers table and history, reviews, seasonal table, ledger and analytics. Inspiration photos and the quote PDF link only render when they point at this project's Storage. The Resend, attachment-remove and category-delete buttons use data attributes and listeners instead of inline `onclick` strings.
+- Also fixed: global search no longer throws when a customer record has no email (A4); Send Quote falls back to the request's email and explains a missing one instead of crashing (A5); `showNotification` exists, so gallery reorder confirms itself (A3); the customers History button opens the customer record (M16); "Delete Test Data" is "Delete order" (M15); CSV export quotes every cell and neutralises leading `= + - @` (M17); recording a deposit on a request that already has an order offers a payment on that order instead of creating a second one (M11); Chart.js pinned to 4.4.4 (N9); the placeholder-testimonial auto-seed and `seed-reviews.html` are gone (N12); `hear_about_us` and `add_ons` tolerate non-string data.
+- `js/app.js`: homepage testimonials are built from text nodes, never markup.
+- `tools/admin-tests`: a browser harness that feeds hostile records to the real dashboard and checks nothing executes (it did 84 times on the previous version).
+
 ### 🟢 Hosting: costing seed files no longer published - Sep 8, 2026
 - `firebase.json` ignores `admin/costing-seed*.json` (Kristen's recipes and store prices were downloadable). The two "Load starter data" buttons only work on an empty database, which is already loaded; their failure message now says where the files live.
 

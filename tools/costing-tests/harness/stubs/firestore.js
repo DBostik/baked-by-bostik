@@ -24,7 +24,7 @@ for (const p of seed2.products) { const {id,...rest}=p; store.products.set(id, {
 store.requests.set('09012026-AB12', { customer_id: 'emma@example.com', status: 'NEW', created_at: new Date(), step1_data: { name: 'Emma R.', event_date: '2026-10-04', category: 'Cakes' } });
 store.requests.set('08282026-CD34', { customer_id: 'liz@example.com', status: 'QUOTING', created_at: new Date(), step1_data: { name: 'Liz M.', event_date: '2026-09-20', category: 'Cookies' } });
 const listeners = [];
-function snapOf(name){ const m = store[name]||new Map(); return { forEach(fn){ for (const [id,data] of m) fn({id, data:()=>data}); }, docs:[...m].map(([id,data])=>({id, data:()=>data})), size:m.size }; }
+function snapOf(name){ const m = store[name]||new Map(); return { forEach(fn){ for (const [id,data] of m) fn({id, data:()=>data}); }, docs:[...m].map(([id,data])=>({id, data:()=>data})), size:m.size, empty:m.size===0 }; }
 export function getFirestore(){return {};}
 export function collection(db, ...path){ return {type:'col', path}; }
 export function doc(db, ...path){ if (db && db.type==='col') return {type:'doc', path:[...db.path, 'auto-'+Math.random().toString(36).slice(2,8)]}; return {type:'doc', path}; }
@@ -34,7 +34,7 @@ export function onSnapshot(ref, cb){
   if (ref.type==='col' && ref.path.length===1) { cb(snapOf(ref.path[0])); listeners.push({ref,cb}); }
   else if (ref.type==='doc') { const fire=()=>{ const m=store[ref.path[0]]; const d=m&&m.get(ref.path[1]); cb({exists:()=>!!d, data:()=>d}); }; fire(); listeners.push({ref, cb:fire, isDoc:true}); }
   return ()=>{}; }
-export async function getDocs(ref){ if (ref.type==='col' && ref.path.length===1 && store[ref.path[0]]) { const m=store[ref.path[0]]; return {docs:[...m].map(([id,data])=>({id, data:()=>data}))}; } if (ref.type==='col' && ref.path.length===3 && ref.path[2]==='prices') { const list=(store.prices.get(ref.path[1])||[]).slice().sort((a,b)=>b.date.localeCompare(a.date)); return {docs:list.map(d=>({id:d.id, data:()=>d}))}; } return {docs:[]}; }
+export async function getDocs(ref){ if (ref.type==='col' && ref.path.length===1) { return snapOf(ref.path[0]); } if (ref.type==='col' && ref.path.length===3 && ref.path[2]==='prices') { const list=(store.prices.get(ref.path[1])||[]).slice().sort((a,b)=>b.date.localeCompare(a.date)); return {docs:list.map(d=>({id:d.id, data:()=>d}))}; } return {docs:[]}; }
 export async function getDoc(ref){ const m=store[ref.path[0]]; const d=m&&m.get(ref.path[1]); return {exists:()=>!!d, data:()=>d}; }
 // Real Firestore semantics: setDoc replaces the whole document unless { merge: true } (or mergeFields) is passed;
 // updateDoc and batch.update merge (dotted paths reach into maps, whole-map values replace the map).
@@ -43,7 +43,7 @@ export async function setDoc(ref, data, options){ return writeDoc(ref, data, !!(
 async function writeDoc(ref, data, merge, mode){
   window.__writes=(window.__writes||0)+1;
   if (ref.path.length===4 && ref.path[2]==='prices') { const list=store.prices.get(ref.path[1])||[]; list.push({id:ref.path[3], ...data}); store.prices.set(ref.path[1], list); return; } // price history entry
-  const m=store[ref.path[0]]; if(!m) return;
+  const m = store[ref.path[0]] || (store[ref.path[0]] = new Map()); // collections appear on first write (admin harness seeds customers, reviews, orders...)
   const cur = merge ? {...(m.get(ref.path[1])||{})} : {};
   for (const [k,v] of Object.entries(data)) {
     const parts=k.split('.'); let o=cur;

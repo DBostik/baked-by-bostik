@@ -34,3 +34,10 @@ tools/rules-tests/*.rules
 
 # Removed from the repo Sep 2026 (never a Firebase feature); ignore a stray local copy
 .firebaseignore
+
+# Removed from the repo Sep 2026 (placeholder-review seeder); ignore a stray local copy
+seed-reviews.html
+
+# Admin test harness output
+tools/admin-tests/harness/site/
+tools/admin-tests/harness/shot*.png

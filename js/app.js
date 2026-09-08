@@ -85,14 +85,20 @@ window.renderTestimonials = function(reviews) {
         item.className = 'testimonial-item';
         
         let stars = '';
-        const rating = review.rating || 5;
+        const rating = Math.max(0, Math.min(5, Number(review.rating) || 5));
         for(let i=0; i<5; i++) { stars += (i < rating) ? '★' : '☆'; }
 
-        item.innerHTML = `
-            <div style="color: #fbbf24; font-size: 1.25rem; margin-bottom: 0.5rem;">${stars}</div>
-            <p class="quote">"${review.text}"</p>
-            <cite>- ${review.name}</cite>
-        `;
+        // Review text and names come from the public review form: build the card with text nodes,
+        // never with markup (audit Phase 2)
+        const starsEl = document.createElement('div');
+        starsEl.style.cssText = 'color: #fbbf24; font-size: 1.25rem; margin-bottom: 0.5rem;';
+        starsEl.textContent = stars;
+        const quote = document.createElement('p');
+        quote.className = 'quote';
+        quote.textContent = `"${review.text || ''}"`;
+        const cite = document.createElement('cite');
+        cite.textContent = `- ${review.name || 'A happy customer'}`;
+        item.append(starsEl, quote, cite);
         track.appendChild(item);
     });
 

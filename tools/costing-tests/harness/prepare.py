@@ -16,7 +16,7 @@ shutil.copy(here / 'vendor' / 'chart.umd.js', site / 'vendor' / 'chart.umd.js')
 s = (repo / 'admin' / 'index.html').read_text()
 import re
 s = re.sub(r'<script type="module" src="/admin/admin.js[^"]*"></script>', '', s)
-s = s.replace('<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>', '<script src="/vendor/chart.umd.js"></script>')  # vendored copy so charts render offline
+s = s.replace('<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.js"></script>', '<script src="/vendor/chart.umd.js"></script>')  # vendored copy so charts render offline
 s = s.replace('<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>', '')
 im = """<script type="importmap">{"imports":{
  "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js":"/stubs/app.js",
