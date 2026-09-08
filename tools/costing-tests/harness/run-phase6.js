@@ -79,6 +79,18 @@ const server = http.createServer((req, res) => { let p = decodeURIComponent(req.
     await page.evaluate(() => window.__stubSet('requests', '09012026-AB12', { status: 'BOOKED', updated_at: new Date() })); await page.waitForTimeout(300);
     await page.evaluate(() => window.__stubSet('requests', '09012026-AB12', { status: 'COMPLETED', updated_at: new Date() })); await page.waitForTimeout(700);
     out.afterSecondCompletion = await stock('board-round-6');
+    // 5b. audit K1 (Sep 2026): opening the estimate and clicking Save after its stock-out must keep the stamp,
+    // so Home does not ask to take it again and a second "Made this" / re-completion cannot double count
+    await nav('costing-estimates'); await page.waitForTimeout(300);
+    await page.click('#page-costing-estimates [data-action="est-open"]'); await page.waitForTimeout(500);
+    await page.click('[data-action="est-save"]'); await page.waitForTimeout(700);
+    out.k1StampKeptAfterEditSave = await page.evaluate(() => { const e = [...window.BBBCosting.state.estimates.values()][0]; return !!e.stockOut; });
+    out.k1StockAfterEditSave = await stock('board-round-6');
+    await nav('costing-home'); await page.waitForTimeout(400);
+    out.k1HomeAsksToTakeAgain = /not yet taken from stock/.test(await text('#page-costing-home'));
+    await page.evaluate(() => window.__stubSet('requests', '09012026-AB12', { status: 'BOOKED', updated_at: new Date() })); await page.waitForTimeout(300);
+    await page.evaluate(() => window.__stubSet('requests', '09012026-AB12', { status: 'COMPLETED', updated_at: new Date() })); await page.waitForTimeout(700);
+    out.k1StockAfterRecompletion = await stock('board-round-6');
 
     // 6. history modal, home card, analytics pill
     await nav('costing-inventory'); await page.click('tr[data-id="board-round-6"] [data-action="inv-history"]'); await page.waitForTimeout(300); await shot('history');

@@ -175,15 +175,19 @@ async function saveDraft(asNew) {
     const est = P.priceEstimate(draft, ctx, ps);
     const id = (asNew || !draft.id) ? ('est-' + todayISO().replace(/-/g, '') + '-' + uid(4)) : draft.id;
     const name = draft.name || est.items.map(i => i.label).join(' + ');
+    // editing an existing estimate: keep what the editor does not own (creation time and, above all, the
+    // "taken from stock" stamp; losing it made a completed order deduct its materials a second time)
+    const prev = (draft.id && !asNew) ? state.estimates.get(draft.id) : null;
     const data = {
         name, requestId: draft.requestId || null, customerLabel: draft.customerLabel || '', notes: draft.notes || '',
         items: JSON.parse(JSON.stringify(draft.items)),
         snapshot: { totals: est.totals, items: est.items.map(i => ({ label: i.label, qty: i.qty, ingredients: U.round2(i.ingredients), supplies: U.round2(i.supplies), hours: i.hours, menu: i.menu, lines: i.lines.map(l => ({ kind: l.kind, label: l.label, detail: l.detail, cost: U.round2(l.cost), minutes: l.minutes })) })), settingsUsed: est.settingsUsed, at: todayISO() },
-        updatedAt: serverTimestamp(), createdAt: (draft.id && !asNew) ? (state.estimates.get(draft.id)?.createdAt || serverTimestamp()) : serverTimestamp(),
+        updatedAt: serverTimestamp(), createdAt: prev?.createdAt || serverTimestamp(),
     };
+    if (prev?.stockOut) data.stockOut = prev.stockOut;
     await setDoc(doc(db, 'estimates', id), data, { merge: false });
     draft.id = id; draft.name = name;
-    toast(asNew ? 'Saved as a new estimate' : 'Estimate saved');
+    toast(asNew ? 'Saved as a new estimate' : (prev?.stockOut ? 'Estimate saved. Its materials were already taken from stock; if they changed, use Undo and then Made this.' : 'Estimate saved'));
     rerender();
 }
 

@@ -36,18 +36,33 @@ export function onSnapshot(ref, cb){
   return ()=>{}; }
 export async function getDocs(ref){ if (ref.type==='col' && ref.path.length===1 && store[ref.path[0]]) { const m=store[ref.path[0]]; return {docs:[...m].map(([id,data])=>({id, data:()=>data}))}; } if (ref.type==='col' && ref.path.length===3 && ref.path[2]==='prices') { const list=(store.prices.get(ref.path[1])||[]).slice().sort((a,b)=>b.date.localeCompare(a.date)); return {docs:list.map(d=>({id:d.id, data:()=>d}))}; } return {docs:[]}; }
 export async function getDoc(ref){ const m=store[ref.path[0]]; const d=m&&m.get(ref.path[1]); return {exists:()=>!!d, data:()=>d}; }
-export async function setDoc(ref, data){
+// Real Firestore semantics: setDoc replaces the whole document unless { merge: true } (or mergeFields) is passed;
+// updateDoc and batch.update merge (dotted paths reach into maps, whole-map values replace the map).
+// The stub used to merge on every write, which hid audit finding K1 (an estimate save dropping its stockOut stamp).
+export async function setDoc(ref, data, options){ return writeDoc(ref, data, !!(options && (options.merge || options.mergeFields)), 'set'); }
+async function writeDoc(ref, data, merge, mode){
   window.__writes=(window.__writes||0)+1;
   if (ref.path.length===4 && ref.path[2]==='prices') { const list=store.prices.get(ref.path[1])||[]; list.push({id:ref.path[3], ...data}); store.prices.set(ref.path[1], list); return; } // price history entry
-  const m=store[ref.path[0]]; if(m){ const cur={...(m.get(ref.path[1])||{})}; for (const [k,v] of Object.entries(data)) { const parts=k.split('.'); let o=cur; for (let i=0;i<parts.length-1;i++){ o[parts[i]]={...(o[parts[i]]||{})}; o=o[parts[i]]; } const last=parts[parts.length-1]; if (v && typeof v==='object' && '__inc' in v) o[last]=(Number(o[last])||0)+v.__inc; else if (v && typeof v==='object' && !Array.isArray(v) && !(v instanceof Date) && o[last] && typeof o[last]==='object' && !Array.isArray(o[last])) o[last]={...o[last], ...v}; else o[last]=v; } m.set(ref.path[1], cur); notify(ref.path[0]); } }
+  const m=store[ref.path[0]]; if(!m) return;
+  const cur = merge ? {...(m.get(ref.path[1])||{})} : {};
+  for (const [k,v] of Object.entries(data)) {
+    const parts=k.split('.'); let o=cur;
+    for (let i=0;i<parts.length-1;i++){ o[parts[i]]={...(o[parts[i]]||{})}; o=o[parts[i]]; }
+    const last=parts[parts.length-1];
+    if (v && typeof v==='object' && '__inc' in v) o[last]=(Number(o[last])||0)+v.__inc;
+    else if (mode==='set' && merge && v && typeof v==='object' && !Array.isArray(v) && !(v instanceof Date) && o[last] && typeof o[last]==='object' && !Array.isArray(o[last])) o[last]={...o[last], ...v}; // setDoc merge deep-merges maps
+    else o[last]=v; // updateDoc replaces a whole map value; setDoc without merge replaces the document
+  }
+  m.set(ref.path[1], cur); notify(ref.path[0]);
+}
 export function increment(n){ return { __inc: n }; }
-export async function updateDoc(ref, data){ return setDoc(ref, data); }
+export async function updateDoc(ref, data){ return writeDoc(ref, data, true, 'update'); }
 export async function addDoc(ref, data){ window.__writes=(window.__writes||0)+1; return {id:'new'}; }
 export async function deleteDoc(ref){ const m=store[ref.path[0]]; if(m){ m.delete(ref.path[1]); notify(ref.path[0]); } }
-export function writeBatch(){ const ops=[]; return { set(ref,data){ops.push(()=>setDoc(ref,data));}, update(ref,data){ops.push(()=>setDoc(ref,data));}, delete(ref){ops.push(()=>deleteDoc(ref));}, async commit(){ for(const o of ops) await o(); window.__batches=(window.__batches||0)+1; } }; }
+export function writeBatch(){ const ops=[]; return { set(ref,data,options){ops.push(()=>setDoc(ref,data,options));}, update(ref,data){ops.push(()=>updateDoc(ref,data));}, delete(ref){ops.push(()=>deleteDoc(ref));}, async commit(){ for(const o of ops) await o(); window.__batches=(window.__batches||0)+1; } }; }
 function notify(name){ for (const l of listeners) if (l.ref.path[0]===name) { if (l.isDoc) l.cb(); else l.cb(snapOf(name)); } }
 // debug hooks for the harness runners
 window.__stubPrices = (id) => (store.prices.get(id) || []).map(p => ({ sourceId: p.sourceId, price: p.price, date: p.date, method: p.method, qty: p.qty }));
 window.__stubCount = (name) => (store[name] ? store[name].size : null);
-window.__stubSet = (col, id, data) => setDoc({ type: 'doc', path: [col, id] }, data);
+window.__stubSet = (col, id, data) => writeDoc({ type: 'doc', path: [col, id] }, data, true, 'update');
 window.__stubGet = (col, id) => store[col] && store[col].get(id);

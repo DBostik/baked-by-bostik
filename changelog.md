@@ -15,6 +15,10 @@
 
 ## 📅 September 2026
 
+### 🟢 Audit K1: an estimate save no longer re-arms the stock deduction - Sep 8, 2026
+- `admin/costing-estimator.js`: saving an existing estimate keeps its "taken from stock" stamp (and its creation time). Before, Save rebuilt the document without the stamp, Home reported the completed order as "not yet taken from stock", and a second "Made this" or re-completion deducted the materials again. The save toast now says when the materials were already taken.
+- `tools/costing-tests/harness/stubs/firestore.js`: the stub now follows real Firestore write semantics (`setDoc` replaces unless `merge: true`; `updateDoc` merges). It used to merge every write, which is why this bug never showed in the harness. `run-phase6.js` gained the regression check (edit, save, re-complete: stock unchanged).
+
 ### 🟢 Audit Phase 1: rules and hosting lockdown - Sep 8, 2026
 - `firestore.rules`: anonymous writes limited to the exact shapes the public forms send (customers, requests Step 1 and Step 2, pending reviews, seasonal). A customer's email can no longer be changed from outside; a request the admin has moved past AWAITING_DETAILS can no longer be reset or overwritten; request ids must match `MMDDYYYY-1234`; inspiration photos must be Storage download URLs from this project.
 - `storage.rules`: `get` instead of `read` on `requests/` and `quotes/` (no more listing every quote PDF or a request's photos); uploads limited to real photo types at new paths under a well-formed request id.

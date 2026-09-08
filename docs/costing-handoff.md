@@ -137,6 +137,10 @@ suggested = cost basis x (1 + profit) rounded up to `roundTo`; margin = (menu - 
   render ran twice); Add to quote reports when the request cannot be opened; two tables wrapped for phones;
   pricebot Storage download sends `Authorization: Firebase <token>` (falls back to Bearer). Kristen's guide for
   daily use is `docs/costing-guide-for-kristen.md`.
+* **Audit K1 fix** (Sep 8, 2026): `saveDraft` in `costing-estimator.js` carries the existing `stockOut` stamp (and
+  `createdAt`) through a save of an existing estimate; a "Save as new" copy starts without a stamp on purpose. The
+  browser harness stub now replaces documents on `setDoc` without `merge` like real Firestore (it used to merge
+  everything, which hid this bug); `run-phase6.js` checks edit-save-recomplete leaves stock unchanged.
 * **Second review pass** (two independent reviewers, same day) fixed: stock explosion now reports a sub-recipe
   line it cannot weigh (count units, missing weight, blank qty) instead of silently deducting nothing; a recipe
   with no lines costs "not complete" instead of $0; `inventory.startedAt` is a client Date (a server timestamp
