@@ -28,7 +28,7 @@ All images are already in the project:
 | `assets/images/Season Page/IMG_3882.jpeg` | Close-up — green & blue crayon cookies |
 | `assets/images/Season Page/IMG_3883.jpeg` | Close-up — personalized "Thank You / Mrs. Smith" apple cookie |
 | `assets/images/Season Page/IMG_3921.jpeg` | Flat-lay — 3 cookies on wood board (notebook heart, apple, pencil) with crayons surrounding |
-| `assets/images/Venmo Info.JPEG` | Venmo QR code — Kristen Bostik / @Kristen-Bostik |
+| `assets/images/Venmo Info.JPEG` | Venmo QR code — Kristen Bostik / @KristenBostik-BakedByBostik |
 
 ---
 
@@ -54,7 +54,7 @@ All images are already in the project:
 
 ### How It Works (3 Steps)
 1. **Fill out the form below** — Tell us your name, how many sets, and each teacher's name
-2. **Pay via Venmo** — Send payment to @Kristen-Bostik (QR code below) to lock in your order
+2. **Pay via Venmo** — Send payment to @KristenBostik-BakedByBostik (QR code below) to lock in your order
 3. **Pick up in May** — Grab your beautifully packaged gift boxes in Glen Ellyn
 
 ### Sold Out State

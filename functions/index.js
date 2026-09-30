@@ -332,7 +332,8 @@ exports.dispatchQuoteEmail = onRequest({ cors: true, invoker: 'public' }, async 
                    <p><a href="${pdfUrl}" style="background:#1A2A3A; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">View Quote PDF</a></p>
                    ${inlineImagesHtml}
                    <p>Best,<br>Baked By Bostik</p>
-                   <p style="margin-top:8px; font-size:0.9em; color:#666;">Venmo: @Kristen-Bostik</p>`,
+                   <p style="margin-top:8px; font-size:0.9em; color:#666;">Venmo: @KristenBostik-BakedByBostik<br>
+                   <img src="https://bakedbybostik.com/assets/images/Venmo%20Info.JPEG" alt="Venmo QR Code" width="150" style="margin-top:10px; border-radius: 8px;" /></p>`,
 
             attachments: attachments
         };
