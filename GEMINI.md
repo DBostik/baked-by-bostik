@@ -1,21 +1,9 @@
-# Agent Directives for Baked By Bostik
+# Agent Directives for Baked By Bostik (Google Antigravity / Gemini)
 
-## 1. Deployment Protocol
-**CRITICAL**: When asked to deploy changes, push code, or alter project architecture, you MUST read and follow the instructions located in `DEPLOY.md` at the root of the workspace.
+**Read `DEPLOY.md` before you commit, push, deploy or change how the project is set up, and follow it.** It is the one set of rules for every AI tool; `CLAUDE.md` points to the same file.
 
-*   **Standard Deploy**: Committing and pushing to the `main` branch automatically deploys the site to Firebase via GitHub Actions.
-*   **Do Not Run Local Firebase Deployments**: Running `firebase deploy` directly from the AI agent will hang due to authentication requirements. Always push to GitHub instead.
-
-## 2. Git & GitHub Push Instructions
-*   When committing, remember to temporarily move the git log to avoid lock issues in the VM environment:
-    ```bash
-    mv .git/logs .git/logs.hold
-    git -c core.logAllRefUpdates=false commit -m "Your message"
-    mv .git/logs.hold .git/logs
-    ```
-*   When pushing, use the secure token saved on the local machine:
-    ```bash
-    mv .git/logs .git/logs.hold
-    git -c core.logAllRefUpdates=false push https://x-access-token:$(cat "/Users/davebostik/Desktop/My Info For Claude/github-token.txt")@github.com/DBostik/baked-by-bostik.git main
-    mv .git/logs.hold .git/logs
-    ```
+The short version:
+*   Work only in `~/Projects/BBB Website`. Never edit, commit or push from `~/Desktop/BBB Website`.
+*   Dave approves every commit and every push, one at a time.
+*   A push to `main` deploys the live site, rules and functions through GitHub Actions. Deploy only by pushing; don't run `firebase deploy` yourself.
+*   Push with plain `git push origin main` (the Mac's own GitHub sign-in). Never use or create a token file.

@@ -1,6 +1,6 @@
 # Deployment & Technology Stack Guide
 
-This document explains how the **Baked By Bostik** website is built, hosted, and deployed. Use this guide to instruct future developers or AI agents.
+This document explains how the **Baked By Bostik** website is built, hosted, and deployed. It is the one set of rules for every developer and every AI agent (Claude Code, Google Antigravity, or any other tool). `CLAUDE.md` and `GEMINI.md` only point here. Read it before you commit, push, deploy, or change how the project is set up.
 
 ## 1. The Technology Stack
 
@@ -17,64 +17,92 @@ This document explains how the **Baked By Bostik** website is built, hosted, and
 
 ---
 
-## 2. The "Gold Standard" Workflow
+## 2. Rules for Every Change (any tool)
+
+1. **Dave approves each commit and each push, one at a time.** Approval for one never covers the next. A push to `main` is a live deploy of the whole site, its database rules and its functions.
+2. **No pull requests.** Dave's workflow: edit the files in the working copy, test, commit, then push `main` after he says yes. Nothing for him to merge.
+3. **One working copy:** `~/Projects/BBB Website` on Dave's Mac. The old `~/Desktop/BBB Website` copy is on the iCloud Desktop (iCloud has broken a git repo before) and is retired: never edit, commit or push from it. Two scheduled price-bot tasks still run scripts from it until they are moved (see `scripts/pricebot/README.md`).
+4. **Deploy only by pushing `main` to GitHub.** Don't run `firebase deploy` yourself unless Dave asks for the manual fallback (section 5).
+5. **Push with the Mac's own GitHub sign-in:** plain `git push origin main`. Never put a GitHub token in a command, a file, or this repo.
+6. **Stage files by name** (`git add path/to/file`), never `git add .` or `git add -A`. macOS rewrites `.DS_Store` files on its own; never commit those changes.
+7. **Never print secrets** (the email password, any service-account key). Never run `firebase functions:list --json`, which can print the email password; the table output is safe.
+8. **Run the Firebase CLI as `npx --yes firebase-tools ...`.** Plain `npx firebase` can fail or pick up the wrong package.
+
+---
+
+## 3. The "Gold Standard" Workflow
 
 Follow this process to ensure stability and avoid breaking the live site.
 
 ### Step 1: Develop Locally (Safe Zone)
 1.  **Pull Latest Code:** `git pull origin main`
 2.  **Make Changes:** Edit HTML/CSS/JS files on your local machine.
-3.  **Test:** Run a local server to verify changes.
+3.  **Preview:** Run a local server to verify changes.
     ```bash
     python3 -m http.server 8080
-    # OR
-    npx serve
     ```
 4.  **Verify:** Open `http://localhost:8080` in your browser.
 
-### Step 2: Push to GitHub (The Trigger)
-Once you are happy with your changes locally:
-
-1.  **Stage & Commit:**
+### Step 2: Test (what to run depends on what changed)
+All of these run on the Mac against local emulators or stubs. None of them touch the live site or live data.
+*   **`firestore.rules` or `storage.rules`:** `tools/rules-tests` (see its README; 81 checks, all must pass). The emulators need Java; on Dave's Mac put `PATH=/opt/homebrew/opt/openjdk/bin:$PATH JAVA_HOME=/opt/homebrew/opt/openjdk` in front of the command.
+*   **Costing files in `admin/`:** the four `node tools/costing-tests/test-*.mjs` files (see `tools/costing-tests/README.md`).
+*   **`admin/admin.js`:** `tools/admin-tests` (see its README).
+*   **`functions/`:** `cd functions && npm ci`, then load them in the emulator under a demo project id (a `demo-` id never reaches the live project):
     ```bash
-    git add .
-    git commit -m "Description of what you fixed or added"
+    npx --yes firebase-tools emulators:exec --only functions,firestore --project demo-bbb "node -e 'setTimeout(()=>{},3000)'"
     ```
-2.  **Push to Main:**
-    ```bash
-    git push origin main
-    ```
+    The log must list all 4 functions after "Loaded functions definitions from source".
 
-### Step 3: Automatic Deployment (Hands-Off)
-You are done! 
-*   **GitHub Actions** will detect the push.
-*   It will automatically log in to Firebase and run `firebase deploy`.
-*   Your changes will be live on `bakedbybostik.com` within 2-3 minutes.
+### Step 3: Commit and Push (each with Dave's yes)
+```bash
+git add <each file you changed>
+git commit -m "Description of what you fixed or added"
+git push origin main
+```
+
+### Step 4: Automatic Deployment and Checks
+*   **GitHub Actions** detects the push, signs in to Firebase with the `FIREBASE_SERVICE_ACCOUNT_BAKEDBYBOSTIK_5EB55` secret and runs `firebase deploy`.
+*   Changes are live on `bakedbybostik.com` within about 1 to 3 minutes.
+*   Watch the run: `gh run list --limit 3`, then `gh run watch <run id>`. It must end green.
+*   Check the live pages you changed. After a functions change, also run `npx --yes firebase-tools functions:list --project bakedbybostik-5eb55` (table output).
 
 ---
 
-## 3. Manual Deployment (Fallback Only)
+## 4. Secrets and Settings
 
-If GitHub Actions is failing or you need to deploy a specific backend function immediately without waiting:
+*   The email login (`SMTP_EMAIL`, `SMTP_PASSWORD`) lives in **Google Cloud Secret Manager**. `dispatchQuoteEmail`, `scheduledWeeklyReport` and `onNewOrderRequest` declare it with `secrets: [...]` in `functions/index.js`. `createQuotePDF` never sends email and has no secrets on purpose.
+*   Never put the email login in `functions/.env`. A name can't be both a plain setting and a secret, so the deploy would fail, and plain settings are readable by anyone with project access.
+*   To check that the secrets exist without seeing them: `npx --yes firebase-tools functions:secrets:get SMTP_PASSWORD --project bakedbybostik-5eb55` (shows version numbers only).
+*   If sending a quote from the admin shows "SIMULATION MODE", the functions can't see the email login.
+*   **Node version:** the functions run on Node 24. `functions/package.json` (`engines`) and the workflow's `node-version` must match. Google retires Node 24 on 2028-10-31; move to a newer version before then.
+
+---
+
+## 5. Manual Deployment (Fallback Only, with Dave's yes)
+
+If GitHub Actions is failing or you need to deploy a specific backend function immediately without waiting. Deploy only from a committed `main` that matches GitHub, so the live site never runs code GitHub doesn't have.
 
 **Deploy Everything (Site + Functions + Rules):**
 ```bash
-npx firebase deploy --project bakedbybostik-5eb55
+npx --yes firebase-tools deploy --project bakedbybostik-5eb55
 ```
 
 **Deploy Only Website (Hosting):**
 ```bash
-npx firebase deploy --only hosting --project bakedbybostik-5eb55
+npx --yes firebase-tools deploy --only hosting --project bakedbybostik-5eb55
 ```
 
 **Deploy Only Functions:**
 ```bash
-npx firebase deploy --only functions --project bakedbybostik-5eb55
+npx --yes firebase-tools deploy --only functions --project bakedbybostik-5eb55
 ```
+
+**Do not use `deploy_update.command` or `easy_setup.sh`.** They are from before the functions read the email login from Secret Manager: they write the password into `functions/.env` or old-style config and deploy from the Mac.
 
 ---
 
-## 4. Troubleshooting
+## 6. Troubleshooting
 
 *   **"My changes aren't showing up!"**
     *   Did you push to `main`? (Pushing to other branches does not trigger a deploy).
@@ -93,48 +121,35 @@ npx firebase deploy --only functions --project bakedbybostik-5eb55
     *   If you see a `404` error, the secret hasn't been created yet. Go to Google Cloud Secret Manager and manually create the secret.
     *   If you see a `403` error when deploying via GitHub Actions, the robotic Service Account (`824666210371-compute@developer.gserviceaccount.com`) lacks permission to explicitly *read* the newly created secret.
     *   **The Fix:** You must go into the Google Cloud Secret Manager UI, click on the specific secret, click the "Permissions" tab, and manually assign the `Secret Manager Secret Accessor` role to the aforementioned Default Compute Service Account. Run this for every secret the function needs.
+*   **"Secret environment variable overlaps non secret environment variable"**
+    *   A function still has an old plain setting with the same name as a secret it now declares. A Firebase deploy does not remove plain settings that were added outside it, and deploying once without the secret does not clear them either (tried Oct 22, 2026).
+    *   Fix it in Cloud Run, one service at a time, with one command so the function is never without the login (Cloud Shell in the Google Cloud console has `gcloud`):
+        ```bash
+        gcloud run services update <service name> --region us-central1 --remove-env-vars SMTP_EMAIL,SMTP_PASSWORD --update-secrets SMTP_EMAIL=SMTP_EMAIL:latest,SMTP_PASSWORD=SMTP_PASSWORD:latest
+        ```
+        Then rerun the failed GitHub deploy (`gh run rerun <run id>`). Done for `dispatchquoteemail` and `scheduledweeklyreport` on Oct 22, 2026.
+*   **"Runtime Node.js ... was deprecated / decommissioned"**
+    *   Move `engines` in `functions/package.json` and `node-version` in the workflow to a supported version together (section 4), then test the functions in the emulator (section 3, Step 2) before pushing.
+*   **`git push` is rejected or asks for a password**
+    *   Run `gh auth status`; it should show the `DBostik` account. If it doesn't, Dave signs in again with `gh auth login`. Don't work around it with a token.
 
 ---
 
-## 5. Notes for Claude (Cowork) sessions
+## 7. Project Notes
 
-Added Sep 6, 2026 with Milestone 24 (Costing). Read this before touching git from a Cowork session.
+Background for anyone changing the code. Written Sep 2026 during Milestone 24 (Costing) and the September security audit.
 
-* **Where the code is**: `~/Desktop/BBB Website` on Dave's Mac mini (this folder). It is the clone of `DBostik/baked-by-bostik`, branch `main`. Pushing `main` deploys hosting, functions and rules through GitHub Actions within a few minutes.
-* **Workflow Dave wants**: edit the local files here, test, then push after he says "approved". No pull requests, no merging for him to do.
-* **Git inside the Cowork VM mount is quirky**. The mounted folder rejects appends and some unlinks, so:
-  * fetch with `git fetch --no-write-fetch-head origin main`, then `git merge --ff-only origin/main`;
-  * before `git commit`, run `mv .git/logs .git/logs.hold`, commit with `-c core.logAllRefUpdates=false`, then `mv .git/logs.hold .git/logs` (the reflog just misses that one entry);
-  * a stale `.git/index.lock` can appear; removing it needs the session's delete permission for the Desktop folder (ask once);
-  * set identity per command: `-c user.name="Dave Bostik" -c user.email="dabosti@gmail.com"`.
-* **Pushing** needs a GitHub fine-grained token (Contents: read/write on this repo). If Dave has saved one, it is in `~/Desktop/My Info For Claude/github-token.txt` (never copy it into the repo). Push with `git push https://x-access-token:$(cat "$HOME/mnt/Desktop/My Info For Claude/github-token.txt")@github.com/DBostik/baked-by-bostik.git main`.
-* **Costing module map**: `admin/costing.js` (screens and Firestore), `admin/costing-units.js` (unit conversion and cost math, pure functions), `admin/costing.css`, `admin/costing-seed.json` (starter data from Kristen's sheet). `admin/admin.js` only has a one-line hook in `showPage()`. Rules: `firestore.rules` (`isAdmin()` UID list, `isPricebot()`). Plan and phases: the "Baked By Bostik Costing Plan" page in Dave's Claude artifacts; `implementation_plan.md` Milestone 7 lists the phases.
-
-### Update Sep 6, 2026 (after Phase 2)
-
-* `git fetch` that brings new objects into the mounted folder dies with a bus error (pack indexing on the mount).
-  When you need commits from GitHub (a PR, or someone else pushed), clone into `$HOME` on the VM (real filesystem),
-  do the merge there, then bring it back: `git rev-list --objects OLD..NEW | git pack-objects --stdout > $HOME/sync.pack`
-  in the clone, and in the mounted repo `git unpack-objects < $HOME/sync.pack`, `git update-ref refs/heads/main NEW`,
-  `git update-ref refs/remotes/origin/main NEW`, `git reset --hard main` (with `.git/logs` moved aside as above).
-* Pushing straight from the mounted repo: `mv .git/logs .git/logs.hold; git -c core.logAllRefUpdates=false push
-  https://x-access-token:$(cat "$HOME/mnt/Desktop/My Info For Claude/github-token.txt")@github.com/DBostik/baked-by-bostik.git main;
-  mv .git/logs.hold .git/logs`. If that ever bus-errors, use the clone route.
+### Costing module
+* **Module map**: `admin/costing.js` (screens and Firestore), `admin/costing-units.js` (unit conversion and cost math, pure functions), `admin/costing.css`, `admin/costing-seed.json` (starter data from Kristen's sheet). `admin/admin.js` only has a one-line hook in `showPage()`. Rules: `firestore.rules` (`isAdmin()` UID list, `isPricebot()`). Plan and phases: the "Baked By Bostik Costing Plan" page in Dave's Claude artifacts; `implementation_plan.md` Milestone 7 lists the phases.
 * Handoff for the Costing work: `docs/costing-handoff.md`. Tests: `tools/costing-tests/README.md`.
-* Files ending in " 2.jpg" that appear in `assets/` are dataless macOS duplicates (0 blocks); safe to delete, never commit.
-
-### Update Sep 6, 2026 (after Phase 3)
-
-* The Playwright browser harness (`tools/costing-tests/harness`) does not run inside the Cowork VM on the Mac: `npm i -g playwright`
-  works with `npm config set prefix ~/.npm-global`, but Chromium needs system libraries (libXdamage and friends) and the VM has
-  no root. Run the harness in the cloud container instead: tar `admin/`, `js/firebase-config.js` and `tools/costing-tests`
-  into `tools/costing-tests/harness/site/` (gitignored), stage that tar, extract it in the container, run there, then copy
-  changed files back with `device_commit_files`. Node unit tests run fine in the VM.
 * Costing scripts: `admin/index.html` has one tag, `costing-main.js`, which imports the other costing modules. Never add
   `?v=` to a costing script tag (it made `costing.js` load twice). `firebase.json` sends `Cache-Control: no-cache` for
   `/admin/**`, so browsers recheck admin files on every load and a deploy shows up right away.
+* The Playwright browser harnesses (`tools/costing-tests/harness`, `tools/admin-tests/harness`) need Chromium. They did not run
+  inside the Claude Cowork VM (no system libraries there).
+* Files ending in " 2.jpg" that appear in `assets/` are dataless macOS duplicates (0 blocks) from the iCloud Desktop; never commit them.
 
-### Update Sep 8, 2026 (audit Phase 1: rules and hosting lockdown)
+### Audit Phase 1 (Sep 8, 2026): rules and hosting lockdown
 
 * **Public writes are shape-checked.** `firestore.rules` now lets anonymous visitors write only the exact
   documents the public site produces: `customers/{email}` with name, email, phone, last_updated (the email
@@ -160,10 +175,10 @@ Added Sep 6, 2026 with Milestone 24 (Costing). Read this before touching git fro
   Costing Settings only work while Costing is empty and the data is already loaded, so nothing changes day to
   day. To bootstrap a fresh database, deploy the files briefly (remove that ignore line, push, load, put it back)
   or load them from a session with admin credentials.
-* The desktop app writes deliverables into `Claude outputs/` inside this folder; it is gitignored and
-  hosting-ignored. Trash it whenever.
+* The Claude desktop app writes deliverables into `Claude outputs/` inside the project folder; it is gitignored and
+  hosting-ignored. Never commit it.
 
-### Update Sep 8, 2026 (audit Phase 2: output encoding in the dashboard)
+### Audit Phase 2 (Sep 8, 2026): output encoding in the dashboard
 
 * `admin/admin.js` escapes everything that came from a document (customer name, Step 1 and Step 2 fields,
   reviews, seasonal orders, orders, document ids) with `esc()` before placing it in HTML, in text or in an
@@ -173,3 +188,8 @@ Added Sep 6, 2026 with Milestone 24 (Costing). Read this before touching git fro
 * Homepage testimonials (`js/app.js`) are built with text nodes.
 * `seed-reviews.html` was removed from the repo (it seeded placeholder reviews); the dashboard no longer
   auto-seeds placeholder reviews when the list is empty.
+
+### Removed Oct 22, 2026
+The old notes for Claude Cowork sessions (git workarounds inside the Cowork VM's mounted Desktop folder, and pushing
+with a token file) were removed when the working copy moved to `~/Projects`. They are in this file's history
+(commit `7cc5726`) if ever needed.
