@@ -9,7 +9,7 @@ import {
 import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, setDoc, where, getDocs, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getStorage, ref, getDownloadURL, uploadBytes, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 import { firebaseConfig } from '../js/firebase-config.js';
-import { toUploadablePhoto, isHeicUrl } from './photo-convert.js';
+import { toUploadablePhoto, isHeicUrl, urlHoldsHeic } from './photo-convert.js';
 
 
 // Init Firebase
@@ -3263,15 +3263,34 @@ async function initGallery() {
 // Old iPhone (HEIC) photos uploaded before photo-convert.js existed: convert them to JPEG in place.
 // Each converted gallery entry keeps original_image_url / original_storage_path (homepage entries keep
 // original_url), and the HEIC files themselves stay in Storage, so nothing is lost.
-async function findOldIphonePhotos() {
-    const items = galleryItems.filter(item => isHeicUrl(item.image_url) || isHeicUrl(item.thumb_url));
+// deep: also read the first bytes of every other photo, to catch iPhone photos saved under a .jpg name.
+async function findOldIphonePhotos(deep = false) {
     const snap = await getDoc(doc(db, 'site_content', 'homepage'));
     const homepage = snap.exists() ? snap.data() : {};
-    const spots = [];
-    if (isHeicUrl(homepage.hero_single?.url)) spots.push({ kind: 'hero_single', entry: homepage.hero_single });
-    (homepage.featured || []).forEach(entry => { if (isHeicUrl(entry?.url)) spots.push({ kind: 'featured', entry }); });
-    (homepage.themes || []).forEach(entry => { if (isHeicUrl(entry?.url)) spots.push({ kind: 'theme', entry }); });
-    return { items, homepage, spots };
+    const candidates = [
+        ...galleryItems.map(item => ({ item, url: item.image_url })),
+        { kind: 'hero_single', entry: homepage.hero_single, url: homepage.hero_single?.url },
+        ...(homepage.featured || []).map(entry => ({ kind: 'featured', entry, url: entry?.url })),
+        ...(homepage.themes || []).map(entry => ({ kind: 'theme', entry, url: entry?.url }))
+    ].filter(c => c.url);
+
+    const found = [];
+    const unsure = [];
+    for (const c of candidates) {
+        (isHeicUrl(c.url) || isHeicUrl(c.item?.thumb_url) ? found : unsure).push(c);
+    }
+    if (deep) {
+        for (let i = 0; i < unsure.length; i += 8) {
+            const batch = unsure.slice(i, i + 8);
+            const flags = await Promise.all(batch.map(c => urlHoldsHeic(c.url).catch(() => false)));
+            batch.forEach((c, n) => { if (flags[n]) found.push(c); });
+        }
+    }
+    return {
+        homepage,
+        items: found.filter(c => c.item).map(c => c.item),
+        spots: found.filter(c => !c.item)
+    };
 }
 
 async function refreshIphonePhotoButton() {
@@ -3287,8 +3306,9 @@ async function convertStoredPhoto(url, storagePath) {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Download failed (${res.status})`);
     const blob = await res.blob();
-    const jpeg = await toUploadablePhoto(new File([blob], 'photo.heic', { type: blob.type || 'image/heic' }));
-    if (jpeg.type !== 'image/jpeg') throw new Error('Conversion failed');
+    const original = new File([blob], 'photo.heic', { type: 'image/heic' });
+    const jpeg = await toUploadablePhoto(original);
+    if (jpeg === original) throw new Error('Conversion failed'); // toUploadablePhoto hands back the original on failure
     const fileRef = ref(storage, storagePath);
     await uploadBytes(fileRef, jpeg);
     return await getDownloadURL(fileRef);
@@ -3296,13 +3316,18 @@ async function convertStoredPhoto(url, storagePath) {
 
 async function fixOldIphonePhotos() {
     const btn = document.getElementById('btn-fix-iphone-photos');
-    const { items, homepage, spots } = await findOldIphonePhotos();
-    const total = items.length + spots.length;
-    if (!total) return;
-    const minutes = Math.max(1, Math.ceil(total * 2 / 60));
-    if (!confirm(`Convert ${total} old iPhone photo${total === 1 ? '' : 's'} to JPEG so every browser can show them?\n\nThe original files are kept. This takes about ${minutes} minute${minutes === 1 ? '' : 's'}; keep this page open until it finishes.`)) return;
-
     btn.disabled = true;
+    btn.textContent = 'Checking all photos...';
+    const { items, homepage, spots } = await findOldIphonePhotos(true);
+    const total = items.length + spots.length;
+    const minutes = Math.max(1, Math.ceil(total * 2 / 60));
+    if (!total || !confirm(`Convert ${total} old iPhone photo${total === 1 ? '' : 's'} to JPEG so every browser can show them?\n\nThe original files are kept. This takes about ${minutes} minute${minutes === 1 ? '' : 's'}; keep this page open until it finishes.`)) {
+        btn.disabled = false;
+        await refreshIphonePhotoButton();
+        if (!total) alert('No iPhone photos left to convert.');
+        return;
+    }
+
     let converted = 0;
     let homepageChanged = false;
     const failed = [];
@@ -3551,9 +3576,17 @@ function renderGalleryGrid() {
                 // Delete from Firestore
                 await deleteDoc(doc(db, 'gallery_items', item.id));
 
-                // Delete from Storage
-                const storageRef = ref(storage, item.storage_path);
-                await deleteObject(storageRef);
+                // Delete from Storage, unless another entry still uses the file (older uploads were
+                // stored under their plain file name, so duplicates can share one file)
+                const path = item.storage_path;
+                const shared = galleryItems.some(i => i.id !== item.id && (i.storage_path === path || i.original_storage_path === path));
+                if (path && !shared) {
+                    try {
+                        await deleteObject(ref(storage, path));
+                    } catch (err) {
+                        if (err.code !== 'storage/object-not-found') throw err; // already gone
+                    }
+                }
 
                 // Remove from memory
                 galleryItems = galleryItems.filter(i => i.id !== item.id);
@@ -3675,8 +3708,8 @@ async function handleImageUpload() {
             // iPhone photos become JPEG first so every browser can show them
             const photo = await toUploadablePhoto(file);
 
-            // Upload to Storage
-            const storagePath = `gallery/${photo.name}`;
+            // Upload to Storage (unique name, so two uploads of the same photo never share one file)
+            const storagePath = `gallery/${Date.now()}_${photo.name}`;
             const storageRef = ref(storage, storagePath);
             await uploadBytes(storageRef, photo);
             const downloadURL = await getDownloadURL(storageRef);

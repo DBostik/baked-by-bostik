@@ -1,8 +1,9 @@
 /**
  * iPhone photos (HEIC/HEIF) only display in Safari, so they show as blank boxes in Chrome,
  * Firefox and Edge. Every photo the admin uploads goes through toUploadablePhoto(): a HEIC
- * file comes back as a JPEG (long edge at most MAX_EDGE, no location or other photo data),
- * any other file comes back unchanged. If a conversion fails, the original file comes back.
+ * file (spotted by name, type or contents) comes back as a JPEG (long edge at most MAX_EDGE,
+ * no location or other photo data), any other file comes back unchanged. If a conversion fails,
+ * the original file comes back.
  *
  * Safari can read HEIC itself. Other browsers load the heic-to converter on first use; it is
  * pinned to one exact file (HEIC_TO_SRI), so the browser refuses it if that file ever changes.
@@ -19,6 +20,31 @@ export function isHeicFile(file) {
 
 export function isHeicUrl(url) {
     return typeof url === 'string' && /\.(heic|heif)$/i.test(url.split('?')[0]);
+}
+
+// iPhone photos sometimes arrive renamed to .jpg; the first bytes tell the truth ("ftyp" + a HEIF brand).
+function isHeicBytes(bytes) {
+    if (!bytes || bytes.length < 12) return false;
+    const text = String.fromCharCode(...bytes.slice(4, 12));
+    return text.slice(0, 4) === 'ftyp' && /^(heic|heix|hevc|hevx|mif1|msf1)$/.test(text.slice(4));
+}
+
+async function holdsHeic(file) {
+    try {
+        return isHeicBytes(new Uint8Array(await file.slice(0, 12).arrayBuffer()));
+    } catch (e) {
+        return false;
+    }
+}
+
+// Reads only the start of a stored photo (needs the Storage bucket's CORS setting, see DEPLOY.md).
+export async function urlHoldsHeic(url) {
+    const res = await fetch(url, { headers: { Range: 'bytes=0-15' } });
+    if (!res.ok) return false;
+    const reader = res.body.getReader();
+    const { value } = await reader.read();
+    reader.cancel();
+    return isHeicBytes(value);
 }
 
 let heicToLoading = null;
@@ -51,7 +77,7 @@ async function decodeHeic(file) {
 }
 
 export async function toUploadablePhoto(file) {
-    if (!isHeicFile(file)) return file;
+    if (!isHeicFile(file) && !(await holdsHeic(file))) return file;
     try {
         return await heicToJpeg(file);
     } catch (err) {
@@ -76,6 +102,6 @@ async function heicToJpeg(file) {
     const blob = await new Promise((resolve, reject) => {
         canvas.toBlob(b => b ? resolve(b) : reject(new Error('Could not convert the photo to JPEG')), 'image/jpeg', JPEG_QUALITY);
     });
-    const name = file.name.replace(/\.(heic|heif)$/i, '') + '.jpg';
+    const name = file.name.replace(/\.(heic|heif|jpe?g|png)$/i, '') + '.jpg';
     return new File([blob], name, { type: 'image/jpeg', lastModified: file.lastModified });
 }

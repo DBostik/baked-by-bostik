@@ -191,7 +191,8 @@ Background for anyone changing the code. Written Sep 2026 during Milestone 24 (C
 
 * Every photo the admin uploads (gallery, homepage editor, request photos, quote attachments) goes through
   `toUploadablePhoto()` in `admin/photo-convert.js`: HEIC/HEIF becomes a JPEG (long edge 2400 px, no location
-  data), anything else is untouched. Safari decodes HEIC itself; other browsers load `heic-to` 1.5.2 from
+  data), anything else is untouched. HEIC is spotted by file name, type or the file's first bytes (iPhone photos
+  sometimes arrive renamed to `.jpg`). Safari decodes HEIC itself; other browsers load `heic-to` 1.5.2 from
   jsdelivr, pinned with an integrity hash. If conversion fails the original file is uploaded, as before.
   Use it for any new admin upload.
 * Photos uploaded before that: the Gallery page shows a "Fix N old iPhone photos" button while any gallery item
@@ -201,6 +202,11 @@ Background for anyone changing the code. Written Sep 2026 during Milestone 24 (C
   in Storage. Downloading needs the Storage bucket's CORS setting, which allows GET from bakedbybostik.com and
   the two Firebase addresses only (set Oct 22, 2026; see it with
   `gcloud storage buckets describe gs://bakedbybostik-5eb55.firebasestorage.app --format="json(cors_config)"`).
+  On click it also reads the first bytes of every other photo, so renamed iPhone photos are caught too.
+* Gallery uploads are stored as `gallery/<time>_<name>`. Older uploads used the plain file name, so re-uploading
+  a photo made several entries share one file, and deleting one deleted the photo for all (that is how
+  `IMG_3814` and `IMG_3616` lost theirs). The gallery delete now removes the file only if no other entry uses
+  it (`storage_path` or `original_storage_path`), and finishes quietly if the file is already gone.
 * `seed-reviews.html` was removed from the repo (it seeded placeholder reviews); the dashboard no longer
   auto-seeds placeholder reviews when the list is empty.
 
