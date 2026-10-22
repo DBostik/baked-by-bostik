@@ -169,7 +169,9 @@ Background for anyone changing the code. Written Sep 2026 during Milestone 24 (C
   unused `assets/images/Gallery/` folder (the gallery loads from Storage). The deploy went from ~1,300
   files to ~370. `.firebaseignore` was removed: it was never a Firebase feature. `/admin/**` is served with
   `X-Frame-Options: DENY`; everything gets `X-Content-Type-Options: nosniff` and a referrer policy. A custom
-  `404.html`, `robots.txt` and `sitemap.xml` were added.
+  `404.html`, `robots.txt` and `sitemap.xml` were added. Since Oct 22, 2026 `.git/**` and `.claude/**` are ignored
+  too (`**/.*` only skips dot *files*, so the checkout's `.git` folder had been published), and the workflow's
+  checkout step uses `persist-credentials: false`.
 * **Costing seed files are not published** (`admin/costing-seed*.json` is in the hosting ignore list since the
   K1 follow-up the same day): they hold Kristen's recipes and store prices. The "Load starter data" buttons in
   Costing Settings only work while Costing is empty and the data is already loaded, so nothing changes day to
