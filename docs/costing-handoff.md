@@ -12,17 +12,16 @@ page in Dave's Claude artifacts. This file is the engineering handoff.
 
 ## Working agreement (do not skip)
 
-* Dave does not operate GitHub. Sessions edit the local folder `~/Desktop/BBB Website` on his Mac mini
-  (a Cowork session linked to the Mac), test, commit locally, and **push only after Dave says "approved"** in chat.
+* Dave does not operate GitHub. Sessions edit the local folder `~/Projects/BBB Website` on his Mac mini (see
+  `DEPLOY.md`; the old `~/Desktop/BBB Website` copy is retired), test, commit locally, and **push only after Dave says "approved"** in chat.
   Pushing `main` deploys hosting + functions + rules through GitHub Actions in about 3 minutes.
 * Kristen tests each phase before the next starts. Her feedback comes through Dave.
 * No em dashes in anything written for Dave. Plain language, click-level steps for anything manual.
-* Never put secrets in the repo. GitHub push token: `~/Desktop/My Info For Claude/github-token.txt`.
+* Never put secrets in the repo. Push with the Mac's own GitHub sign-in (`git push origin main`); never use a token file.
   Admin login UID: `LYJpCo6DEIO9w9Yurupuw0uyxpJ2` (one shared login). Price-bot UID: `USNXR3iZcdVnNUY2VdPdoeYE3BI2`
   (Firebase Auth user `pricebot@bakedbybostik.com`, password known to Dave; not yet used).
-* Git on the mounted folder is quirky (see `DEPLOY.md` section 5): move `.git/logs` aside while committing,
-  `git fetch` of new packs bus-errors; when a fetch is needed, use a real-filesystem clone in `$HOME` and sync
-  objects back with `git pack-objects` / `git unpack-objects` (that is how PR #1 was merged).
+* Commit, push and deploy rules are in `DEPLOY.md`. (The old git workarounds for the Cowork VM's mounted Desktop
+  folder are in that file's history at commit `7cc5726`; they are not needed in `~/Projects`.)
 
 ## Files
 
