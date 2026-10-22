@@ -268,7 +268,11 @@ exports.createQuotePDF = onRequest({ cors: true, invoker: 'public' }, async (req
  * Receives: { customerEmail, pdfUrl, customerName, emailMessage }
  * Returns: { success: true }
  */
-exports.dispatchQuoteEmail = onRequest({ cors: true, invoker: 'public' }, async (req, res) => {
+exports.dispatchQuoteEmail = onRequest({
+    cors: true,
+    invoker: 'public',
+    secrets: ["SMTP_EMAIL", "SMTP_PASSWORD"]
+}, async (req, res) => {
     if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
 
     try {
@@ -354,7 +358,10 @@ exports.dispatchQuoteEmail = onRequest({ cors: true, invoker: 'public' }, async 
      * 3. Scheduled Weekly Report
      * Triggers every Monday at 9:00 AM (Timezone: America/New_York or default UTC, let's assume default for now or specify)
      */
-exports.scheduledWeeklyReport = onSchedule("every monday 09:00", async (event) => {
+exports.scheduledWeeklyReport = onSchedule({
+    schedule: "every monday 09:00",
+    secrets: ["SMTP_EMAIL", "SMTP_PASSWORD"]
+}, async (event) => {
     try {
         const db = admin.firestore();
         const now = new Date();
