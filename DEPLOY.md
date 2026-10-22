@@ -186,6 +186,14 @@ Background for anyone changing the code. Written Sep 2026 during Milestone 24 (C
   ever goes inside an inline `onclick` string. Keep it that way when adding screens, and run
   `tools/admin-tests` (see its README) after changes to admin.js.
 * Homepage testimonials (`js/app.js`) are built with text nodes.
+
+### iPhone photos (Oct 22, 2026)
+
+* Every photo the admin uploads (gallery, homepage editor, request photos, quote attachments) goes through
+  `toUploadablePhoto()` in `admin/photo-convert.js`: HEIC/HEIF becomes a JPEG (long edge 2400 px, no location
+  data), anything else is untouched. Safari decodes HEIC itself; other browsers load `heic-to` 1.5.2 from
+  jsdelivr, pinned with an integrity hash. If conversion fails the original file is uploaded, as before.
+  Use it for any new admin upload. Photos uploaded before this change are not converted.
 * `seed-reviews.html` was removed from the repo (it seeded placeholder reviews); the dashboard no longer
   auto-seeds placeholder reviews when the list is empty.
 

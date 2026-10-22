@@ -9,6 +9,7 @@ import {
 import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, setDoc, where, getDocs, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getStorage, ref, getDownloadURL, uploadBytes, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 import { firebaseConfig } from '../js/firebase-config.js';
+import { toUploadablePhoto } from './photo-convert.js';
 
 
 // Init Firebase
@@ -1569,7 +1570,7 @@ async function saveRequestDetails() {
             btn.textContent = 'Uploading...';
             // Need requestId for path
             for (let i = 0; i < fileInput.files.length; i++) {
-                const file = fileInput.files[i];
+                const file = await toUploadablePhoto(fileInput.files[i]);
                 const filePath = `requests/${currentModalRequestId}/${Date.now()}_${file.name}`;
                 const storageRef = ref(storage, filePath);
                 const snapshot = await uploadBytes(storageRef, file);
@@ -2028,7 +2029,8 @@ async function generatePDF() {
         btn.textContent = 'Uploading images...';
         currentQuoteAttachmentUrls = [];
         if (currentQuoteAttachmentFiles.length > 0) {
-            for (const file of currentQuoteAttachmentFiles) {
+            for (const picked of currentQuoteAttachmentFiles) {
+                const file = await toUploadablePhoto(picked);
                 const filePath = `quote_attachments/${currentQuoteRequest.id}/${Date.now()}_${file.name}`;
                 const fileRef = ref(storage, filePath);
                 const snapshot = await uploadBytes(fileRef, file);
@@ -3571,14 +3573,17 @@ async function handleImageUpload() {
 
     for (const file of selectedFiles) {
         try {
+            // iPhone photos become JPEG first so every browser can show them
+            const photo = await toUploadablePhoto(file);
+
             // Upload to Storage
-            const storagePath = `gallery/${file.name}`;
+            const storagePath = `gallery/${photo.name}`;
             const storageRef = ref(storage, storagePath);
-            await uploadBytes(storageRef, file);
+            await uploadBytes(storageRef, photo);
             const downloadURL = await getDownloadURL(storageRef);
 
             // Extract metadata
-            const nameWithoutExt = file.name.replace(/\.(jpg|jpeg|png)$/i, '');
+            const nameWithoutExt = photo.name.replace(/\.(jpg|jpeg|png)$/i, '');
             const displayName = nameWithoutExt.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
             const tags = nameWithoutExt.split('-').map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(', ');
 
@@ -3959,7 +3964,7 @@ async function saveSiteContent() {
         const heroSingleInput = document.getElementById('hero-single-file');
         if (heroSingleInput && heroSingleInput.files && heroSingleInput.files.length > 0) {
             btn.textContent = `Uploading Hero Image...`;
-            const file = heroSingleInput.files[0];
+            const file = await toUploadablePhoto(heroSingleInput.files[0]);
             const storagePath = `site_content/homepage/hero_single_${Date.now()}_${file.name}`;
             const storageRef = ref(storage, storagePath);
             await uploadBytes(storageRef, file);
@@ -3973,7 +3978,7 @@ async function saveSiteContent() {
             const input = document.getElementById(`featured-file-${i}`);
             if (input && input.files && input.files.length > 0) {
                 btn.textContent = `Uploading Featured ${i+1}...`;
-                const file = input.files[0];
+                const file = await toUploadablePhoto(input.files[0]);
                 const storagePath = `site_content/homepage/featured_${Date.now()}_${file.name}`;
                 const storageRef = ref(storage, storagePath);
                 await uploadBytes(storageRef, file);
@@ -3996,7 +4001,7 @@ async function saveSiteContent() {
             
             if (input && input.files && input.files.length > 0) {
                 btn.textContent = `Uploading Theme ${i+1}...`;
-                const file = input.files[0];
+                const file = await toUploadablePhoto(input.files[0]);
                 const storagePath = `site_content/homepage/theme_${Date.now()}_${file.name}`;
                 const storageRef = ref(storage, storagePath);
                 await uploadBytes(storageRef, file);
