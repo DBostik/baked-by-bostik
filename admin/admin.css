@@ -497,6 +497,21 @@ body {
     border-color: white;
 }
 
+/* Gallery page: the Total / Visible / Hidden boxes filter the grid */
+.stat-card[data-visibility] {
+    cursor: pointer;
+}
+
+.stat-card[data-visibility].active,
+.stat-card[data-visibility].active:hover {
+    box-shadow: 0 0 0 2px var(--primary), var(--glass-shadow);
+}
+
+.stat-card[data-visibility]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
 .stat-label {
     display: block;
     color: var(--text-muted);

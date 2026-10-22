@@ -3234,6 +3234,7 @@ function exportCSV() {
 let galleryItems = []; // All items
 let galleryCategories = []; // All categories
 let currentGalleryFilter = 'all';
+let currentVisibilityFilter = 'all'; // 'all' | 'visible' | 'hidden', set by the Total / Visible / Hidden boxes
 let selectedFiles = [];
 // Drag-and-Drop State
 let isReordering = false;
@@ -3252,6 +3253,7 @@ async function initGallery() {
     renderGalleryGrid();
     updateGalleryStats();
     initSortable(); // Initialize drag-and-drop
+    initVisibilityFilter();
     refreshIphonePhotoButton();
 
     // Event listeners
@@ -3414,10 +3416,14 @@ window.toggleReorderMode = function () {
         // Disable other controls
         document.getElementById('btn-upload-images').disabled = true;
         document.getElementById('btn-manage-categories').disabled = true;
-        // Check if filter is 'all'
-        if (currentGalleryFilter !== 'all') {
-            alert("Note: You can only reorder when viewing 'All' items. Switching to All now.");
-            filterGallery('all');
+        // Reordering needs every photo on screen (handleReorder maps grid positions onto galleryItems)
+        if (currentGalleryFilter !== 'all' || currentVisibilityFilter !== 'all') {
+            alert("Note: You can only reorder when viewing all images. Switching to All now.");
+            currentGalleryFilter = 'all';
+            currentVisibilityFilter = 'all';
+            renderGalleryFilters();
+            highlightVisibilityFilter();
+            renderGalleryGrid();
         }
     } else {
         // Disable Sorting
@@ -3514,9 +3520,14 @@ function renderGalleryGrid() {
     if (currentGalleryFilter !== 'all') {
         filteredItems = galleryItems.filter(item => item.categories && item.categories.includes(currentGalleryFilter));
     }
+    if (currentVisibilityFilter === 'visible') filteredItems = filteredItems.filter(item => item.visible);
+    if (currentVisibilityFilter === 'hidden') filteredItems = filteredItems.filter(item => !item.visible);
 
     if (filteredItems.length === 0) {
         grid.innerHTML = '';
+        emptyState.querySelector('p').textContent = galleryItems.length
+            ? 'No images match this view.'
+            : 'No images found. Click "Upload Images" to get started.';
         emptyState.classList.remove('hidden');
         return;
     }
@@ -3602,6 +3613,35 @@ function renderGalleryGrid() {
 
         card.appendChild(overlay);
         grid.appendChild(card);
+    });
+}
+
+// The Total / Visible / Hidden boxes above the gallery double as a filter (combined with the category tabs).
+function initVisibilityFilter() {
+    document.querySelectorAll('.stat-card[data-visibility]').forEach(card => {
+        card.onclick = () => setVisibilityFilter(card.dataset.visibility);
+        card.onkeydown = (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setVisibilityFilter(card.dataset.visibility);
+            }
+        };
+    });
+    highlightVisibilityFilter();
+}
+
+function setVisibilityFilter(value) {
+    if (isReordering) return; // reordering needs every photo on screen
+    currentVisibilityFilter = value;
+    highlightVisibilityFilter();
+    renderGalleryGrid();
+}
+
+function highlightVisibilityFilter() {
+    document.querySelectorAll('.stat-card[data-visibility]').forEach(card => {
+        const on = card.dataset.visibility === currentVisibilityFilter;
+        card.classList.toggle('active', on);
+        card.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
 }
 
