@@ -9,7 +9,7 @@ import {
 import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, setDoc, where, getDocs, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getStorage, ref, getDownloadURL, uploadBytes, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 import { firebaseConfig } from '../js/firebase-config.js';
-import { toUploadablePhoto } from './photo-convert.js';
+import { toUploadablePhoto, isHeicUrl } from './photo-convert.js';
 
 
 // Init Firebase
@@ -3252,10 +3252,109 @@ async function initGallery() {
     renderGalleryGrid();
     updateGalleryStats();
     initSortable(); // Initialize drag-and-drop
+    refreshIphonePhotoButton();
 
     // Event listeners
     document.getElementById('btn-upload-images').addEventListener('click', openUploadModal);
     document.getElementById('btn-manage-categories').addEventListener('click', openCategoryManagerModal);
+    document.getElementById('btn-fix-iphone-photos').onclick = fixOldIphonePhotos;
+}
+
+// Old iPhone (HEIC) photos uploaded before photo-convert.js existed: convert them to JPEG in place.
+// Each converted gallery entry keeps original_image_url / original_storage_path (homepage entries keep
+// original_url), and the HEIC files themselves stay in Storage, so nothing is lost.
+async function findOldIphonePhotos() {
+    const items = galleryItems.filter(item => isHeicUrl(item.image_url) || isHeicUrl(item.thumb_url));
+    const snap = await getDoc(doc(db, 'site_content', 'homepage'));
+    const homepage = snap.exists() ? snap.data() : {};
+    const spots = [];
+    if (isHeicUrl(homepage.hero_single?.url)) spots.push({ kind: 'hero_single', entry: homepage.hero_single });
+    (homepage.featured || []).forEach(entry => { if (isHeicUrl(entry?.url)) spots.push({ kind: 'featured', entry }); });
+    (homepage.themes || []).forEach(entry => { if (isHeicUrl(entry?.url)) spots.push({ kind: 'theme', entry }); });
+    return { items, homepage, spots };
+}
+
+async function refreshIphonePhotoButton() {
+    const btn = document.getElementById('btn-fix-iphone-photos');
+    if (!btn) return;
+    const { items, spots } = await findOldIphonePhotos();
+    const total = items.length + spots.length;
+    btn.style.display = total ? '' : 'none';
+    btn.textContent = `Fix ${total} old iPhone photo${total === 1 ? '' : 's'}`;
+}
+
+async function convertStoredPhoto(url, storagePath) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Download failed (${res.status})`);
+    const blob = await res.blob();
+    const jpeg = await toUploadablePhoto(new File([blob], 'photo.heic', { type: blob.type || 'image/heic' }));
+    if (jpeg.type !== 'image/jpeg') throw new Error('Conversion failed');
+    const fileRef = ref(storage, storagePath);
+    await uploadBytes(fileRef, jpeg);
+    return await getDownloadURL(fileRef);
+}
+
+async function fixOldIphonePhotos() {
+    const btn = document.getElementById('btn-fix-iphone-photos');
+    const { items, homepage, spots } = await findOldIphonePhotos();
+    const total = items.length + spots.length;
+    if (!total) return;
+    const minutes = Math.max(1, Math.ceil(total * 2 / 60));
+    if (!confirm(`Convert ${total} old iPhone photo${total === 1 ? '' : 's'} to JPEG so every browser can show them?\n\nThe original files are kept. This takes about ${minutes} minute${minutes === 1 ? '' : 's'}; keep this page open until it finishes.`)) return;
+
+    btn.disabled = true;
+    let converted = 0;
+    let homepageChanged = false;
+    const failed = [];
+
+    for (const item of items) {
+        btn.textContent = `Converting ${converted + failed.length + 1} of ${total}...`;
+        try {
+            const storagePath = `gallery/converted/${item.id}.jpg`;
+            const url = await convertStoredPhoto(item.image_url, storagePath);
+            const changes = {
+                image_url: url,
+                thumb_url: url,
+                storage_path: storagePath,
+                original_image_url: item.image_url,
+                original_storage_path: item.storage_path || null,
+                converted_at: serverTimestamp()
+            };
+            await updateDoc(doc(db, 'gallery_items', item.id), changes);
+            Object.assign(item, changes);
+            converted++;
+        } catch (err) {
+            console.error('Could not convert gallery photo', item.id, err);
+            failed.push(item.display_name || item.id);
+        }
+    }
+
+    for (const spot of spots) {
+        btn.textContent = `Converting ${converted + failed.length + 1} of ${total}...`;
+        try {
+            const url = await convertStoredPhoto(spot.entry.url, `site_content/homepage/${spot.kind}_${Date.now()}_converted.jpg`);
+            spot.entry.original_url = spot.entry.url;
+            spot.entry.url = url;
+            homepageChanged = true;
+            converted++;
+        } catch (err) {
+            console.error('Could not convert homepage photo', spot.kind, err);
+            failed.push(`homepage ${spot.kind}`);
+        }
+    }
+    if (homepageChanged) {
+        await updateDoc(doc(db, 'site_content', 'homepage'), {
+            hero_single: homepage.hero_single || null,
+            featured: homepage.featured || [],
+            themes: homepage.themes || [],
+            updated_at: serverTimestamp()
+        });
+    }
+
+    btn.disabled = false;
+    renderGalleryGrid();
+    await refreshIphonePhotoButton();
+    alert(`Converted ${converted} of ${total} photos.` + (failed.length ? `\n\nCould not convert: ${failed.join(', ')}` : ''));
 }
 
 // Initialize SortableJS

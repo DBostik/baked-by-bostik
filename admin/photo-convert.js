@@ -17,6 +17,10 @@ export function isHeicFile(file) {
     return /^image\/hei[cf]/i.test(file.type || '') || /\.(heic|heif)$/i.test(file.name || '');
 }
 
+export function isHeicUrl(url) {
+    return typeof url === 'string' && /\.(heic|heif)$/i.test(url.split('?')[0]);
+}
+
 let heicToLoading = null;
 function loadHeicTo() {
     if (!heicToLoading) {

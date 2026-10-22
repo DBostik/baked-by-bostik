@@ -193,7 +193,14 @@ Background for anyone changing the code. Written Sep 2026 during Milestone 24 (C
   `toUploadablePhoto()` in `admin/photo-convert.js`: HEIC/HEIF becomes a JPEG (long edge 2400 px, no location
   data), anything else is untouched. Safari decodes HEIC itself; other browsers load `heic-to` 1.5.2 from
   jsdelivr, pinned with an integrity hash. If conversion fails the original file is uploaded, as before.
-  Use it for any new admin upload. Photos uploaded before this change are not converted.
+  Use it for any new admin upload.
+* Photos uploaded before that: the Gallery page shows a "Fix N old iPhone photos" button while any gallery item
+  or homepage picture is still HEIC. It downloads each one, converts it, saves the JPEG under a new name
+  (`gallery/converted/<item id>.jpg`, `site_content/homepage/<kind>_<time>_converted.jpg`) and points the entry
+  at it, keeping `original_image_url` / `original_storage_path` (homepage: `original_url`). The HEIC files stay
+  in Storage. Downloading needs the Storage bucket's CORS setting, which allows GET from bakedbybostik.com and
+  the two Firebase addresses only (set Oct 22, 2026; see it with
+  `gcloud storage buckets describe gs://bakedbybostik-5eb55.firebasestorage.app --format="json(cors_config)"`).
 * `seed-reviews.html` was removed from the repo (it seeded placeholder reviews); the dashboard no longer
   auto-seeds placeholder reviews when the list is empty.
 
